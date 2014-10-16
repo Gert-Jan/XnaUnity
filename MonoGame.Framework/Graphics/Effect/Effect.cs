@@ -2,5 +2,6 @@
 {
 	public class Effect
 	{
+		public EffectTechnique CurrentTechnique { get; set; }
 	}
 }

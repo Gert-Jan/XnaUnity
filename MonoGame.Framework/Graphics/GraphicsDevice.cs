@@ -85,7 +85,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			private readonly List<MaterialHolder> _materials = new List<MaterialHolder>();
 			private int _index;
-			private readonly Shader _shader = Shader.Find("Custom/SpriteShader");
+			private readonly Shader _shader = Shader.Find("Sprites/Default");
 
 			private MaterialHolder Create(Texture2D texture)
 			{
@@ -198,6 +198,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh.vertices = Vertices;
 				Mesh.uv = UVs;
 				Mesh.colors32 = Colors;
+				Mesh.RecalculateBounds();
 			}
 
 			public int NextPowerOf2(int minimum)

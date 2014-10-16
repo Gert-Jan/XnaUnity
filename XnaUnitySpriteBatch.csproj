@@ -11,8 +11,9 @@
     <AssemblyName>XnaUnitySpriteBatch</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unity-Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unity-Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -46,8 +47,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Unity433\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +76,9 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\GameWindow.cs">
       <Link>MonoGame.Framework\GameWindow.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsExtensions.cs">
       <Link>MonoGame.Framework\Graphics\GraphicsExtensions.cs</Link>
@@ -123,8 +128,14 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Viewport.cs">
       <Link>MonoGame.Framework\Graphics\Viewport.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\Buttons.cs">
+      <Link>MonoGame.Framework\Input\Buttons.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\ButtonState.cs">
       <Link>MonoGame.Framework\Input\ButtonState.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\Keys.cs">
+      <Link>MonoGame.Framework\Input\Keys.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\MouseState.cs">
       <Link>MonoGame.Framework\Input\MouseState.cs</Link>
@@ -149,6 +160,9 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\Touch\TouchPanelCapabilities.cs">
       <Link>MonoGame.Framework\Input\Touch\TouchPanelCapabilities.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\Touch\TouchPanelState.cs">
+      <Link>MonoGame.Framework\Input\Touch\TouchPanelState.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\MathHelper.cs">
       <Link>MonoGame.Framework\MathHelper.cs</Link>
@@ -180,6 +194,9 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\Hash.cs">
       <Link>MonoGame.Framework\Utilities\Hash.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\ReflectionHelpers.cs">
+      <Link>MonoGame.Framework\Utilities\ReflectionHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Vector2.cs">
       <Link>MonoGame.Framework\Vector2.cs</Link>
     </Compile>
@@ -197,7 +214,9 @@
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\EffectPass.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\Effect.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\EffectTechnique.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsDevice.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatch.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\BlendState.cs" />
@@ -213,6 +232,10 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetDir)XnaUnitySpriteBatch.dll" "$(ProjectDir)..\..\Unity433\XnaTest\Assets\"
+copy "$(TargetDir)XnaUnitySpriteBatch.pdb" "$(ProjectDir)..\..\Unity433\XnaTest\Assets\"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
