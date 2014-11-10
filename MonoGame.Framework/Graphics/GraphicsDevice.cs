@@ -8,6 +8,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class GraphicsDevice : IDisposable
 	{
+		public UnityEngine.Material Material;
 		public Texture2D[] Textures = new Texture2D[1];
 		private Matrix4x4 _matrix;
 		private Matrix4x4 _baseMatrix;
@@ -46,12 +47,23 @@ namespace Microsoft.Xna.Framework.Graphics
 			Debug.Assert(vertexData != null && vertexData.Length > 0, "The vertexData must not be null or zero length!");
 			Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
-			var material = _materialPool.Get(Textures[0]);
+			UnityEngine.Material mat = null;
+			if (this.Material == null)
+			{
+				mat = _materialPool.Get(Textures[0]);
+			}
+			else
+			{
+				//XX: if custom effect put shader in material/ use effect's material
+				//XX: set texture on material
+				mat = this.Material;
+				mat.mainTexture = Textures[0].Texture;
+			}
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
 
-			UnityGraphics.DrawMesh(mesh.Mesh, _matrix, material, 0);
+			UnityGraphics.DrawMesh(mesh.Mesh, _matrix, mat, 0);
 		}
 
 		public void ResetPools()
@@ -92,19 +104,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				var mat = new Material(_shader);
 				mat.mainTexture = texture.Texture;
 				mat.renderQueue += _materials.Count;
-				// START: DO THIS IN BASIC EFFECT
-				Matrix4x4 world = Matrix4x4.identity;
-				Matrix4x4 proj = Matrix4x4.Ortho(0, 1280, 720, 0, 1, 1000);
-				Matrix4x4 view = Matrix4x4.identity;
-				// scroll factor
-				//view.m03 = 0.1f;
-				//view.m13 = 0.1f;
-				//view.m23 = -1;
-				Matrix4x4 worldviewproj = world * view * proj;
-				worldviewproj.m23 = 0;
-
-				mat.SetMatrix("_WorldViewProj", worldviewproj);
-				// END: DO THIS IN BASIC EFFECT
 				return new MaterialHolder(mat, texture);
 			}
 

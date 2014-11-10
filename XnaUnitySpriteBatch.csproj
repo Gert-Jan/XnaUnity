@@ -77,8 +77,29 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\GameWindow.cs">
       <Link>MonoGame.Framework\GameWindow.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectAnnotation.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectAnnotation.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectAnnotationCollection.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectAnnotationCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameter.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameterClass.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectParameterClass.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameterCollection.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectParameterCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameterType.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\EffectParameterType.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs">
       <Link>MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\IEffectMatrices.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\IEffectMatrices.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsExtensions.cs">
       <Link>MonoGame.Framework\Graphics\GraphicsExtensions.cs</Link>
@@ -88,9 +109,6 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\PresentInterval.cs">
       <Link>MonoGame.Framework\Graphics\PresentInterval.cs</Link>
-    </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\SpriteBatcher.cs">
-      <Link>MonoGame.Framework\Graphics\SpriteBatcher.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\SpriteBatchItem.cs">
       <Link>MonoGame.Framework\Graphics\SpriteBatchItem.cs</Link>
@@ -214,11 +232,14 @@
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffect.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\EffectHelpers.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectPass.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\Effect.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectTechnique.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsDevice.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatch.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\SpriteBatcher.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\BlendState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\DepthStencilState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\RasterizerState.cs" />
@@ -227,6 +248,7 @@
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
     <Compile Include="MonoGame.Framework\UnityGameWindow.cs" />
+    <Compile Include="XnaToUnity.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

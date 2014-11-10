@@ -13,7 +13,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		//SamplerState _samplerState;
 		//DepthStencilState _depthStencilState; 
 		//RasterizerState _rasterizerState;		
-		//Effect _effect;
+		Effect _effect;
         bool _beginCalled;
 
 		//Effect _spriteEffect;
@@ -45,10 +45,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Begin ()
 		{
-            Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Matrix.Identity);	
+            Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Matrix.Identity);
 		}
 
-		public void Begin (SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState, Effect effect, Matrix transformMatrix)
+		public void Begin (SpriteSortMode sortMode, BlendState? blendState, SamplerState? samplerState, DepthStencilState? depthStencilState, RasterizerState? rasterizerState, Effect effect, Matrix transformMatrix)
 		{
             if (_beginCalled)
                 throw new InvalidOperationException("Begin cannot be called again until End has been successfully called.");
@@ -60,7 +60,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_depthStencilState = depthStencilState ?? DepthStencilState.None;
 			//_rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
 			//
-			//_effect = effect;
+			_effect = effect;
 			
 			_matrix = transformMatrix;
 
@@ -78,12 +78,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Begin (SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState)
 		{
-			Begin (sortMode, blendState, samplerState, depthStencilState, rasterizerState, null, Matrix.Identity);	
+			Begin (sortMode, blendState, samplerState, depthStencilState, rasterizerState, null, Matrix.Identity);
 		}
 
-		public void Begin (SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState, Effect effect)
+		public void Begin (SpriteSortMode sortMode, BlendState? blendState, SamplerState? samplerState, DepthStencilState? depthStencilState, RasterizerState? rasterizerState, Effect effect)
 		{
-			Begin (sortMode, blendState, samplerState, depthStencilState, rasterizerState, effect, Matrix.Identity);			
+			Begin (sortMode, blendState, samplerState, depthStencilState, rasterizerState, effect, Matrix.Identity);
 		}
 
 		public void End ()
@@ -97,7 +97,9 @@ namespace Microsoft.Xna.Framework.Graphics
             _blendState.ApplyState(GraphicsDevice);
 #endif
             
-            _batcher.DrawBatch(_sortMode);
+            _batcher.DrawBatch(_sortMode, _effect);
+			_effect = null;
+			GraphicsDevice.Material = null;
         }
 		
 		void Setup() 
@@ -111,29 +113,40 @@ namespace Microsoft.Xna.Framework.Graphics
             // Setup the default sprite effect.
 			var vp = gd.Viewport;
 
-		    //Matrix projection;
+			Matrix projection;
 #if PSM || DIRECTX
             Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, -1, 0, out projection);
 #else
             // GL requires a half pixel offset to match DX.
-            //Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1, out projection);
-			if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+			//XX: actaully create a projection matrix here
+			if (_effect == null)
 			{
-				_matrix.M41 += -0.5f * _matrix.M11;
-				_matrix.M42 += -0.5f * _matrix.M22;
+				Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1, out projection);
+				if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+				{
+					_matrix.M41 += -0.5f * _matrix.M11;
+					_matrix.M42 += -0.5f * _matrix.M22;
+				}
+
+				Matrix.Multiply(ref _matrix, ref projection, out projection);
+
+				_matrix = projection;
 			}
 #endif
-            //Matrix.Multiply(ref _matrix, ref projection, out projection);
-
-            //_matrixTransform.SetValue(projection);
+            
+            //_matrix.SetValue(projection);
             //_spritePass.Apply();
 
+			// XX: Set custom effect on graphics device
+			if (_effect != null)
+				gd.Material = _effect.Material;
 			gd.Matrix = _matrix;
 
 			// If the user supplied a custom effect then apply
 			// it now to override the sprite effect.
-			//if (_effect != null)
-			//    _effect.CurrentTechnique.Passes[0].Apply();
+			if (_effect != null)
+				_effect.OnApply();
+			//	_effect.CurrentTechnique.Passes[0].Apply();
         }
 		
         void CheckValid(Texture2D texture)
