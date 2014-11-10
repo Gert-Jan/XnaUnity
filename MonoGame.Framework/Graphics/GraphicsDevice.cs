@@ -85,13 +85,26 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			private readonly List<MaterialHolder> _materials = new List<MaterialHolder>();
 			private int _index;
-			private readonly Shader _shader = Shader.Find("Sprites/Default");
+			private readonly Shader _shader = Shader.Find("Custom/SpriteShader");
 
 			private MaterialHolder Create(Texture2D texture)
 			{
 				var mat = new Material(_shader);
 				mat.mainTexture = texture.Texture;
 				mat.renderQueue += _materials.Count;
+				// START: DO THIS IN BASIC EFFECT
+				Matrix4x4 world = Matrix4x4.identity;
+				Matrix4x4 proj = Matrix4x4.Ortho(0, 1280, 720, 0, 1, 1000);
+				Matrix4x4 view = Matrix4x4.identity;
+				// scroll factor
+				//view.m03 = 0.1f;
+				//view.m13 = 0.1f;
+				//view.m23 = -1;
+				Matrix4x4 worldviewproj = world * view * proj;
+				worldviewproj.m23 = 0;
+
+				mat.SetMatrix("_WorldViewProj", worldviewproj);
+				// END: DO THIS IN BASIC EFFECT
 				return new MaterialHolder(mat, texture);
 			}
 
