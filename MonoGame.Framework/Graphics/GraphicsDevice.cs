@@ -58,23 +58,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				//XX: set texture on material
 				mat = this.Material;
 				mat.mainTexture = Textures[0].Texture;
-
-				// START: DO THIS IN BASIC EFFECT
-				
-				Matrix4x4 world = Matrix4x4.identity;
-				Matrix4x4 proj = Matrix4x4.Ortho(0, 1280, 720, 0, 1, 1000);
-				Matrix4x4 view = Matrix4x4.identity;
-				// scroll factor
-				//view.m03 = 0.1f;
-				//view.m13 = 0.1f;
-				//view.m23 = -1;
-				Matrix4x4 worldviewproj = world * view * proj;
-				worldviewproj.m23 = 0;
-
-				mat.SetMatrix("_WorldViewProj", worldviewproj);
-				// END: DO THIS IN BASIC EFFECT
-				
-
 			}
 
 			var mesh = _meshPool.Get(primitiveCount / 2);

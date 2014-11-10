@@ -36,7 +36,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		Matrix view = Matrix.Identity;
 		Matrix projection = Matrix.Identity;
 
-		Matrix worldView;
+		Matrix worldView = new Matrix();
+		Matrix worldViewProj = new Matrix();
 
 		Vector3 diffuseColor = Vector3.One;
 
@@ -190,8 +191,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		internal override bool OnApply()
 		{
 			// Recompute the world+view+projection matrix or fog vector?
-			Matrix worldViewProj = new Matrix();
-			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);;
+			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);
 			UnityEngine.Matrix4x4 uWorldViewProj = XnaToUnity.Matrix(worldViewProj);
 			uWorldViewProj.m23 = 0;
 			material.SetMatrix("_WorldViewProj", uWorldViewProj);

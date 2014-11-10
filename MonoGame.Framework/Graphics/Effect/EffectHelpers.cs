@@ -42,13 +42,11 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         internal static EffectDirtyFlags SetWorldViewProjAndFog(EffectDirtyFlags dirtyFlags,
                                                                 ref Matrix world, ref Matrix view, ref Matrix projection, ref Matrix worldView,
-                                                                ref Matrix worldViewProjParam)
+                                                                ref Matrix worldViewProj)
         {
             // Recompute the world+view+projection matrix?
             if ((dirtyFlags & EffectDirtyFlags.WorldViewProj) != 0)
             {
-                Matrix worldViewProj;
-                
                 Matrix.Multiply(ref world, ref view, out worldView);
                 Matrix.Multiply(ref worldView, ref projection, out worldViewProj);
                 
