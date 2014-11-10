@@ -152,8 +152,14 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\ButtonState.cs">
       <Link>MonoGame.Framework\Input\ButtonState.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\KeyboardState.cs">
+      <Link>MonoGame.Framework\Input\KeyboardState.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\Keys.cs">
       <Link>MonoGame.Framework\Input\Keys.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\KeyState.cs">
+      <Link>MonoGame.Framework\Input\KeyState.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\MouseState.cs">
       <Link>MonoGame.Framework\Input\MouseState.cs</Link>
@@ -245,6 +251,7 @@
     <Compile Include="MonoGame.Framework\Graphics\States\RasterizerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\SamplerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture2D.cs" />
+    <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
     <Compile Include="MonoGame.Framework\UnityGameWindow.cs" />
