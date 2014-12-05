@@ -98,11 +98,17 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs">
       <Link>MonoGame.Framework\Graphics\Effect\EffectPassCollection.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\IEffectFog.cs">
+      <Link>MonoGame.Framework\Graphics\Effect\IEffectFog.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\IEffectMatrices.cs">
       <Link>MonoGame.Framework\Graphics\Effect\IEffectMatrices.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsExtensions.cs">
       <Link>MonoGame.Framework\Graphics\GraphicsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsProfile.cs">
+      <Link>MonoGame.Framework\Graphics\GraphicsProfile.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsResource.cs">
       <Link>MonoGame.Framework\Graphics\GraphicsResource.cs</Link>
@@ -151,6 +157,30 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\ButtonState.cs">
       <Link>MonoGame.Framework\Input\ButtonState.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadButtons.cs">
+      <Link>MonoGame.Framework\Input\GamePadButtons.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadCapabilities.cs">
+      <Link>MonoGame.Framework\Input\GamePadCapabilities.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadDeadZone.cs">
+      <Link>MonoGame.Framework\Input\GamePadDeadZone.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadDPad.cs">
+      <Link>MonoGame.Framework\Input\GamePadDPad.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadState.cs">
+      <Link>MonoGame.Framework\Input\GamePadState.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadThumbSticks.cs">
+      <Link>MonoGame.Framework\Input\GamePadThumbSticks.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadTriggers.cs">
+      <Link>MonoGame.Framework\Input\GamePadTriggers.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadType.cs">
+      <Link>MonoGame.Framework\Input\GamePadType.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\KeyboardState.cs">
       <Link>MonoGame.Framework\Input\KeyboardState.cs</Link>
@@ -203,6 +233,9 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\PlaneIntersectionType.cs">
       <Link>MonoGame.Framework\PlaneIntersectionType.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\PlayerIndex.cs">
+      <Link>PlayerIndex.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Point.cs">
       <Link>MonoGame.Framework\Point.cs</Link>
     </Compile>
@@ -214,6 +247,9 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Rectangle.cs">
       <Link>MonoGame.Framework\Rectangle.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\FileHelpers.cs">
+      <Link>MonoGame.Framework\Utilities\FileHelpers.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\Hash.cs">
       <Link>MonoGame.Framework\Utilities\Hash.cs</Link>
@@ -235,6 +271,7 @@
     <Compile Include="DotNetUpdates\TimeSpanExtensions.cs" />
     <Compile Include="DotNetUpdates\Tuple.cs" />
     <Compile Include="MonoGame.Framework\Audio\SoundEffect.cs" />
+    <Compile Include="MonoGame.Framework\Audio\SoundEffectInstance.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
@@ -254,7 +291,9 @@
     <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
+    <Compile Include="MonoGame.Framework\SpriteFont.cs" />
     <Compile Include="MonoGame.Framework\UnityGameWindow.cs" />
+    <Compile Include="UnityToXna.cs" />
     <Compile Include="XnaToUnity.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -262,8 +301,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)XnaUnitySpriteBatch.dll" "$(ProjectDir)..\..\Unity433\XnaTest\Assets\"
-copy "$(TargetDir)XnaUnitySpriteBatch.pdb" "$(ProjectDir)..\..\Unity433\XnaTest\Assets\"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

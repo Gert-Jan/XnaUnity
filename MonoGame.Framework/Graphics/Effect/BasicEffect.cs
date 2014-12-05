@@ -194,6 +194,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);
 			UnityEngine.Matrix4x4 uWorldViewProj = XnaToUnity.Matrix(worldViewProj);
 			uWorldViewProj.m23 = 0;
+
 			material.SetMatrix("_WorldViewProj", uWorldViewProj);
 			//XX: set transform on material
 

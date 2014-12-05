@@ -386,7 +386,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					_texCoordBR);			
 			
 			if (_sortMode == SpriteSortMode.Immediate)
-                _batcher.DrawBatch(_sortMode);
+                _batcher.DrawBatch(_sortMode, null);
 		}
 
 		public void Draw (Texture2D texture, Vector2 position, Rectangle? sourceRectangle, Color color)

@@ -21,7 +21,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		private Viewport _viewport;
 		public Viewport Viewport {
 			get { return _viewport; }
-			internal set
+			set
 			{
 				_viewport = value;
 				_baseMatrix = Matrix4x4.TRS(new UnityEngine.Vector3(-_viewport.Width / 2, _viewport.Height / 2, 0), UnityEngine.Quaternion.identity, new UnityEngine.Vector3(1, -1, 1));
@@ -37,6 +37,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 				_matrix = _baseMatrix * _matrix;
 			}
+		}
+
+		public bool IsDisposed
+		{
+			get { return false; }
 		}
 
 		private readonly MaterialPool _materialPool = new MaterialPool();

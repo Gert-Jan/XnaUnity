@@ -6,11 +6,15 @@ using UnityAudioClip = UnityEngine.AudioClip;
 using UnityResources = UnityEngine.Resources;
 using TextAsset = UnityEngine.TextAsset;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Content
 {
 	public class ContentManager
 	{
+		private List<IDisposable> disposableAssets = new List<IDisposable>();
+
 		public string RootDirectory { get; set; }
 
 		public T Load<T>(string fileName) where T : class

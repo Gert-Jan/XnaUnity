@@ -50,6 +50,11 @@ namespace Microsoft.Xna.Framework
 		private readonly Stopwatch _gameTimer = Stopwatch.StartNew();
 		private TimeSpan _accumulatedElapsedTime;
 
+		public bool IsActive
+		{
+			get { return true; }
+		}
+
 		//Taken from MonoGame.Game.Tick
 		private void RunUpdates()
 		{
@@ -86,8 +91,8 @@ namespace Microsoft.Xna.Framework
 
 		public void UnityInitialize()
 		{
-			Initialize();
 			LoadContent();
+			Initialize();
 		}
 
 		private bool _mouseIsDown = false;
@@ -150,6 +155,10 @@ namespace Microsoft.Xna.Framework
 		}
 
 		protected virtual void LoadContent()
+		{
+		}
+
+		protected virtual void UnloadContent()
 		{
 		}
 

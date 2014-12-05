@@ -13,5 +13,6 @@ namespace Microsoft.Xna.Framework
 		public DisplayOrientation SupportedOrientations { get; set; }
 		public bool IsFullScreen { get; set; }
 		public GraphicsDevice GraphicsDevice { get; private set; }
+		public GraphicsProfile GraphicsProfile { get { return Graphics.GraphicsProfile.HiDef; } }
 	}
 }
