@@ -59,10 +59,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 			else
 			{
-				//XX: if custom effect put shader in material/ use effect's material
-				//XX: set texture on material
+				//XX: Please make a pool of materials for this later! For now just create a new material for each drawcall
+				//XX: Find a better way to get the WorldViewProj matrix here
 				mat = this.Material;
+				mat = new Material(this.Material);
+				mat.SetMatrix("_WorldViewProj", this.Material.GetMatrix("_WorldViewProj"));
 				mat.mainTexture = Textures[0].Texture;
+				mat.SetPass(0);
 			}
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
