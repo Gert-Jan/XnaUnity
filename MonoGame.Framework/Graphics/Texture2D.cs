@@ -33,8 +33,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		public void GetData<T>(int level, Rectangle? rect, Color[] data, int startIndex, int elementCount) where T : struct
 		{
 			UnityEngine.Color[] output;
+			// unity reads from bottom to top, so compensate for that on the Y position
 			if (rect.HasValue)
-				output = Texture.GetPixels(rect.Value.X, rect.Value.Y, rect.Value.Width, rect.Value.Height, level);
+				output = Texture.GetPixels(rect.Value.X, Texture.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, level);
 			else
 				output = Texture.GetPixels(level);
 
@@ -46,6 +47,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			UnityEngine.Color[] unityData = new UnityEngine.Color[data.Length];
 			XnaToUnity.Color(data, ref unityData);
 			Texture.SetPixels(unityData);
+			Texture.Apply();
 		}
 
 		public void SetData<T>(Color[] data, int startIndex, int elementCount) where T : struct
