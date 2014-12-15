@@ -212,7 +212,24 @@ namespace Microsoft.Xna.Framework.Graphics
 			switch (sortMode)
 			{
 				case SpriteSortMode.Texture:
-					_batchItemList.Sort(CompareTexture);
+					// TODO: this is a quick inline sorting algorithm because the monogame sorting is broken
+					// Not sure if this is the fastest way to do it but it has proven to be adequate for now.
+					Texture2D current_tex = null;
+					for (int point = 0; point < _batchItemList.Count; point++)
+					{
+						current_tex = _batchItemList[point].Texture;
+						for (int i = point + 1; i < _batchItemList.Count; i++)
+						{
+							if (ReferenceEquals(current_tex, _batchItemList[i].Texture))
+							{
+								SpriteBatchItem temp = _batchItemList[point];
+								_batchItemList[point] = _batchItemList[i];
+								_batchItemList[i] = temp;
+								point++;
+							}
+						}
+					}
+					//_batchItemList.Sort(CompareTexture);
 					break;
 				case SpriteSortMode.FrontToBack:
 					_batchItemList.Sort(CompareDepth);
