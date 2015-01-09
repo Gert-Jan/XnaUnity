@@ -68,6 +68,30 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\ContainmentType.cs">
       <Link>MonoGame.Framework\ContainmentType.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentLoadException.cs">
+      <Link>MonoGame.Framework\Content\ContentLoadException.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentReaders\CharReader.cs">
+      <Link>MonoGame.Framework\Content\ContentReaders\CharReader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentReaders\ListReader.cs">
+      <Link>MonoGame.Framework\Content\ContentReaders\ListReader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentReaders\RectangleReader.cs">
+      <Link>MonoGame.Framework\Content\ContentReaders\RectangleReader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentReaders\SpriteFontReader.cs">
+      <Link>MonoGame.Framework\Content\ContentReaders\SpriteFontReader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentReaders\Vector3Reader.cs">
+      <Link>MonoGame.Framework\Content\ContentReaders\Vector3Reader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\ContentTypeReader.cs">
+      <Link>MonoGame.Framework\Content\ContentTypeReader.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Content\LzxDecoder.cs">
+      <Link>MonoGame.Framework\Content\LzxDecoder.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\DisplayOrientation.cs">
       <Link>MonoGame.Framework\DisplayOrientation.cs</Link>
     </Compile>
@@ -76,6 +100,9 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\GameWindow.cs">
       <Link>MonoGame.Framework\GameWindow.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\DxtUtil.cs">
+      <Link>MonoGame.Framework\Graphics\DxtUtil.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectAnnotation.cs">
       <Link>MonoGame.Framework\Graphics\Effect\EffectAnnotation.cs</Link>
@@ -254,6 +281,9 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\Hash.cs">
       <Link>MonoGame.Framework\Utilities\Hash.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\Lz4Stream\Lz4DecoderStream.cs">
+      <Link>MonoGame.Framework\Utilities\Lz4Stream\Lz4DecoderStream.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Utilities\ReflectionHelpers.cs">
       <Link>MonoGame.Framework\Utilities\ReflectionHelpers.cs</Link>
     </Compile>
@@ -273,6 +303,9 @@
     <Compile Include="MonoGame.Framework\Audio\SoundEffect.cs" />
     <Compile Include="MonoGame.Framework\Audio\SoundEffectInstance.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
+    <Compile Include="MonoGame.Framework\Content\ContentReader.cs" />
+    <Compile Include="MonoGame.Framework\Content\ContentReaders\Texture2DReader.cs" />
+    <Compile Include="MonoGame.Framework\Content\ContentTypeReaderManager.cs" />
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffect.cs" />

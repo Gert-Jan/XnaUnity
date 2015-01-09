@@ -55,6 +55,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			
 		}
 
+		public void SetData(UnityEngine.Color[] data)
+		{
+			Texture.SetPixels(data);
+			Texture.Apply();
+		}
+
+		public void SetData(UnityEngine.Color[] data, int mipLevel)
+		{
+			Texture.SetPixels(data, mipLevel);
+			Texture.Apply();
+		}
+
 		public Rectangle Bounds { get { return new Rectangle(0, 0, Width, Height); } }
 		public int Width { get { return Texture.width; } }
 		public int Height { get { return Texture.height; } }

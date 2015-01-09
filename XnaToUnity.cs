@@ -16,6 +16,20 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
+		public static UnityEngine.Color[] Color(byte[] input)
+		{
+			UnityEngine.Color[] output = new UnityEngine.Color[input.Length / 4];
+			for (int i = 0; i < output.Length; i++)
+			{
+				output[i] = new UnityEngine.Color(
+					input[i * 4 + 0] / 255f,
+					input[i * 4 + 1] / 255f,
+					input[i * 4 + 2] / 255f,
+					input[i * 4 + 3] / 255f);
+			}
+			return output;
+		}
+
 		public static UnityEngine.Matrix4x4 Matrix(Xna.Framework.Matrix input)
 		{
 			UnityEngine.Matrix4x4 output = new UnityEngine.Matrix4x4();
