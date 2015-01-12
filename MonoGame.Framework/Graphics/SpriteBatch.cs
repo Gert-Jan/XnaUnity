@@ -156,8 +156,8 @@ namespace Microsoft.Xna.Framework.Graphics
             if (!_beginCalled)
                 throw new InvalidOperationException("Draw was called, but Begin has not yet been called. Begin must be called successfully before you can call Draw.");
         }
-		/*
-        void CheckValid(SpriteFont spriteFont, string text)
+
+		void CheckValid(SpriteFont spriteFont, string text)
         {
             if (spriteFont == null)
                 throw new ArgumentNullException("spriteFont");
@@ -175,7 +175,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new ArgumentNullException("text");
             if (!_beginCalled)
                 throw new InvalidOperationException("DrawString was called, but Begin has not yet been called. Begin must be called successfully before you can call DrawString.");
-        }*/
+        }
 
         // Overload for calling Draw() with named parameters
         /// <summary>
@@ -276,7 +276,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				rotation,
 				origin * scale,
 				effect,
-				depth);
+				depth,
+				true);
 		}
 
 		public void Draw (Texture2D texture,
@@ -306,7 +307,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				rotation,
 				origin * scale,
 				effect,
-				depth);
+				depth,
+				true);
 		}
 
 		public void Draw (Texture2D texture,
@@ -331,7 +333,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			      new Vector2(origin.X * ((float)destinationRectangle.Width / (float)( (sourceRectangle.HasValue && sourceRectangle.Value.Width != 0) ? sourceRectangle.Value.Width : texture.Width)),
                         			origin.Y * ((float)destinationRectangle.Height) / (float)( (sourceRectangle.HasValue && sourceRectangle.Value.Height != 0) ? sourceRectangle.Value.Height : texture.Height)),
 			      effect,
-			      depth);
+			      depth,
+				  true);
 		}
 
 		internal void DrawInternal (Texture2D texture,
@@ -341,7 +344,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			float rotation,
 			Vector2 origin,
 			SpriteEffects effect,
-			float depth)
+			float depth,
+			bool autoFlush)
 		{
 			var item = _batcher.CreateBatchItem();
 
@@ -383,10 +387,21 @@ namespace Microsoft.Xna.Framework.Graphics
 					(float)Math.Cos (rotation), 
 					color, 
 					_texCoordTL, 
-					_texCoordBR);			
-			
+					_texCoordBR);
+
+			if (autoFlush)
+			{
+				FlushIfNeeded();
+			}
+		}
+
+		// Mark the end of a draw operation for Immediate SpriteSortMode.
+		internal void FlushIfNeeded()
+		{
 			if (_sortMode == SpriteSortMode.Immediate)
-                _batcher.DrawBatch(_sortMode, null);
+			{
+				_batcher.DrawBatch(_sortMode, _effect);
+			}
 		}
 
 		public void Draw (Texture2D texture, Vector2 position, Rectangle? sourceRectangle, Color color)
@@ -408,7 +423,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			Draw (texture, rectangle, null, color);
 		}
-		/*
+		
 		public void DrawString (SpriteFont spriteFont, string text, Vector2 position, Color color)
 		{
             CheckValid(spriteFont, text);
@@ -466,7 +481,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var source = new SpriteFont.CharacterSource(text);
             spriteFont.DrawInto(this, ref source, position, color, rotation, origin, scale, effect, depth);
-		}*/
+		}
 
         protected override void Dispose(bool disposing)
         {

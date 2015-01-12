@@ -100,6 +100,21 @@ namespace Microsoft.Xna.Framework.Content
 						levelData = DxtUtil.DecompressDxt5(levelData, levelWidth, levelHeight);
 						break;
 				}
+
+				// swap rows because unity textures are laid out bottom-top instead of top-bottom
+				int rowSize = width * 4;
+				byte[] temp = new byte[rowSize];
+				for (int i = 0; i < levelData.Length / 2; i += rowSize)
+				{
+					for (int j = 0; j < rowSize; j++)
+						temp[j] = levelData[i + j];
+					int p = levelData.Length - (i + rowSize);
+					for (int j = 0; j < rowSize; j++)
+						levelData[i + j] = levelData[p + j];
+					for (int j = 0; j < rowSize; j++)
+ 						levelData[p + j] = temp[j];
+				}
+
 				unityTexture.SetPixels(XnaToUnity.Color(levelData), level);
 				unityTexture.Apply();
 				texture = new Texture2D(unityTexture);

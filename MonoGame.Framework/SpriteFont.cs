@@ -329,13 +329,13 @@ namespace Microsoft.Xna.Framework.Graphics
 											currentGlyph.BoundsInTexture.Width * scale.X,
 											currentGlyph.BoundsInTexture.Height * scale.Y);
 
-				/* QQQ spriteBatch.DrawInternal(
+				spriteBatch.DrawInternal(
 					_texture, destRect, currentGlyph.BoundsInTexture,
-					color, rotation, Vector2.Zero, effect, depth, false);*/
+					color, rotation, Vector2.Zero, effect, depth, false);
 			}
 
 			// We need to flush if we're using Immediate sort mode.
-			// QQQ spriteBatch.FlushIfNeeded();
+			spriteBatch.FlushIfNeeded();
 		}
 
 		internal struct CharacterSource
