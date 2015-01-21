@@ -53,6 +53,33 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\AudioChannels.cs">
+      <Link>MonoGame.Framework\Audio\AudioChannels.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\AudioEmitter.cs">
+      <Link>MonoGame.Framework\Audio\AudioEmitter.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\AudioListener.cs">
+      <Link>MonoGame.Framework\Audio\AudioListener.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\InstancePlayLimitException.cs">
+      <Link>MonoGame.Framework\Audio\InstancePlayLimitException.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\NoAudioHardwareException.cs">
+      <Link>MonoGame.Framework\Audio\NoAudioHardwareException.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundEffect.cs">
+      <Link>MonoGame.Framework\Audio\SoundEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundEffectInstance.cs">
+      <Link>MonoGame.Framework\Audio\SoundEffectInstance.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundEffectInstancePool.cs">
+      <Link>MonoGame.Framework\Audio\SoundEffectInstancePool.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundState.cs">
+      <Link>MonoGame.Framework\Audio\SoundState.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\BoundingBox.cs">
       <Link>MonoGame.Framework\BoundingBox.cs</Link>
     </Compile>
@@ -306,8 +333,8 @@
     <Compile Include="DotNetUpdates\StringBuilderExtensions.cs" />
     <Compile Include="DotNetUpdates\TimeSpanExtensions.cs" />
     <Compile Include="DotNetUpdates\Tuple.cs" />
-    <Compile Include="MonoGame.Framework\Audio\SoundEffect.cs" />
-    <Compile Include="MonoGame.Framework\Audio\SoundEffectInstance.cs" />
+    <Compile Include="MonoGame.Framework\Audio\SoundEffect.Unity.cs" />
+    <Compile Include="MonoGame.Framework\Audio\SoundEffectInstance.Unity.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentReader.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentReaders\Texture2DReader.cs" />

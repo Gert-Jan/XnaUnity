@@ -62,6 +62,12 @@ namespace Microsoft.Xna.Framework.Media
 			State = MediaState.Paused;
 		}
 
+		public static bool IsRepeating
+		{
+			get { return AudioSource.loop; }
+			set { AudioSource.loop = value; }
+		}
+
 		private static void FireMediaStateChanged()
 		{
 			if (MediaStateChanged != null)
