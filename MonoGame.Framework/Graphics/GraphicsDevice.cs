@@ -15,7 +15,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		internal GraphicsDevice(Viewport viewport)
 		{
+			Adapter = new GraphicsAdapter();
 			Viewport = viewport;
+		}
+
+		public GraphicsAdapter Adapter
+		{
+			get;
+			private set;
 		}
 
 		private Viewport _viewport;
