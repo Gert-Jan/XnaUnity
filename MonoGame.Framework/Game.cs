@@ -37,9 +37,11 @@ namespace Microsoft.Xna.Framework
 		public void UnityUpdate()
 		{
 			PreUpdate();
-
 			RunUpdates();
+		}
 
+		public void UnityDraw()
+		{
 			GraphicsDevice.ResetPools();
 			Draw(_gameTime);
 		}

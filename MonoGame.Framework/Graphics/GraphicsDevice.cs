@@ -78,7 +78,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
 
-			UnityGraphics.DrawMesh(mesh.Mesh, _matrix, mat, 0);
+			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
 		}
 
 		public void ResetPools()
