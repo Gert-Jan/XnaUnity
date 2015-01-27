@@ -90,7 +90,6 @@ namespace Microsoft.Xna.Framework.Content
 							"Please ensure the name of the Assembly that " +
 							"contains the Type matches the assembly in the full type name: " +
 										originalReaderTypeString + " (" + readerTypeString + ")");
-						break;
 				}
 
 				typeReader.Initialize(this);

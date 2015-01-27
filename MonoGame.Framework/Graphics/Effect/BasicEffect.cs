@@ -148,6 +148,12 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 			}
 		}
+
+		public float Alpha
+		{
+			get;
+			set;
+		}
 		#endregion
 
 		#region Methods

@@ -19,5 +19,13 @@ namespace Microsoft.Xna.Framework
 				output[i] = UnityToXna.Color(input[i]);
 			}
 		}
+
+		public static void Color<T>(UnityEngine.Color[] input, ref T[] output)
+		{
+			for (int i = 0; i < input.Length && i < output.Length; i++)
+			{
+				output[i] = (T)(object)UnityToXna.Color(input[i]);
+			}
+		}
 	}
 }

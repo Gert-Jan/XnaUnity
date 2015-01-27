@@ -173,8 +173,17 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\GraphicsResource.cs">
       <Link>MonoGame.Framework\Graphics\GraphicsResource.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\IRenderTarget.cs">
+      <Link>MonoGame.Framework\Graphics\IRenderTarget.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\PresentInterval.cs">
       <Link>MonoGame.Framework\Graphics\PresentInterval.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\RenderTarget2D.cs">
+      <Link>MonoGame.Framework\Graphics\RenderTarget2D.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\RenderTargetUsage.cs">
+      <Link>MonoGame.Framework\Graphics\RenderTargetUsage.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\SpriteBatchItem.cs">
       <Link>MonoGame.Framework\Graphics\SpriteBatchItem.cs</Link>
@@ -185,8 +194,17 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\SpriteSortMode.cs">
       <Link>MonoGame.Framework\Graphics\SpriteSortMode.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\States\DepthFormat.cs">
+      <Link>MonoGame.Framework\Graphics\States\DepthFormat.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\SurfaceFormat.cs">
       <Link>MonoGame.Framework\Graphics\SurfaceFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Texture.cs">
+      <Link>MonoGame.Framework\Graphics\Texture.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Texture2D.cs">
+      <Link>MonoGame.Framework\Graphics\Texture2D.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Vertices\IVertexType.cs">
       <Link>MonoGame.Framework\Graphics\Vertices\IVertexType.cs</Link>
@@ -205,6 +223,9 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Vertices\VertexElementUsage.cs">
       <Link>MonoGame.Framework\Graphics\Vertices\VertexElementUsage.cs</Link>
+    </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Vertices\VertexPositionColor.cs">
+      <Link>MonoGame.Framework\Graphics\Vertices\VertexPositionColor.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Vertices\VertexPositionColorTexture.cs">
       <Link>MonoGame.Framework\Graphics\Vertices\VertexPositionColorTexture.cs</Link>
@@ -348,13 +369,15 @@
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectTechnique.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsAdapter.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsDevice.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\RenderTarget2D.Unity.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatch.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatcher.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\BlendState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\DepthStencilState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\RasterizerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\SamplerState.cs" />
-    <Compile Include="MonoGame.Framework\Graphics\Texture2D.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Texture.Unity.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Texture2D.Unity.cs" />
     <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
