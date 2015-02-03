@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				//XX: Find a better way to get the WorldViewProj matrix here
 				mat = this.Material;
 				mat.SetMatrix("_WorldViewProj", this.Material.GetMatrix("_WorldViewProj"));
-				mat.mainTexture = Textures[0].Texture;
+				mat.mainTexture = Textures[0].UnityTexture;
 				mat.SetPass(0);
 			}
 
@@ -94,6 +94,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			throw new NotImplementedException();
 		}
 
+		public void SetRenderTarget(RenderTarget2D renderTarget)
+		{
+			if (renderTarget != null)
+				UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
+			else
+				UnityGraphics.SetRenderTarget(null);
+		}
+
 		private class MaterialPool
 		{
 			private class MaterialHolder
@@ -115,7 +123,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			private MaterialHolder Create(Texture2D texture)
 			{
 				var mat = new Material(_shader);
-				mat.mainTexture = texture.Texture;
+				mat.mainTexture = texture.UnityTexture;
 				mat.renderQueue += _materials.Count;
 				return new MaterialHolder(mat, texture);
 			}
