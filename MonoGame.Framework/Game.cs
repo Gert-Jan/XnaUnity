@@ -29,6 +29,12 @@ namespace Microsoft.Xna.Framework
 
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
+		}		
+        
+        public void UnityInitialize()
+		{
+			LoadContent();
+			Initialize();
 		}
 
 		/// <summary>
@@ -61,7 +67,7 @@ namespace Microsoft.Xna.Framework
 		private void RunUpdates()
 		{
 			_gameTime.ElapsedGameTime = _targetElapsedTime;
-			var stepCount = 0;
+			//var stepCount = 0;
 
 			// Advance the accumulated elapsed time.
 			var elapsed = _gameTimer.Elapsed;
@@ -71,18 +77,22 @@ namespace Microsoft.Xna.Framework
 			_gameTimer.Reset();
 			_gameTimer.Start();
 			// Perform as many full fixed length time steps as we can.
-			while (_accumulatedElapsedTime >= _targetElapsedTime)
-			{
-				_gameTime.TotalGameTime += _targetElapsedTime;
+            //bool wasInWhile = false;
+			//while (_accumulatedElapsedTime >= _targetElapsedTime)
+			//{
+             //   wasInWhile = true;
+                _gameTime.TotalGameTime += _targetElapsedTime;
 				_accumulatedElapsedTime -= _targetElapsedTime;
-				++stepCount;
+			//	++stepCount;
 
-				MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
+				//MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
 				Update(_gameTime);
-			}
+               
+			//}
+
 			// Draw needs to know the total elapsed time
 			// that occured for the fixed length updates.
-			_gameTime.ElapsedGameTime = TimeSpan.FromTicks(_targetElapsedTime.Ticks * stepCount);
+			_gameTime.ElapsedGameTime = TimeSpan.FromTicks(_targetElapsedTime.Ticks /* * stepCount*/);
 		}
 
 		private void PreUpdate()
@@ -91,11 +101,7 @@ namespace Microsoft.Xna.Framework
 			UpdateInput();
 		}
 
-		public void UnityInitialize()
-		{
-			LoadContent();
-			Initialize();
-		}
+
 
 		private bool _mouseIsDown = false;
 		private UnityGameWindow _window;

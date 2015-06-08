@@ -40,6 +40,8 @@
 // 
 
 using System.Collections.Generic;
+using System;
+using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -90,6 +92,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		private short[] _index;
 
 		private VertexPositionColorTexture[] _vertexArray;
+
+        private int logCount;
 
 		public SpriteBatcher(GraphicsDevice device)
 		{
@@ -276,6 +280,16 @@ namespace Microsoft.Xna.Framework.Graphics
 					_vertexArray[index++] = item.vertexTR;
 					_vertexArray[index++] = item.vertexBL;
 					_vertexArray[index++] = item.vertexBR;
+                    
+                    /*logCount++;
+                    if (logCount > 300)
+                    {
+                        logCount = 0;
+                        Console.WriteLine("Item vertex TL(x:" + item.vertexTL.Position.X + " y: " + item.vertexTL.Position.Y + ") --- " +
+                            "vertex TR(x:" + item.vertexTR.Position.X + " y: " + item.vertexTR.Position.Y + ") --- " +
+                            "vertex BL(x:" + item.vertexBL.Position.X + " y: " + item.vertexBL.Position.Y + ") --- " +
+                            "vertex BR(x:" + item.vertexBR.Position.X + " y: " + item.vertexBR.Position.Y + ")");
+                    }*/
 
 					// Release the texture and return the item to the queue.
 					item.Texture = null;

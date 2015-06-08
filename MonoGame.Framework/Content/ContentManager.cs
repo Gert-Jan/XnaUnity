@@ -9,7 +9,10 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Xna.Framework.Utilities;
 using Lz4;
+using TextureAtlasContent;
+using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -70,7 +73,37 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-		public T Load<T>(string fileName) where T : class
+        public Microsoft.Xna.Framework.Graphics.Texture2D LoadTexture2D(string fileName)
+        {
+            return new Microsoft.Xna.Framework.Graphics.Texture2D(NativeLoad<UnityTexture>(fileName));
+        }
+
+        public SoundEffect LoadSoundEffect(string fileName)
+        {
+            return new SoundEffect(NativeLoad<UnityAudioClip>(fileName));
+        }
+
+        public Song LoadSong(string fileName)
+        {
+            return new Song(NativeLoad<UnityAudioClip>(fileName));
+        }
+
+        public SpriteFont LoadSpriteFont(string fileName)
+        {
+            return ReadAsset<SpriteFont>(fileName, null);
+        }
+
+        public string LoadText(string fileName)
+        {
+            return (NativeLoad<TextAsset>(fileName)).text;
+        }
+
+        public TextureAtlas LoadTextureAtlas(string fileName)
+        {
+            return ReadAsset<TextureAtlas>(fileName, null);
+        }
+
+		public virtual T Load<T>(string fileName) where T : class
 		{
 			if (string.IsNullOrEmpty(fileName))
 			{
@@ -78,6 +111,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			if (disposed)
 			{
+                Console.WriteLine("ContentManager.Load: manager disposed");
 				throw new ObjectDisposedException("ContentManager");
 			}
 
@@ -90,9 +124,9 @@ namespace Microsoft.Xna.Framework.Content
 				}
 			}
 
-			if (typeof(T) == typeof(Texture2D))
+			if (typeof(T) == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
 			{
-				asset = new Texture2D(NativeLoad<UnityTexture>(fileName));
+				asset = new Microsoft.Xna.Framework.Graphics.Texture2D(NativeLoad<UnityTexture>(fileName));
 			}
 			if (typeof(T) == typeof(SoundEffect))
 			{
@@ -111,21 +145,43 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				asset = (NativeLoad<TextAsset>(fileName)).text;
 			}
+            if (typeof(T) == typeof(TextureAtlas))
+            {
+                asset = ReadAsset<TextureAtlas>(fileName, null);
+            }
+
 			loadedAssets[fileName] = asset;
 			return asset as T;
 		}
 
 		private T NativeLoad<T>(string fileName) where T : class
 		{
-			var res = UnityResources.Load(fileName, typeof(T)) as T;
+            var res = UnityResources.Load(fileName, typeof(T)) as T;
 			if (res == null)
 			{
+                Console.WriteLine("Failed to load " + fileName + " as " + typeof(T));
 				throw new ContentLoadException("Failed to load " + fileName + " as " + typeof(T));
 			}
 			return res;
 		}
 
-		protected T ReadAsset<T>(string assetName, Action<IDisposable> recordDisposableObject)
+        public static Stream ReadBytesFileToStream(string assetName)
+        {
+            TextAsset binData = UnityResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+            if (binData == null)
+            {
+                throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));
+            }
+            return new MemoryStream(binData.bytes);
+        }
+
+        public static string ReadTextFile(string textname)
+        {
+            TextAsset file = Resources.Load("english") as TextAsset;
+            return file.text;
+        }
+
+		public T ReadAsset<T>(string assetName, Action<IDisposable> recordDisposableObject)
 		{
 			if (string.IsNullOrEmpty(assetName))
 			{
@@ -366,7 +422,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		internal void RecordDisposable(IDisposable disposable)
 		{
-			Debug.Assert(disposable != null, "The disposable is null!");
+			//Debug.Assert(disposable != null, "The disposable is null!");
 
 			// Avoid recording disposable objects twice. ReloadAsset will try to record the disposables again.
 			// We don't know which asset recorded which disposable so just guard against storing multiple of the same instance.

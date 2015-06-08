@@ -237,11 +237,11 @@ namespace Microsoft.Xna.Framework.Graphics
 					flipAdjustment.X = -size.X;
 				}
 
-				if (flippedVert)
-				{
-					origin.Y *= -1;
-					flipAdjustment.Y = LineSpacing - size.Y;
-				}
+                if (flippedVert)
+                {
+                    origin.Y *= -1;
+                    flipAdjustment.Y = LineSpacing - size.Y;
+                }
 			}
 
 			// TODO: This looks excessive... i suspect we could do most

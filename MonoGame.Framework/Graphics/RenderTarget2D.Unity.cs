@@ -24,7 +24,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private void PlatformConstruct(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage, bool shared)
 		{
-			UnityRenderTexture = new UnityEngine.RenderTexture(width, height, 0);
+			UnityRenderTexture = new UnityEngine.RenderTexture(width, height, 1);
 			UnityRenderTexture.Create();
 		}
 

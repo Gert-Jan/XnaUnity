@@ -8,10 +8,12 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class GraphicsDevice : IDisposable
 	{
+        public int drawcount;
 		public UnityEngine.Material Material;
 		public Texture2D[] Textures = new Texture2D[1];
 		private Matrix4x4 _matrix;
-		private Matrix4x4 _baseMatrix;
+		//private Matrix4x4 _baseMatrix;
+        private Matrix defaultProjection;
 
 		internal GraphicsDevice(Viewport viewport)
 		{
@@ -31,7 +33,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			set
 			{
 				_viewport = value;
-				_baseMatrix = Matrix4x4.TRS(new UnityEngine.Vector3(-_viewport.Width / 2, _viewport.Height / 2, 0), UnityEngine.Quaternion.identity, new UnityEngine.Vector3(1, -1, 1));
+				//_baseMatrix = Matrix4x4.TRS(new UnityEngine.Vector3(-_viewport.Width / 2, _viewport.Height / 2, 0), UnityEngine.Quaternion.identity, new UnityEngine.Vector3(1, -1, 1));
+
+                Matrix newDefaultProj;
+                Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, 1, out newDefaultProj);
+                defaultProjection = newDefaultProj;
 			}
 		}
 		public Matrix Matrix
@@ -42,14 +48,25 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					_matrix[i] = value[i];
 				}
-				_matrix = _baseMatrix * _matrix;
+				/*_matrix = _baseMatrix * _matrix;*/
 			}
 		}
+
+        public Matrix DefaultProjection
+        {
+            get { return defaultProjection; }
+        }
 
 		public bool IsDisposed
 		{
 			get { return false; }
 		}
+
+        //TODO: This is just a test
+        public DisplayMode DisplayMode 
+        { 
+            get { return new DisplayMode(1080, 1920, 60, SurfaceFormat.Alpha8); } 
+        }
 
 		private readonly MaterialPool _materialPool = new MaterialPool();
 		private readonly MeshPool _meshPool = new MeshPool();
@@ -63,6 +80,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (this.Material == null)
 			{
 				mat = _materialPool.Get(Textures[0]);
+                Console.WriteLine("Material is null"); 
 			}
 			else
 			{
@@ -76,6 +94,20 @@ namespace Microsoft.Xna.Framework.Graphics
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
 
+            /*drawcount++;
+            if (drawcount > 300)
+            {
+                Console.WriteLine("DrawMeshNow");
+                Console.WriteLine(" ");
+                Console.WriteLine("vertexData: " + vertexData.ToString() + " vertexOffset: " + vertexOffset + " numvertices: " + numVertices + " indexData: " + indexData.ToString() + " indexOffset: " + indexOffset + " primitiveCount: " + primitiveCount);
+                for (int i = 0; i < numVertices; i++)
+                {
+                    Console.Write(" Mesh vert[" + i + "](X: " + mesh.Vertices[i].x + " Y: " + mesh.Vertices[i].y + " Z: " + mesh.Vertices[i].z);
+                }
+
+                drawcount = 0;
+            }*/
+
 			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
 		}
 
@@ -87,6 +119,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Clear(Color color)
 		{
+            GL.Clear(true, true, new UnityEngine.Color(0f, 0f, 120f));
 		}
 
 		public void Dispose()
@@ -96,10 +129,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void SetRenderTarget(RenderTarget2D renderTarget)
 		{
-			if (renderTarget != null)
-				UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
-			else
-				UnityGraphics.SetRenderTarget(null);
+            if (renderTarget != null)
+            {
+                UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
+            }
+            else
+            {
+                UnityGraphics.SetRenderTarget(null);
+            }
+
 		}
 
 		private class MaterialPool
@@ -119,13 +157,19 @@ namespace Microsoft.Xna.Framework.Graphics
 			private readonly List<MaterialHolder> _materials = new List<MaterialHolder>();
 			private int _index;
 			private readonly Shader _shader = Shader.Find("Custom/SpriteShader");
+            private Material _defaultmaterial; 
+
+            public MaterialPool()
+            {
+                _defaultmaterial = new Material(_shader);
+            }
 
 			private MaterialHolder Create(Texture2D texture)
 			{
-				var mat = new Material(_shader);
+                var mat = _defaultmaterial;
 				mat.mainTexture = texture.UnityTexture;
 				mat.renderQueue += _materials.Count;
-				return new MaterialHolder(mat, texture);
+                return new MaterialHolder(mat, texture);
 			}
 
 			public Material Get(Texture2D texture)

@@ -24,7 +24,14 @@ namespace Microsoft.Xna.Framework.Graphics
 		Rectangle _tempRect = new Rectangle (0,0,0,0);
 		Vector2 _texCoordTL = new Vector2 (0,0);
 		Vector2 _texCoordBR = new Vector2 (0,0);
+        private int logCount;
 
+#if UNITY
+        BasicEffectFlip effectFlip;
+#endif
+
+        public Matrix tempProjMatrix; //TODO make this a property
+        
 		public SpriteBatch (GraphicsDevice graphicsDevice)
 		{
 			if (graphicsDevice == null) {
@@ -39,8 +46,12 @@ namespace Microsoft.Xna.Framework.Graphics
             //_spritePass = _spriteEffect.CurrentTechnique.Passes[0];
 
             _batcher = new SpriteBatcher(graphicsDevice);
-
+            
             _beginCalled = false;
+            
+#if UNITY
+            effectFlip = new BasicEffectFlip(graphicsDevice);
+#endif
 		}
 
 		public void Begin ()
@@ -60,7 +71,21 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_depthStencilState = depthStencilState ?? DepthStencilState.None;
 			//_rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
 			//
-			_effect = effect;
+            
+#if UNITY || false
+            if (effect == null)
+            {
+                effectFlip.Projection = GraphicsDevice.DefaultProjection;
+                effectFlip.View = Matrix.Identity;
+                _effect = effectFlip;
+            }
+            else
+            {
+                _effect = effect;
+            }
+#else
+            _effect = effect;
+#endif
 			
 			_matrix = transformMatrix;
 
@@ -71,7 +96,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _beginCalled = true;
 		}
 
-		public void Begin (SpriteSortMode sortMode, BlendState blendState)
+		public void Begin (SpriteSortMode sortMode, BlendState? blendState)
 		{
 			Begin (sortMode, blendState, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Matrix.Identity);			
 		}
@@ -96,7 +121,6 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsDevice.BlendState = _blendState;
             _blendState.ApplyState(GraphicsDevice);
 #endif
-            
             _batcher.DrawBatch(_sortMode, _effect);
 			_effect = null;
 			GraphicsDevice.Material = null;
@@ -263,11 +287,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var w = texture.Width * scale.X;
             var h = texture.Height * scale.Y;
-			if (sourceRectangle.HasValue)
+            if (sourceRectangle.HasValue)
             {
-				w = sourceRectangle.Value.Width*scale.X;
-				h = sourceRectangle.Value.Height*scale.Y;
-			}
+                w = sourceRectangle.Value.Width * scale.X;
+                h = sourceRectangle.Value.Height * scale.Y;
+            }
 
             DrawInternal(texture,
 				new Vector4(position.X, position.Y, w, h),
@@ -366,16 +390,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			_texCoordBR.X = (_tempRect.X + _tempRect.Width) / (float)texture.Width;
 			_texCoordBR.Y = (_tempRect.Y + _tempRect.Height) / (float)texture.Height;
 
-			if ((effect & SpriteEffects.FlipVertically) != 0) {
-                var temp = _texCoordBR.Y;
-				_texCoordBR.Y = _texCoordTL.Y;
-				_texCoordTL.Y = temp;
-			}
-			if ((effect & SpriteEffects.FlipHorizontally) != 0) {
+            if ((effect & SpriteEffects.FlipVertically) != 0)
+            {
+                var temp2 = _texCoordBR.Y;
+                _texCoordBR.Y = _texCoordTL.Y;
+                _texCoordTL.Y = temp2;
+            }
+            if ((effect & SpriteEffects.FlipHorizontally) != 0)
+            {
                 var temp = _texCoordBR.X;
-				_texCoordBR.X = _texCoordTL.X;
-				_texCoordTL.X = temp;
-			}
+                _texCoordBR.X = _texCoordTL.X;
+                _texCoordTL.X = temp;
+            }
 
 			item.Set (destinationRectangle.X,
 					destinationRectangle.Y, 
@@ -388,6 +414,15 @@ namespace Microsoft.Xna.Framework.Graphics
 					color, 
 					_texCoordTL, 
 					_texCoordBR);
+
+            /*logCount++;
+            if(logCount > 300)
+            {
+                logCount = 0;
+                Console.WriteLine("Rotation: " + rotation);
+                Console.WriteLine("item set input: destinationRectangle: " + destinationRectangle.ToString() + " origin: " + origin.ToString() +
+                    " sin: " + (float)Math.Sin(rotation) + " cos: " + (float)Math.Cos(rotation) + " _texCoordTL: " + _texCoordTL.ToString() + " _texCoordBR: " + _texCoordBR);
+            }*/
 
 			if (autoFlush)
 			{

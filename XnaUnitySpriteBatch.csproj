@@ -11,12 +11,14 @@
     <AssemblyName>XnaUnitySpriteBatch</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;UNITY</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -24,7 +26,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;UNITY</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -33,11 +35,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Unity-WinRt|AnyCPU'">
     <OutputPath>bin\Unity-WinRt\</OutputPath>
     <DefineConstants>TRACE;WINRT1</DefineConstants>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,9 +50,8 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Unity433\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\Program Files\Unity Consoles\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -363,12 +365,27 @@
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffect.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffectFlip.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectHelpers.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectPass.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\Effect.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectTechnique.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsAdapter.cs" />
     <Compile Include="MonoGame.Framework\Graphics\GraphicsDevice.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\Bgr565.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\Bgra4444.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\Byte4.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\HalfSingle.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\HalfTypeHelper.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\HalfVector2.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\HalfVector4.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\IPackedVector.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\NormalizedByte2.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\NormalizedByte4.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\NormalizedShort2.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\NormalizedShort4.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\Short2.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\PackedVector\Short4.cs" />
     <Compile Include="MonoGame.Framework\Graphics\RenderTarget2D.Unity.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatch.cs" />
     <Compile Include="MonoGame.Framework\Graphics\SpriteBatcher.cs" />
@@ -378,11 +395,18 @@
     <Compile Include="MonoGame.Framework\Graphics\States\SamplerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture.Unity.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture2D.Unity.cs" />
+    <Compile Include="MonoGame.Framework\Input\GamePad.cs" />
     <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
     <Compile Include="MonoGame.Framework\SpriteFont.cs" />
+    <Compile Include="MonoGame.Framework\Storage\StorageContainer.cs" />
+    <Compile Include="MonoGame.Framework\Storage\StorageDevice.cs" />
+    <Compile Include="MonoGame.Framework\Storage\StorageDeviceHelper.cs" />
     <Compile Include="MonoGame.Framework\UnityGameWindow.cs" />
+    <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
+    <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
+    <Compile Include="TextureAtlasContent\TextureRegion.cs" />
     <Compile Include="UnityToXna.cs" />
     <Compile Include="XnaToUnity.cs" />
   </ItemGroup>

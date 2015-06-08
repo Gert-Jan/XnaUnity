@@ -78,6 +78,7 @@ namespace Microsoft.Xna.Framework.Input
 					pressedKeys.Add((Keys)i);
 				}
 			}
+            KeyboardState state = new KeyboardState(pressedKeys);
 			return new KeyboardState(pressedKeys);
 		}
 	}

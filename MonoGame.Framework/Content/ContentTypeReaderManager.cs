@@ -17,6 +17,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using TextureAtlasContent;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content
@@ -84,6 +85,12 @@ namespace Microsoft.Xna.Framework.Content
 					case "Microsoft.Xna.Framework.Content.ListReader`1[[Microsoft.Xna.Framework.Vector3":
 						typeReader = new ListReader<Vector3>();
 						break;
+                    case "TextureAtlasContent.TextureAtlasReader":
+                        typeReader = new TextureAtlasReader();
+                        break;
+                    case "TextureAtlasContent.TextureRegionReader":
+                        typeReader = new TextureRegionReader();
+                        break;
 					default:
 						throw new ContentLoadException(
 							"Could not find ContentTypeReader Type. " +

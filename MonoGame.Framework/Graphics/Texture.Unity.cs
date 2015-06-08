@@ -7,7 +7,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public partial class Texture
 	{
-		protected UnityEngine.Texture texture;
+        protected UnityEngine.Texture texture;
 
 		public UnityEngine.Texture UnityTexture
 		{

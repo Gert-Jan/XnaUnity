@@ -25,7 +25,7 @@ namespace Microsoft.Xna.Framework
 
 		public void ApplyChanges()
 		{
-			UnityEngine.Screen.SetResolution(PreferredBackBufferWidth, PreferredBackBufferHeight, IsFullScreen);
+			UnityEngine.Screen.SetResolution(1920, 1080, true);
 		}
 	}
 }
