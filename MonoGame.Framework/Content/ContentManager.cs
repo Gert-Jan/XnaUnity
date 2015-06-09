@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework.Utilities;
-using Lz4;
+//using LZ4n;
 using TextureAtlasContent;
 using UnityEngine;
 

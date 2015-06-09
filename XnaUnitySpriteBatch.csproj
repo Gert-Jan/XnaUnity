@@ -76,9 +76,6 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundEffectInstance.cs">
       <Link>MonoGame.Framework\Audio\SoundEffectInstance.cs</Link>
     </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundEffectInstancePool.cs">
-      <Link>MonoGame.Framework\Audio\SoundEffectInstancePool.cs</Link>
-    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Audio\SoundState.cs">
       <Link>MonoGame.Framework\Audio\SoundState.cs</Link>
     </Compile>
@@ -144,9 +141,6 @@
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectAnnotationCollection.cs">
       <Link>MonoGame.Framework\Graphics\Effect\EffectAnnotationCollection.cs</Link>
-    </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameter.cs">
-      <Link>MonoGame.Framework\Graphics\Effect\EffectParameter.cs</Link>
     </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Effect\EffectParameterClass.cs">
       <Link>MonoGame.Framework\Graphics\Effect\EffectParameterClass.cs</Link>
@@ -358,6 +352,7 @@
     <Compile Include="DotNetUpdates\Tuple.cs" />
     <Compile Include="MonoGame.Framework\Audio\SoundEffect.Unity.cs" />
     <Compile Include="MonoGame.Framework\Audio\SoundEffectInstance.Unity.cs" />
+    <Compile Include="MonoGame.Framework\Audio\SoundEffectInstancePool.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentManager.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentReader.cs" />
     <Compile Include="MonoGame.Framework\Content\ContentReaders\Texture2DReader.cs" />
@@ -367,6 +362,7 @@
     <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffect.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffectFlip.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectHelpers.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Effect\EffectParameter.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectPass.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\Effect.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectTechnique.cs" />
