@@ -39,7 +39,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
 			_audioSource.volume = volume;
-			_audioSource.pan = pan;
+            _audioSource.panStereo = pan;
 			_audioSource.pitch = Mathf.Pow(2, pitch);
 			_audioSource.Play();
 		}

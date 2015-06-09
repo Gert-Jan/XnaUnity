@@ -17,7 +17,7 @@ namespace Microsoft.Xna.Framework.Audio
 				_source = SoundEffect.GameObject.AddComponent<AudioSource>();
 			_source.clip = soundEffect.UnityAudioClip;
 			_source.volume = _volume;
-			_source.pan = _pan;
+			_source.panStereo= _pan;
 			//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
 			_source.pitch = Mathf.Pow(2, _pitch);
 		}
@@ -71,7 +71,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void PlatformSetPan(float value)
 		{
-			_source.pan = value;
+			_source.panStereo = value;
 		}
 
 		private void PlatformSetPitch(float value)
