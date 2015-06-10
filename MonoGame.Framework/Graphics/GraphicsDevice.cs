@@ -93,21 +93,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
-
-            /*drawcount++;
-            if (drawcount > 300)
-            {
-                Console.WriteLine("DrawMeshNow");
-                Console.WriteLine(" ");
-                Console.WriteLine("vertexData: " + vertexData.ToString() + " vertexOffset: " + vertexOffset + " numvertices: " + numVertices + " indexData: " + indexData.ToString() + " indexOffset: " + indexOffset + " primitiveCount: " + primitiveCount);
-                for (int i = 0; i < numVertices; i++)
-                {
-                    Console.Write(" Mesh vert[" + i + "](X: " + mesh.Vertices[i].x + " Y: " + mesh.Vertices[i].y + " Z: " + mesh.Vertices[i].z);
-                }
-
-                drawcount = 0;
-            }*/
-
 			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
 		}
 
@@ -119,7 +104,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Clear(Color color)
 		{
-            GL.Clear(true, true, new UnityEngine.Color(0f, 0f, 120f));
+            //GL.Clear(true, false, new UnityEngine.Color(255, 255 ,255));
 		}
 
 		public void Dispose()
