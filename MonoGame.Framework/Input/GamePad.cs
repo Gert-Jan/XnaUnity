@@ -84,16 +84,25 @@ namespace Microsoft.Xna.Framework.Input
             }
 
             //Axis Thumsticks
-            pressedInput[index].thumbSticks = new GamePadThumbSticks(new Vector2(UnityEngine.Input.GetAxis("Joystick1LeftAX"), UnityEngine.Input.GetAxis("Joystick1LeftAY")), new Vector2(0, 0));
+            pressedInput[index].thumbSticks = new GamePadThumbSticks(new Vector2(UnityEngine.Input.GetAxis("Joystick1LeftAX"), -UnityEngine.Input.GetAxis("Joystick1LeftAY")),
+                new Vector2(UnityEngine.Input.GetAxis("Joystick1RightAX"), -UnityEngine.Input.GetAxis("Joystick1RightAY")));
 
             //Axis Triggers
-            //Debug.Log("Left Trigger: " + UnityEngine.Input.GetAxis("LeftAxis").ToString() + " Right Trigger: " + UnityEngine.Input.GetAxis("RightAxis").ToString());
-            //pressedInput[index].triggers = new GamePadTriggers(UnityEngine.Input.GetAxis("LeftAxis"), UnityEngine.Input.GetAxis("RightAxis"));
-
-            //Axis DPad
-            //ButtonState[] states = GetDPadButtonsState("DPadX", "DPadY");
-            //pressedInput[index].dPad = new GamePadDPad(states[0], states[1], states[2], states[3]);
+            pressedInput[index].triggers = new GamePadTriggers(UnityEngine.Input.GetAxis("Joystick1TriggerLeft"), UnityEngine.Input.GetAxis("Joystick1TriggerRight"));
             
+            //Axis DPad
+            ButtonState[] states = GetDPadButtonsState("Joystick1DpadX", "Joystick1DpadY");
+            pressedInput[index].dPad = new GamePadDPad(states[0], states[1], states[2], states[3]);
+            
+            if (states[0] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadUp);
+            if (states[1] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadDown);
+            if (states[2] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadLeft);
+            if (states[3] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadRight);
+
             return new GamePadState(pressedInput[index].thumbSticks,
                 pressedInput[index].triggers,
                 new GamePadButtons(pressedInput[index].buttons.ToArray()),
@@ -108,18 +117,18 @@ namespace Microsoft.Xna.Framework.Input
         private static ButtonState[] GetDPadButtonsState(string xAxisName, string yAxisName)
         {
             ButtonState[] state = new ButtonState[4];
-            
-            state[0] = GetAxisPressedState(xAxisName, -1);  //up
-            state[1] = GetAxisPressedState(xAxisName, 1);   //down
-            state[2] = GetAxisPressedState(yAxisName, -1);  //left
-            state[3] = GetAxisPressedState(yAxisName, 1);   //right
+
+            state[0] = GetAxisPressedState(yAxisName, 1);  //up
+            state[1] = GetAxisPressedState(yAxisName, -1);   //down
+            state[2] = GetAxisPressedState(xAxisName, -1);  //left
+            state[3] = GetAxisPressedState(xAxisName, 1);   //right
 
             return state;
         }
 
         private static ButtonState GetAxisPressedState(string axisName, float pressedValue)
         {
-            if (GetAxis(axisName) == pressedValue)
+             if (GetAxis(axisName) == pressedValue)
                 return ButtonState.Pressed;
 
             return ButtonState.Released;
