@@ -73,37 +73,21 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-        public Microsoft.Xna.Framework.Graphics.Texture2D LoadTexture2D(string fileName)
+#if UNITY
+        // Show AOT which types will be used in combination with this function; this function can't ever be called
+        public void _dummy_Load()
         {
-            return new Microsoft.Xna.Framework.Graphics.Texture2D(NativeLoad<UnityTexture>(fileName));
+            this.Load<Microsoft.Xna.Framework.Graphics.Texture2D>("");
+            this.Load<SoundEffect>("");
+            this.Load<Song>("");
+            this.Load<SpriteFont>("");
+            this.Load<string>("");
+            this.Load<TextureAtlas>("");
+            this.Load<Effect>("");
         }
+#endif
 
-        public SoundEffect LoadSoundEffect(string fileName)
-        {
-            return new SoundEffect(NativeLoad<UnityAudioClip>(fileName));
-        }
-
-        public Song LoadSong(string fileName)
-        {
-            return new Song(NativeLoad<UnityAudioClip>(fileName));
-        }
-
-        public SpriteFont LoadSpriteFont(string fileName)
-        {
-            return ReadAsset<SpriteFont>(fileName, null);
-        }
-
-        public string LoadText(string fileName)
-        {
-            return (NativeLoad<TextAsset>(fileName)).text;
-        }
-
-        public TextureAtlas LoadTextureAtlas(string fileName)
-        {
-            return ReadAsset<TextureAtlas>(fileName, null);
-        }
-
-		public virtual T Load<T>(string fileName) where T : class
+		public T Load<T>(string fileName) where T : class // Removed virtual
 		{
 			if (string.IsNullOrEmpty(fileName))
 			{
@@ -124,46 +108,124 @@ namespace Microsoft.Xna.Framework.Content
 				}
 			}
 
+            // Make Unity load the different XNA asset types in the right Unity way
 			if (typeof(T) == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
 			{
-				asset = new Microsoft.Xna.Framework.Graphics.Texture2D(NativeLoad<UnityTexture>(fileName));
+                asset = NativeLoad(fileName, typeof(UnityTexture));
 			}
-			if (typeof(T) == typeof(SoundEffect))
+            if (typeof(T) == typeof(SoundEffect) || typeof(T) == typeof(Song))
 			{
-				asset = new SoundEffect(NativeLoad<UnityAudioClip>(fileName));
-			}
-			if (typeof(T) == typeof(Song))
-			{
-				asset = new Song(NativeLoad<UnityAudioClip>(fileName));
+                asset = NativeLoad(fileName, typeof(UnityAudioClip));
 			}
 			if (typeof(T) == typeof(SpriteFont))
 			{
-				asset = ReadAsset<SpriteFont>(fileName, null);
-				//asset = new SpriteFont(NativeLoad<UnityEngine.TextAsset>(fileName));
+                asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
 			}
 			if (typeof(T) == typeof(string))
 			{
-				asset = (NativeLoad<TextAsset>(fileName)).text;
+                asset = ((UnityEngine.TextAsset)NativeLoad(fileName, typeof(UnityEngine.TextAsset))).text;
 			}
             if (typeof(T) == typeof(TextureAtlas))
             {
-                asset = ReadAsset<TextureAtlas>(fileName, null);
+                asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
             }
+
+            // Convert the Unity asset type to the right XNA asset type
+            asset = ConvertAsset(fileName, asset, typeof(T));
 
 			loadedAssets[fileName] = asset;
 			return asset as T;
 		}
 
-		private T NativeLoad<T>(string fileName) where T : class
+        public ResourceRequest LoadAsync(string fileName, Type type)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentNullException("assetName");
+            }
+            if (disposed)
+            {
+                Console.WriteLine("ContentManager.Load: manager disposed");
+                throw new ObjectDisposedException("ContentManager");
+            }
+
+            ResourceRequest request;
+
+            if (type == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
+            {
+                request = UnityEngine.Resources.LoadAsync(fileName, typeof(UnityTexture));
+            }
+            else if (type == typeof(SoundEffect) || type == typeof(Song))
+            {
+                request = UnityEngine.Resources.LoadAsync(fileName, typeof(UnityAudioClip));
+            }
+            else if (type == typeof(SpriteFont))
+            {
+                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
+            }
+            else if (type == typeof(string))
+            {
+                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
+            }
+            else if (type == typeof(TextureAtlas))
+            {
+                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("ContentManager: LoadAsync: type " + type + " not defined");
+                request = UnityEngine.Resources.LoadAsync(fileName);
+            }
+
+            return request;
+        }
+
+        private object NativeLoad(string fileName, Type type)
 		{
-            var res = UnityResources.Load(fileName, typeof(T)) as T;
+            var res = UnityResources.Load(fileName, type);
 			if (res == null)
 			{
-                Console.WriteLine("Failed to load " + fileName + " as " + typeof(T));
-				throw new ContentLoadException("Failed to load " + fileName + " as " + typeof(T));
+                Console.WriteLine("Failed to load " + fileName + " as " + type);
+                throw new ContentLoadException("Failed to load " + fileName + " as " + type);
 			}
 			return res;
 		}
+
+        /**
+         * Convert Unity assets loaded from disk to corresponding XNA asset types
+         */
+        public object ConvertAsset(string name, object asset, Type type)
+        {
+            if (type == typeof(Song))
+            {
+                return new Song((UnityEngine.AudioClip)asset);
+            }
+            else if (type == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
+            {
+                return new Microsoft.Xna.Framework.Graphics.Texture2D((UnityEngine.Texture2D)asset);
+            }
+            else if (type == typeof(SoundEffect))
+            {
+                return new SoundEffect((UnityEngine.AudioClip)asset);
+            }
+            else if (type == typeof(SpriteFont))
+            {
+                return ReadAsset<SpriteFont>(asset, name, null);
+            }
+            else if (type == typeof(string))
+            {
+                return ((TextAsset)asset).text;
+            }
+            else if (type == typeof(TextureAtlas))
+            {
+                return ReadAsset<TextureAtlas>(asset, name, null);
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("ContentManager: ConvertAsset: type " + type + " not defined");
+                return asset;
+            }
+        }
 
         public static Stream ReadBytesFileToStream(string assetName)
         {
@@ -181,7 +243,7 @@ namespace Microsoft.Xna.Framework.Content
             return file.text;
         }
 
-		public T ReadAsset<T>(string assetName, Action<IDisposable> recordDisposableObject)
+		public T ReadAsset<T>(object asset, string assetName, Action<IDisposable> recordDisposableObject)
 		{
 			if (string.IsNullOrEmpty(assetName))
 			{
@@ -206,7 +268,12 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			*/
 			Stream stream = null;
-			TextAsset binData = NativeLoad<UnityEngine.TextAsset>(assetName);
+            TextAsset binData;
+            if (asset == null)
+                binData = (TextAsset) NativeLoad(assetName, typeof(TextAsset));
+            else
+                binData = (TextAsset) asset;
+                
 			stream = new MemoryStream(binData.bytes);
 
 			// Try to load as XNB file
