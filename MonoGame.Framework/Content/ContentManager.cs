@@ -87,7 +87,7 @@ namespace Microsoft.Xna.Framework.Content
         }
 #endif
 
-		public T Load<T>(string fileName) where T : class // Removed virtual
+		public T Load<T>(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 			{
@@ -134,7 +134,7 @@ namespace Microsoft.Xna.Framework.Content
             asset = ConvertAsset(fileName, asset, typeof(T));
 
 			loadedAssets[fileName] = asset;
-			return asset as T;
+			return (T)asset;
 		}
 
         public ResourceRequest LoadAsync(string fileName, Type type)
