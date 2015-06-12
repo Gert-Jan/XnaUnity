@@ -11,6 +11,8 @@ namespace Microsoft.Xna.Framework.Input
 {
     public static class GamePad
     {
+        public const string GAMEPAD = "Joystick";
+
         private struct ButtonMapStruct
         {
             public KeyCode UnityKey;
@@ -30,7 +32,7 @@ namespace Microsoft.Xna.Framework.Input
             public GamePadThumbSticks thumbSticks;
             public GamePadTriggers triggers;
             public GamePadDPad dPad;
-           
+
             public GamePadInput()
             {
                 buttons = new List<Buttons>();
@@ -40,9 +42,9 @@ namespace Microsoft.Xna.Framework.Input
             }
         }
         static GamePadInput[] pressedInput;
-        
+
         static GamePad()
-		{
+        {
             const UInt16 maxGamePads = (UInt16)PlayerIndex.Four;
             buttonMapping = new ButtonMapStruct[maxGamePads + 1][];
             pressedInput = new GamePadInput[maxGamePads + 1];
@@ -53,26 +55,57 @@ namespace Microsoft.Xna.Framework.Input
                 pressedInput[i] = new GamePadInput();
             }
 
-            for (int i = 0; i <= maxGamePads; i++)
-            {
-                buttonMapping[i][0] = new ButtonMapStruct(KeyCode.Joystick1Button0, Buttons.A);
-                buttonMapping[i][1] = new ButtonMapStruct(KeyCode.Joystick1Button1, Buttons.B);
-                buttonMapping[i][2] = new ButtonMapStruct(KeyCode.Joystick1Button2, Buttons.X);
-                buttonMapping[i][3] = new ButtonMapStruct(KeyCode.Joystick1Button3, Buttons.Y);
-                buttonMapping[i][4] = new ButtonMapStruct(KeyCode.Joystick1Button4, Buttons.LeftShoulder);
-                buttonMapping[i][5] = new ButtonMapStruct(KeyCode.Joystick1Button5, Buttons.RightShoulder);
-                buttonMapping[i][6] = new ButtonMapStruct(KeyCode.Joystick1Button6, Buttons.Back);
-                buttonMapping[i][7] = new ButtonMapStruct(KeyCode.Joystick1Button7, Buttons.Start);
-                buttonMapping[i][8] = new ButtonMapStruct(KeyCode.Joystick1Button8, Buttons.LeftStick);
-                buttonMapping[i][9] = new ButtonMapStruct(KeyCode.Joystick1Button9, Buttons.RightStick);
-            }
+            buttonMapping[0][0] = new ButtonMapStruct(KeyCode.Joystick1Button0, Buttons.A);
+            buttonMapping[0][1] = new ButtonMapStruct(KeyCode.Joystick1Button1, Buttons.B);
+            buttonMapping[0][2] = new ButtonMapStruct(KeyCode.Joystick1Button2, Buttons.X);
+            buttonMapping[0][3] = new ButtonMapStruct(KeyCode.Joystick1Button3, Buttons.Y);
+            buttonMapping[0][4] = new ButtonMapStruct(KeyCode.Joystick1Button4, Buttons.LeftShoulder);
+            buttonMapping[0][5] = new ButtonMapStruct(KeyCode.Joystick1Button5, Buttons.RightShoulder);
+            buttonMapping[0][6] = new ButtonMapStruct(KeyCode.Joystick1Button6, Buttons.Back);
+            buttonMapping[0][7] = new ButtonMapStruct(KeyCode.Joystick1Button7, Buttons.Start);
+            buttonMapping[0][8] = new ButtonMapStruct(KeyCode.Joystick1Button8, Buttons.LeftStick);
+            buttonMapping[0][9] = new ButtonMapStruct(KeyCode.Joystick1Button9, Buttons.RightStick);
+
+            buttonMapping[1][0] = new ButtonMapStruct(KeyCode.Joystick2Button0, Buttons.A);
+            buttonMapping[1][1] = new ButtonMapStruct(KeyCode.Joystick2Button1, Buttons.B);
+            buttonMapping[1][2] = new ButtonMapStruct(KeyCode.Joystick2Button2, Buttons.X);
+            buttonMapping[1][3] = new ButtonMapStruct(KeyCode.Joystick2Button3, Buttons.Y);
+            buttonMapping[1][4] = new ButtonMapStruct(KeyCode.Joystick2Button4, Buttons.LeftShoulder);
+            buttonMapping[1][5] = new ButtonMapStruct(KeyCode.Joystick2Button5, Buttons.RightShoulder);
+            buttonMapping[1][6] = new ButtonMapStruct(KeyCode.Joystick2Button6, Buttons.Back);
+            buttonMapping[1][7] = new ButtonMapStruct(KeyCode.Joystick2Button7, Buttons.Start);
+            buttonMapping[1][8] = new ButtonMapStruct(KeyCode.Joystick2Button8, Buttons.LeftStick);
+            buttonMapping[1][9] = new ButtonMapStruct(KeyCode.Joystick2Button9, Buttons.RightStick);
+
+            buttonMapping[2][0] = new ButtonMapStruct(KeyCode.Joystick3Button0, Buttons.A);
+            buttonMapping[2][1] = new ButtonMapStruct(KeyCode.Joystick3Button1, Buttons.B);
+            buttonMapping[2][2] = new ButtonMapStruct(KeyCode.Joystick3Button2, Buttons.X);
+            buttonMapping[2][3] = new ButtonMapStruct(KeyCode.Joystick3Button3, Buttons.Y);
+            buttonMapping[2][4] = new ButtonMapStruct(KeyCode.Joystick3Button4, Buttons.LeftShoulder);
+            buttonMapping[2][5] = new ButtonMapStruct(KeyCode.Joystick3Button5, Buttons.RightShoulder);
+            buttonMapping[2][6] = new ButtonMapStruct(KeyCode.Joystick3Button6, Buttons.Back);
+            buttonMapping[2][7] = new ButtonMapStruct(KeyCode.Joystick3Button7, Buttons.Start);
+            buttonMapping[2][8] = new ButtonMapStruct(KeyCode.Joystick3Button8, Buttons.LeftStick);
+            buttonMapping[2][9] = new ButtonMapStruct(KeyCode.Joystick3Button9, Buttons.RightStick);
+
+            buttonMapping[3][0] = new ButtonMapStruct(KeyCode.Joystick4Button0, Buttons.A);
+            buttonMapping[3][1] = new ButtonMapStruct(KeyCode.Joystick4Button1, Buttons.B);
+            buttonMapping[3][2] = new ButtonMapStruct(KeyCode.Joystick4Button2, Buttons.X);
+            buttonMapping[3][3] = new ButtonMapStruct(KeyCode.Joystick4Button3, Buttons.Y);
+            buttonMapping[3][4] = new ButtonMapStruct(KeyCode.Joystick4Button4, Buttons.LeftShoulder);
+            buttonMapping[3][5] = new ButtonMapStruct(KeyCode.Joystick4Button5, Buttons.RightShoulder);
+            buttonMapping[3][6] = new ButtonMapStruct(KeyCode.Joystick4Button6, Buttons.Back);
+            buttonMapping[3][7] = new ButtonMapStruct(KeyCode.Joystick4Button7, Buttons.Start);
+            buttonMapping[3][8] = new ButtonMapStruct(KeyCode.Joystick4Button8, Buttons.LeftStick);
+            buttonMapping[3][9] = new ButtonMapStruct(KeyCode.Joystick4Button9, Buttons.RightStick);
         }
 
         public static GamePadState GetState(PlayerIndex playerIndex)
         {
             int index = (int)playerIndex;
+            string playerGamePad = GAMEPAD + (index + 1); //inputmanager names from 1-4 because joystick0
             pressedInput[index].buttons.Clear();
-            
+
             //Button
             for (int i = 0; i < 10; i++)
             {
@@ -84,22 +117,31 @@ namespace Microsoft.Xna.Framework.Input
             }
 
             //Axis Thumsticks
-            pressedInput[index].thumbSticks = new GamePadThumbSticks(new Vector2(UnityEngine.Input.GetAxis("Joystick1LeftAX"), UnityEngine.Input.GetAxis("Joystick1LeftAY")), new Vector2(0, 0));
+            pressedInput[index].thumbSticks = new GamePadThumbSticks(new Vector2(GetAxis(playerGamePad + "LeftAX"), -GetAxis(playerGamePad + "LeftAY")),
+                new Vector2(GetAxis(playerGamePad + "RightAX"), -GetAxis(playerGamePad + "RightAY")));
 
             //Axis Triggers
-            //Debug.Log("Left Trigger: " + UnityEngine.Input.GetAxis("LeftAxis").ToString() + " Right Trigger: " + UnityEngine.Input.GetAxis("RightAxis").ToString());
-            //pressedInput[index].triggers = new GamePadTriggers(UnityEngine.Input.GetAxis("LeftAxis"), UnityEngine.Input.GetAxis("RightAxis"));
+            pressedInput[index].triggers = new GamePadTriggers(GetAxis(playerGamePad + "TriggerLeft"), GetAxis(playerGamePad + "TriggerRight"));
 
             //Axis DPad
-            //ButtonState[] states = GetDPadButtonsState("DPadX", "DPadY");
-            //pressedInput[index].dPad = new GamePadDPad(states[0], states[1], states[2], states[3]);
-            
+            ButtonState[] states = GetDPadButtonsState(playerGamePad + "DpadX", playerGamePad + "DpadY");
+            pressedInput[index].dPad = new GamePadDPad(states[0], states[1], states[2], states[3]);
+
+            if (states[0] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadUp);
+            if (states[1] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadDown);
+            if (states[2] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadLeft);
+            if (states[3] == ButtonState.Pressed)
+                pressedInput[index].buttons.Add(Buttons.DPadRight);
+
             return new GamePadState(pressedInput[index].thumbSticks,
                 pressedInput[index].triggers,
                 new GamePadButtons(pressedInput[index].buttons.ToArray()),
                 pressedInput[index].dPad);
-        }    
-        
+        }
+
         private static float GetAxis(string axisName)
         {
             return UnityEngine.Input.GetAxis(axisName);
@@ -108,19 +150,29 @@ namespace Microsoft.Xna.Framework.Input
         private static ButtonState[] GetDPadButtonsState(string xAxisName, string yAxisName)
         {
             ButtonState[] state = new ButtonState[4];
-            
-            state[0] = GetAxisPressedState(xAxisName, -1);  //up
-            state[1] = GetAxisPressedState(xAxisName, 1);   //down
-            state[2] = GetAxisPressedState(yAxisName, -1);  //left
-            state[3] = GetAxisPressedState(yAxisName, 1);   //right
+
+            float pressedValue = 0.8f;
+            state[0] = GetAxisPressedState(yAxisName, pressedValue);  //up
+            state[1] = GetAxisPressedState(yAxisName, -pressedValue);   //down
+            state[2] = GetAxisPressedState(xAxisName, -pressedValue);  //left
+            state[3] = GetAxisPressedState(xAxisName, pressedValue);   //right
 
             return state;
         }
 
         private static ButtonState GetAxisPressedState(string axisName, float pressedValue)
         {
-            if (GetAxis(axisName) == pressedValue)
-                return ButtonState.Pressed;
+            float axis = GetAxis(axisName);
+            if (pressedValue < 0)
+            {
+                if (axis <= pressedValue)
+                    return ButtonState.Pressed;
+            }
+            else
+            {
+                if (axis >= pressedValue)
+                    return ButtonState.Pressed;
+            }
 
             return ButtonState.Released;
         }
