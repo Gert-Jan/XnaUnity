@@ -151,18 +151,28 @@ namespace Microsoft.Xna.Framework.Input
         {
             ButtonState[] state = new ButtonState[4];
 
-            state[0] = GetAxisPressedState(yAxisName, 1);  //up
-            state[1] = GetAxisPressedState(yAxisName, -1);   //down
-            state[2] = GetAxisPressedState(xAxisName, -1);  //left
-            state[3] = GetAxisPressedState(xAxisName, 1);   //right
+            float pressedValue = 0.8f;
+            state[0] = GetAxisPressedState(yAxisName, pressedValue);  //up
+            state[1] = GetAxisPressedState(yAxisName, -pressedValue);   //down
+            state[2] = GetAxisPressedState(xAxisName, -pressedValue);  //left
+            state[3] = GetAxisPressedState(xAxisName, pressedValue);   //right
 
             return state;
         }
 
         private static ButtonState GetAxisPressedState(string axisName, float pressedValue)
         {
-            if (GetAxis(axisName) == pressedValue)
-                return ButtonState.Pressed;
+            float axis = GetAxis(axisName);
+            if (pressedValue < 0)
+            {
+                if (axis <= pressedValue)
+                    return ButtonState.Pressed;
+            }
+            else
+            {
+                if (axis >= pressedValue)
+                    return ButtonState.Pressed;
+            }
 
             return ButtonState.Released;
         }
