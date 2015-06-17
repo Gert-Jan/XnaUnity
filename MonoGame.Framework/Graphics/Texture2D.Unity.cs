@@ -27,6 +27,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			this._levelCount = texture.mipmapCount;
 		}
 
+		/**
+		 * Extra function for Unity so that the original texture settings can be copied to the new texture
+		 */
+		public Texture2D(GraphicsDevice graphicsDevice, int width, int height, UnityEngine.Texture2D original)
+			: this(graphicsDevice, width, height, false, SurfaceFormat.Color, SurfaceType.Texture, false, original)
+		{
+		}
+
 		protected Texture2D(GraphicsDevice graphicsDevice, int width, int height, bool mipmap, SurfaceFormat format, SurfaceType type, bool shared, UnityEngine.Texture2D original)
 			: this(graphicsDevice, width, height, mipmap, format, type, false)
 		{
