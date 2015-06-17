@@ -104,7 +104,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Clear(Color color)
 		{
-            //GL.Clear(true, false, new UnityEngine.Color(255, 255 ,255));
+            GL.Clear(true, true, new UnityEngine.Color(0, 0, 0));
 		}
 
 		public void Dispose()
