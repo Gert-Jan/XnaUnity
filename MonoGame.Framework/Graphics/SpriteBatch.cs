@@ -72,7 +72,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
 			//
             
-#if UNITY || false
+#if UNITY
             if (effect == null)
             {
                 effectFlip.Projection = GraphicsDevice.DefaultProjection;

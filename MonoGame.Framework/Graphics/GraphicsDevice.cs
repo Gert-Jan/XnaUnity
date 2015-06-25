@@ -33,11 +33,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			set
 			{
 				_viewport = value;
-				//_baseMatrix = Matrix4x4.TRS(new UnityEngine.Vector3(-_viewport.Width / 2, _viewport.Height / 2, 0), UnityEngine.Quaternion.identity, new UnityEngine.Vector3(1, -1, 1));
 
-                Matrix newDefaultProj;
-                Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, 1, out newDefaultProj);
-                defaultProjection = newDefaultProj;
+				// Set the graphics driver viewport to the right size
+				GL.Viewport(new Rect(Viewport.X, Viewport.Y, Viewport.Width, Viewport.Height));
+
+				// Calculate the right projection matrix, used when a draw call doesn't have specified a specific effect
+				// defined to calculate the projection matrix
+				Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.Width, Viewport.Height, Viewport.Y, 0, 1, out defaultProjection);
 			}
 		}
 		public Matrix Matrix
@@ -48,7 +50,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					_matrix[i] = value[i];
 				}
-				/*_matrix = _baseMatrix * _matrix;*/
+				// _matrix = _baseMatrix * _matrix;
 			}
 		}
 
@@ -104,7 +106,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Clear(Color color)
 		{
-            //GL.Clear(true, false, new UnityEngine.Color(255, 255 ,255));
+			GL.Clear(true, true, XnaToUnity.Color(color));
 		}
 
 		public void Dispose()

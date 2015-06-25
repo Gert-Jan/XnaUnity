@@ -27,6 +27,25 @@ namespace Microsoft.Xna.Framework.Graphics
 			this._levelCount = texture.mipmapCount;
 		}
 
+		/**
+		 * Extra function for Unity so that the original texture settings can be copied to the new texture
+		 */
+		public Texture2D(GraphicsDevice graphicsDevice, int width, int height, UnityEngine.Texture2D original)
+			: this(graphicsDevice, width, height, false, SurfaceFormat.Color, SurfaceType.Texture, false, original)
+		{
+		}
+
+		protected Texture2D(GraphicsDevice graphicsDevice, int width, int height, bool mipmap, SurfaceFormat format, SurfaceType type, bool shared, UnityEngine.Texture2D original)
+			: this(graphicsDevice, width, height, mipmap, format, type, false)
+		{
+			if (original != null)
+			{
+				// Copy the wrap mode (clamp, repeat) and filter mode (point, bilinair, trilinair) from the original texture
+				UnityTexture2D.wrapMode = original.wrapMode;
+				UnityTexture2D.filterMode = original.filterMode;
+			}
+		}
+
 		private void PlatformConstruct(int width, int height, bool mipmap, SurfaceFormat format, SurfaceType type, bool shared)
 		{
 			UnityTexture2D = new UnityEngine.Texture2D(width, height, XnaToUnity.TextureFormat(format), mipmap);
