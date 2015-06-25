@@ -36,7 +36,14 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			UnityEngine.Color[] unityData = new UnityEngine.Color[data.Length];
 			XnaToUnity.Color<T>(data, ref unityData);
-			UnityTexture2D.SetPixels(unityData);
+			if (rect.HasValue)
+			{
+				UnityTexture2D.SetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, unityData);
+			}
+			else
+			{
+				UnityTexture2D.SetPixels(unityData);
+			}
 			UnityTexture2D.Apply();
 		}
 

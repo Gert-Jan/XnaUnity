@@ -5,6 +5,8 @@ namespace Microsoft.Xna.Framework
 {
 	public class GraphicsDeviceManager
 	{
+		private GraphicsProfile graphicsProfile = Graphics.GraphicsProfile.HiDef;
+
 		public GraphicsDeviceManager(Game game)
 		{
 			GraphicsDevice = game.GraphicsDevice;
@@ -15,7 +17,11 @@ namespace Microsoft.Xna.Framework
 		public int PreferredBackBufferHeight { get; set; }
 		public int PreferredBackBufferWidth { get; set; }
 		public GraphicsDevice GraphicsDevice { get; private set; }
-		public GraphicsProfile GraphicsProfile { get { return Graphics.GraphicsProfile.HiDef; } }
+		public GraphicsProfile GraphicsProfile 
+		{ 
+			get { return graphicsProfile; }
+			set { graphicsProfile = value; }
+		}
 
 		public void ToggleFullScreen()
 		{
