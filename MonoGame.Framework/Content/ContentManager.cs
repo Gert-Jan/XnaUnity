@@ -237,10 +237,14 @@ namespace Microsoft.Xna.Framework.Content
             return new MemoryStream(binData.bytes);
         }
 
-        public static string ReadTextFile(string textname)
+		public static string ReadTextFile(string assetName)
         {
-            TextAsset file = Resources.Load("english") as TextAsset;
-            return file.text;
+			TextAsset textasset = UnityResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+			if (textasset == null)
+			{
+				throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));
+			}
+			return textasset.text;
         }
 
 		public T ReadAsset<T>(object asset, string assetName, Action<IDisposable> recordDisposableObject)
