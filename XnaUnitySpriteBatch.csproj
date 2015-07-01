@@ -363,6 +363,7 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Vector4.cs">
       <Link>MonoGame.Framework\Vector4.cs</Link>
     </Compile>
+    <Compile Include="Print.cs" />
     <Compile Include="DotNetUpdates\PureAttribute.cs" />
     <Compile Include="DotNetUpdates\StringBuilderExtensions.cs" />
     <Compile Include="DotNetUpdates\TimeSpanExtensions.cs" />
