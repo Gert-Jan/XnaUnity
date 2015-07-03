@@ -63,6 +63,8 @@ namespace Microsoft.Xna.Framework.Input
 			keyMapping[(int)Keys.Up] = KeyCode.UpArrow;
 			keyMapping[(int)Keys.Down] = KeyCode.DownArrow;
 
+			keyMapping[(int)Keys.Escape] = KeyCode.Escape;
+
 			// TODO: More key code conversions
 		}
 
