@@ -24,8 +24,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private void PlatformConstruct(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage, bool shared)
 		{
-			UnityRenderTexture = new UnityEngine.RenderTexture(width, height, 1);
-			UnityRenderTexture.Create();
+			UnityEngine.RenderTexture t = null;
+			switch (preferredFormat)
+			{
+				case SurfaceFormat.Color: t = new UnityEngine.RenderTexture(width, height, 1, UnityEngine.RenderTextureFormat.ARGB32); break;
+				// TODO: more custom formats
+			}
+			if (t == null)
+			{
+				t = new UnityEngine.RenderTexture(width, height, 1);
+			}
+			t.Create();
+			UnityRenderTexture = t;
 		}
 
 		private void PlatformGraphicsDeviceResetting()

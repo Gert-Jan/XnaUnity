@@ -22,7 +22,7 @@ namespace Microsoft.Xna.Framework
 			get { return graphicsProfile; }
 			set { graphicsProfile = value; }
 		}
-
+		public bool SynchronizeWithVerticalRetrace { get { return UnityEngine.QualitySettings.vSyncCount != 0; } }
 		public void ToggleFullScreen()
 		{
 			IsFullScreen = !IsFullScreen;
