@@ -16,6 +16,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		Effect _effect;
         bool _beginCalled;
 
+		BasicEffect basicEffect;
+
 		//Effect _spriteEffect;
 	    //readonly EffectParameter _matrixTransform;
         //readonly EffectPass _spritePass;
@@ -24,11 +26,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		Rectangle _tempRect = new Rectangle (0,0,0,0);
 		Vector2 _texCoordTL = new Vector2 (0,0);
 		Vector2 _texCoordBR = new Vector2 (0,0);
-        private int logCount;
-
-#if UNITY
-        BasicEffectFlip effectFlip;
-#endif
+        //private int logCount;
 
         public Matrix tempProjMatrix; //TODO make this a property
         
@@ -49,9 +47,7 @@ namespace Microsoft.Xna.Framework.Graphics
             
             _beginCalled = false;
             
-#if UNITY
-            effectFlip = new BasicEffectFlip(graphicsDevice);
-#endif
+			basicEffect = new BasicEffect(graphicsDevice);
 		}
 
 		public void Begin ()
@@ -71,21 +67,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_depthStencilState = depthStencilState ?? DepthStencilState.None;
 			//_rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
 			//
-            
-#if UNITY
+          
             if (effect == null)
             {
-                effectFlip.Projection = GraphicsDevice.DefaultProjection;
-                effectFlip.View = Matrix.Identity;
-                _effect = effectFlip;
+				basicEffect.Projection = GraphicsDevice.DefaultProjection;
+				basicEffect.View = Matrix.Identity;
+				effect = basicEffect;
             }
-            else
-            {
-                _effect = effect;
-            }
-#else
-            _effect = effect;
-#endif
+			_effect = effect;
 			
 			_matrix = transformMatrix;
 
@@ -123,53 +112,57 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
             _batcher.DrawBatch(_sortMode, _effect);
 			_effect = null;
-			GraphicsDevice.Material = null;
+
+			GraphicsDevice.activeEffect = null;
         }
 		
 		void Setup() 
         {
-            var gd = GraphicsDevice;
+            //var gd = GraphicsDevice;
 			//gd.BlendState = _blendState;
 			//gd.DepthStencilState = _depthStencilState;
 			//gd.RasterizerState = _rasterizerState;
 			//gd.SamplerStates[0] = _samplerState;
-			
-            // Setup the default sprite effect.
-			var vp = gd.Viewport;
 
-			Matrix projection;
+			// Setup the default sprite effect.
+			GraphicsDevice.activeEffect = _effect;
+			GraphicsDevice.activeEffect.OnApply();
+
+			//var vp = gd.Viewport;
+
+			//Matrix projection;
 #if PSM || DIRECTX
             Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, -1, 0, out projection);
 #else
             // GL requires a half pixel offset to match DX.
 			//XX: actaully create a projection matrix here
-			if (_effect == null)
-			{
-				Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1, out projection);
-				if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
-				{
-					_matrix.M41 += -0.5f * _matrix.M11;
-					_matrix.M42 += -0.5f * _matrix.M22;
-				}
-
-				Matrix.Multiply(ref _matrix, ref projection, out projection);
-
-				_matrix = projection;
-			}
+			//if (_effect == null)
+			//{
+			//	Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1, out projection);
+			//	if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+			//	{
+			//		_matrix.M41 += -0.5f * _matrix.M11;
+			//		_matrix.M42 += -0.5f * _matrix.M22;
+			//	}
+			//
+			//	Matrix.Multiply(ref _matrix, ref projection, out projection);
+			//
+			//	_matrix = projection;
+			//}
 #endif
             
             //_matrix.SetValue(projection);
             //_spritePass.Apply();
 
 			// XX: Set custom effect on graphics device
-			if (_effect != null)
-				gd.Material = _effect.Material;
-			gd.Matrix = _matrix;
+			//if (_effect != null)
+			//	gd.Material = _effect.Material;
+			//gd.Matrix = _matrix;
 
 			// If the user supplied a custom effect then apply
 			// it now to override the sprite effect.
-			if (_effect != null)
-				_effect.OnApply();
+			//if (_effect != null)
+			//	_effect.OnApply();
 			//	_effect.CurrentTechnique.Passes[0].Apply();
         }
 		

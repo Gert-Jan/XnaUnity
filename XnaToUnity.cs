@@ -41,6 +41,11 @@ namespace Microsoft.Xna.Framework
 		public static UnityEngine.Matrix4x4 Matrix(Xna.Framework.Matrix input)
 		{
 			UnityEngine.Matrix4x4 output = new UnityEngine.Matrix4x4();
+			return Matrix(input, out output);
+		}
+
+		public static UnityEngine.Matrix4x4 Matrix(Xna.Framework.Matrix input, out UnityEngine.Matrix4x4 output)
+		{
 			output.m00 = input.M11;
 			output.m01 = input.M21;
 			output.m02 = input.M31;

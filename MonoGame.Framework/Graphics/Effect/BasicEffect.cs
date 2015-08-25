@@ -11,6 +11,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using DDG.XnaWrapper;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -44,7 +45,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		EffectDirtyFlags dirtyFlags = EffectDirtyFlags.All;
 
 		private static readonly UnityEngine.Shader shader = UnityEngine.Shader.Find("Custom/SpriteShader");
-		private UnityEngine.Material material = new UnityEngine.Material(shader);
+
+		private UnityEngine.Material material;
 
 		#endregion
 
@@ -161,34 +163,46 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Creates a new BasicEffect with default parameter settings.
 		/// </summary>
-		public BasicEffect(GraphicsDevice device)
+		public BasicEffect(GraphicsDevice device) : base(device)
 		{
-			base.Material = new UnityEngine.Material(shader);
+			material = new UnityEngine.Material(shader);
 		}
 
 		/// <summary>
 		/// Creates a new BasicEffect by cloning parameter settings from an existing instance.
 		/// </summary>
-		protected BasicEffect(BasicEffect cloneSource)
-		{
-			textureEnabled = cloneSource.textureEnabled;
-			vertexColorEnabled = cloneSource.vertexColorEnabled;
-
-			world = cloneSource.world;
-			view = cloneSource.view;
-			projection = cloneSource.projection;
-
-			diffuseColor = cloneSource.diffuseColor;
-
-			base.Material = new UnityEngine.Material(shader);
-		}
+		//protected BasicEffect(BasicEffect cloneSource)
+		//{
+		//	textureEnabled = cloneSource.textureEnabled;
+		//	vertexColorEnabled = cloneSource.vertexColorEnabled;
+		//
+		//	world = cloneSource.world;
+		//	view = cloneSource.view;
+		//	projection = cloneSource.projection;
+		//
+		//	diffuseColor = cloneSource.diffuseColor;
+		//
+		//	base.Material = new UnityEngine.Material(shader);
+		//}
 
 		/// <summary>
 		/// Creates a clone of the current BasicEffect instance.
 		/// </summary>
-		public Effect Clone()
+		//public Effect Clone()
+		//{
+		//	return new BasicEffect(this);
+		//}
+
+		private MatrixProperty worldViewProj_Property = new MatrixProperty("_WorldViewProj");
+		private IntegerProperty RT_Property = new IntegerProperty("_IsRT");
+
+		internal override void OnApplyPostTexture()
 		{
-			return new BasicEffect(this);
+			if (device.Textures[0] is RenderTarget2D)
+				RT_Property.Value = 1;
+			else
+				RT_Property.Value = 0;
+			RT_Property.ApplyToMaterial(material);
 		}
 
 		/// <summary>
@@ -198,10 +212,13 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			// Recompute the world+view+projection matrix or fog vector?
 			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);
-			UnityEngine.Matrix4x4 uWorldViewProj = XnaToUnity.Matrix(worldViewProj);
-			uWorldViewProj.m23 = 0;
+			
+			XnaToUnity.Matrix(worldViewProj, out worldViewProj_Property.Value);
+			worldViewProj_Property.Value.m23 = 0;
 
-			material.SetMatrix("_WorldViewProj", uWorldViewProj);
+			// apply the above settings
+			worldViewProj_Property.ApplyToMaterial(material);
+
 			//XX: set transform on material
 
 			// Recompute the diffuse/emissive/alpha material color parameters?

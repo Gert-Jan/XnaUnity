@@ -272,6 +272,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 						tex = item.Texture;
 						startIndex = index = 0;
+						
 						_device.Textures[0] = tex;
 					}
 
@@ -317,38 +318,23 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			var vertexCount = end - start;
 
-			// If the effect is not null, then apply each pass and render the geometry
-			if (effect != null)
-			{
-				//var passes = effect.CurrentTechnique.Passes;
-				//foreach (var pass in passes)
-				//{
-				//    pass.Apply();
-				//effect.OnApply();
-				_device.DrawUserIndexedPrimitives(
-					PrimitiveType.TriangleList,
-					_vertexArray,
-					0,
-					vertexCount,
-					_index,
-					0,
-					(vertexCount / 4) * 2,
-					VertexPositionColorTexture.VertexDeclaration);
-				//}
-			}
-			else
-			{
-				// If no custom effect is defined, then simply render.
-				_device.DrawUserIndexedPrimitives(
-					PrimitiveType.TriangleList,
-					_vertexArray,
-					0,
-					vertexCount,
-					_index,
-					0,
-					(vertexCount / 4) * 2,
-					VertexPositionColorTexture.VertexDeclaration);
-			}
+			// We are now assuming we ALWAYS have an effect
+
+			//var passes = effect.CurrentTechnique.Passes;
+			//foreach (var pass in passes)
+			//{
+			//    pass.Apply();
+			//effect.OnApply();
+			_device.DrawUserIndexedPrimitives(
+				PrimitiveType.TriangleList,
+				_vertexArray,
+				0,
+				vertexCount,
+				_index,
+				0,
+				(vertexCount / 4) * 2,
+				VertexPositionColorTexture.VertexDeclaration);
+			//}
 		}
 	}
 }

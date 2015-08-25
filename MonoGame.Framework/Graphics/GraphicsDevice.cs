@@ -8,10 +8,10 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class GraphicsDevice : IDisposable
 	{
-        public int drawcount;
-		public UnityEngine.Material Material;
+        //public int drawcount;
+		//public UnityEngine.Material Material;
 		public Texture2D[] Textures = new Texture2D[1];
-		private Matrix4x4 _matrix;
+		public Effect activeEffect;
 		//private Matrix4x4 _baseMatrix;
         private Matrix defaultProjection;
 
@@ -39,18 +39,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 				// Calculate the right projection matrix, used when a draw call doesn't have specified a specific effect
 				// defined to calculate the projection matrix
-				Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.Width, Viewport.Height, Viewport.Y, 0, 1, out defaultProjection);
-			}
-		}
-		public Matrix Matrix
-		{
-			set
-			{
-				for (var i = 0; i < 4 * 4; i++)
-				{
-					_matrix[i] = value[i];
-				}
-				// _matrix = _baseMatrix * _matrix;
+				Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.X + Viewport.Width, Viewport.Y, Viewport.Y + Viewport.Height, 0, 1, out defaultProjection);
 			}
 		}
 
@@ -66,8 +55,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         //TODO: This is just a test
         public DisplayMode DisplayMode 
-        { 
-            get { return new DisplayMode(1080, 1920, 60, SurfaceFormat.Alpha8); } 
+        {
+			get { return new DisplayMode(1920, 1080, 60, SurfaceFormat.Color); } 
         }
 
 		private readonly MaterialPool _materialPool = new MaterialPool();
@@ -78,20 +67,28 @@ namespace Microsoft.Xna.Framework.Graphics
 			Debug.Assert(vertexData != null && vertexData.Length > 0, "The vertexData must not be null or zero length!");
 			Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
-			UnityEngine.Material mat = null;
-			if (this.Material == null)
-			{
-				mat = _materialPool.Get(Textures[0]);
-                Console.WriteLine("Material is null"); 
-			}
-			else
-			{
-				//XX: Find a better way to get the WorldViewProj matrix here
-				mat = this.Material;
-				mat.SetMatrix("_WorldViewProj", this.Material.GetMatrix("_WorldViewProj"));
-				mat.mainTexture = Textures[0].UnityTexture;
-				mat.SetPass(0);
-			}
+			UnityEngine.Material mat = activeEffect.Material;
+
+			//XX: Find a better way to get the WorldViewProj matrix here
+			//mat = this.activeEffect.Material;
+			//mat.SetMatrix("_WorldViewProj", this.activeEffect.Material.GetMatrix("_WorldViewProj"));
+			mat.mainTexture = Textures[0].UnityTexture;
+
+			// Normal blending: SrcAlpha OneMinusSrcAlpha
+			// Premultiplied alpha blending: One OneMinusSrcAlpha
+			//int srcNormal = (int)UnityEngine.Rendering.BlendMode.SrcAlpha;
+			//int srcPremult = (int)UnityEngine.Rendering.BlendMode.One;
+			//int propID = Shader.PropertyToID("_BlendSrcMode");
+			//mat.SetInt("_BlendSrcPremult", srcPremult);
+			//if (Textures[0] is RenderTarget2D)
+			//	mat.SetInt(propID, srcNormal);
+			//else
+			//	mat.SetInt(propID, srcPremult);
+
+			activeEffect.OnApplyPostTexture();
+
+			mat.SetPass(0);
+			
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
@@ -118,7 +115,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
             if (renderTarget != null)
             {
-                UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
+				UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
             }
             else
             {
