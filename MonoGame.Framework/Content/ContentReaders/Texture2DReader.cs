@@ -101,6 +101,24 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 				}
 
+				// un-premultiply alpha (instead do it in the shader)
+				for (int i = 0; i < levelData.Length; i += 4)
+				{
+					float r = levelData[i + 0] / 255.0f;
+					float g = levelData[i + 1] / 255.0f;
+					float b = levelData[i + 2] / 255.0f;
+					float a = levelData[i + 3] / 255.0f;
+
+					levelData[i + 0] = (byte)(r / a * 255.0f);
+					levelData[i + 1] = (byte)(g / a * 255.0f);
+					levelData[i + 2] = (byte)(b / a * 255.0f);
+
+					//levelData[i + 0] = 0;
+					//levelData[i + 1] = 255;
+					//levelData[i + 2] = 0;
+					//levelData[i + 3] = 255;
+				}
+
 				// swap rows because unity textures are laid out bottom-top instead of top-bottom
 				int rowSize = width * 4;
 				byte[] temp = new byte[rowSize];
