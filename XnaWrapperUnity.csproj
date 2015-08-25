@@ -378,7 +378,6 @@
     <Compile Include="MonoGame.Framework\Game.cs" />
     <Compile Include="MonoGame.Framework\GraphicsDeviceManager.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffect.cs" />
-    <Compile Include="MonoGame.Framework\Graphics\Effect\BasicEffectFlip.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectHelpers.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectParameter.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Effect\EffectPass.cs" />
