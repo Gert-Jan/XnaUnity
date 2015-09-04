@@ -29,7 +29,7 @@
     <FileAlignment>512</FileAlignment>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -363,7 +363,6 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Vector4.cs">
       <Link>MonoGame.Framework\Vector4.cs</Link>
     </Compile>
-    <Compile Include="Print.cs" />
     <Compile Include="DotNetUpdates\PureAttribute.cs" />
     <Compile Include="DotNetUpdates\StringBuilderExtensions.cs" />
     <Compile Include="DotNetUpdates\TimeSpanExtensions.cs" />
@@ -420,8 +419,9 @@
     <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
-    <Compile Include="UnityToXna.cs" />
-    <Compile Include="XnaToUnity.cs" />
+    <Compile Include="WrapperUtils\DataConvert.cs" />
+    <Compile Include="WrapperUtils\Debug.cs" />
+    <Compile Include="WrapperUtils\MaterialProperties.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
