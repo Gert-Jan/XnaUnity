@@ -61,15 +61,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Initialization size for the batch item list and queue.
 		/// </summary>
-		private const int InitialBatchSize = 256;
+		private const int InitialBatchSize = 16;
 		/// <summary>
 		/// The maximum number of batch items that can be processed per iteration
 		/// </summary>
 		private const int MaxBatchSize = short.MaxValue / 6; // 6 = 4 vertices unique and 2 shared, per quad
-		/// <summary>
-		/// Initialization size for the vertex array, in batch units.
-		/// </summary>
-		private const int InitialVertexArraySize = 256;
 
 		/// <summary>
 		/// The list of batch items to process.
@@ -79,7 +75,48 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// The available SpriteBatchItem queue so that we reuse these objects when we can.
 		/// </summary>
-		private readonly Queue<SpriteBatchItem> _freeBatchItemQueue;
+		//private readonly Queue<SpriteBatchItem> _freeBatchItemQueue;
+		/// <summary>
+		/// We can do better. Use pooling.
+		/// </summary>
+		private readonly BatchItemPool _freeBatchItemPool;
+
+		/// <summary>
+		/// Optimizations come from not setting unnecessary values, and explicit reallocation of backing array.
+		/// </summary>
+		private class BatchItemPool
+		{
+			private SpriteBatchItem[] _freeItems;
+			private int _freeIndex;
+
+			public BatchItemPool(int initialCapacity)
+			{
+				_freeItems = new SpriteBatchItem[initialCapacity];
+				for (int i = 0; i < initialCapacity; ++i)
+					_freeItems[i] = new SpriteBatchItem();
+				_freeIndex = initialCapacity - 1;
+			}
+
+			public SpriteBatchItem Fetch()
+			{
+				if (_freeIndex < 0)
+				{
+					// expand
+					int oldCapacity = _freeItems.Length;
+					_freeItems = new SpriteBatchItem[oldCapacity * 2];
+					// leave half free, to leave room for items being restored
+					for (int i = 0; i < oldCapacity; ++i)
+						_freeItems[i] = new SpriteBatchItem();
+					_freeIndex = oldCapacity - 1;
+				}
+				return _freeItems[_freeIndex--];
+			}
+
+			public void Restore(SpriteBatchItem item)
+			{
+				_freeItems[++_freeIndex] = item;
+			}
+		}
 
 		/// <summary>
 		/// The target graphics device.
@@ -93,14 +130,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private VertexPositionColorTexture[] _vertexArray;
 
-        private int logCount;
-
+        //private int logCount;
+		
 		public SpriteBatcher(GraphicsDevice device)
 		{
 			_device = device;
 
 			_batchItemList = new List<SpriteBatchItem>(InitialBatchSize);
-			_freeBatchItemQueue = new Queue<SpriteBatchItem>(InitialBatchSize);
+			//_freeBatchItemQueue = new Queue<SpriteBatchItem>(InitialBatchSize);
+			_freeBatchItemPool = new BatchItemPool(InitialBatchSize);
 
 			EnsureArrayCapacity(InitialBatchSize);
 		}
@@ -113,10 +151,13 @@ namespace Microsoft.Xna.Framework.Graphics
 		public SpriteBatchItem CreateBatchItem()
 		{
 			SpriteBatchItem item;
-			if (_freeBatchItemQueue.Count > 0)
-				item = _freeBatchItemQueue.Dequeue();
-			else
-				item = new SpriteBatchItem();
+
+			item = _freeBatchItemPool.Fetch();
+			//if (_freeBatchItemQueue.Count > 0)
+			//	item = _freeBatchItemQueue.Dequeue();
+			//else
+			//	item = new SpriteBatchItem();
+
 			_batchItemList.Add(item);
 			return item;
 		}
@@ -243,9 +284,14 @@ namespace Microsoft.Xna.Framework.Graphics
 					break;
 			}
 
+			DrawList(_batchItemList);
+		}
+
+		private void DrawList(List<SpriteBatchItem> list)
+		{
 			// Determine how many iterations through the drawing code we need to make
 			int batchIndex = 0;
-			int batchCount = _batchItemList.Count;
+			int batchCount = list.Count;
 			// Iterate through the batches, doing short.MaxValue sets of vertices only.
 			while (batchCount > 0)
 			{
@@ -263,16 +309,16 @@ namespace Microsoft.Xna.Framework.Graphics
 				// Draw the batches
 				for (int i = 0; i < numBatchesToProcess; i++, batchIndex++)
 				{
-					SpriteBatchItem item = _batchItemList[batchIndex];
+					SpriteBatchItem item = list[batchIndex];
 					// if the texture changed, we need to flush and bind the new texture
 					var shouldFlush = !ReferenceEquals(item.Texture, tex);
 					if (shouldFlush)
 					{
-						FlushVertexArray(startIndex, index, effect);
+						FlushVertexArray(startIndex, index);
 
 						tex = item.Texture;
 						startIndex = index = 0;
-						
+
 						_device.Textures[0] = tex;
 					}
 
@@ -281,28 +327,29 @@ namespace Microsoft.Xna.Framework.Graphics
 					_vertexArray[index++] = item.vertexTR;
 					_vertexArray[index++] = item.vertexBL;
 					_vertexArray[index++] = item.vertexBR;
-                    
-                    /*logCount++;
-                    if (logCount > 300)
-                    {
-                        logCount = 0;
-                        Console.WriteLine("Item vertex TL(x:" + item.vertexTL.Position.X + " y: " + item.vertexTL.Position.Y + ") --- " +
-                            "vertex TR(x:" + item.vertexTR.Position.X + " y: " + item.vertexTR.Position.Y + ") --- " +
-                            "vertex BL(x:" + item.vertexBL.Position.X + " y: " + item.vertexBL.Position.Y + ") --- " +
-                            "vertex BR(x:" + item.vertexBR.Position.X + " y: " + item.vertexBR.Position.Y + ")");
-                    }*/
+
+					/*logCount++;
+					if (logCount > 300)
+					{
+						logCount = 0;
+						Console.WriteLine("Item vertex TL(x:" + item.vertexTL.Position.X + " y: " + item.vertexTL.Position.Y + ") --- " +
+							"vertex TR(x:" + item.vertexTR.Position.X + " y: " + item.vertexTR.Position.Y + ") --- " +
+							"vertex BL(x:" + item.vertexBL.Position.X + " y: " + item.vertexBL.Position.Y + ") --- " +
+							"vertex BR(x:" + item.vertexBR.Position.X + " y: " + item.vertexBR.Position.Y + ")");
+					}*/
 
 					// Release the texture and return the item to the queue.
 					item.Texture = null;
-					_freeBatchItemQueue.Enqueue(item);
+					//_freeBatchItemQueue.Enqueue(item);
+					_freeBatchItemPool.Restore(item);
 				}
 				// flush the remaining vertexArray data
-				FlushVertexArray(startIndex, index, effect);
+				FlushVertexArray(startIndex, index);
 				// Update our batch count to continue the process of culling down
 				// large batches
 				batchCount -= numBatchesToProcess;
 			}
-			_batchItemList.Clear();
+			list.Clear();
 		}
 
 		/// <summary>
@@ -310,15 +357,14 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		/// <param name="start">Start index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
 		/// <param name="end">End index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
-		/// <param name="effect">The custom effect to apply to the geometry</param>
-		private void FlushVertexArray(int start, int end, Effect effect)
+		private void FlushVertexArray(int start, int end)
 		{
 			if (start == end)
 				return;
 
 			var vertexCount = end - start;
 
-			// We are now assuming we ALWAYS have an effect
+			// We are now assuming we effects are set in advance 
 
 			//var passes = effect.CurrentTechnique.Passes;
 			//foreach (var pass in passes)
@@ -336,6 +382,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				VertexPositionColorTexture.VertexDeclaration);
 			//}
 		}
+
 	}
 }
 
