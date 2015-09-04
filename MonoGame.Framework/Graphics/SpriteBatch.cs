@@ -44,7 +44,7 @@ namespace Microsoft.Xna.Framework.Graphics
             //_spritePass = _spriteEffect.CurrentTechnique.Passes[0];
 
             _batcher = new SpriteBatcher(graphicsDevice);
-            
+
             _beginCalled = false;
             
 			basicEffect = new BasicEffect(graphicsDevice);
@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsDevice.BlendState = _blendState;
             _blendState.ApplyState(GraphicsDevice);
 #endif
-            _batcher.DrawBatch(_sortMode, _effect);
+			_batcher.DrawBatch(_sortMode, _effect);
 			_effect = null;
 
 			GraphicsDevice.activeEffect = null;
@@ -526,6 +526,38 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             base.Dispose(disposing);
         }
+
+		/// <summary>
+		/// Writes a string that is preprocessed as a vertex list (including rotation, scaling, flipping, etc). The 
+		/// characterVertices array must contain at least numVertices instances (each 4 representing a single sprite, 
+		/// which will be copied to the SpriteBatch's internal buffer.
+		/// Vertices are expected in the order [TopLeft, TopRight, BottomLeft, BottomRight], repeated.
+		/// 
+		/// The specified color is applied to the vertices in this function, the Red channel on each vertex is used as
+		/// an index to the specified font texture array. 
+		/// </summary>
+		public void DrawStringUnity(Texture2D[] fontTextures, int numVertices, VertexPositionColorTexture[] characterVertices, Color color)
+		{
+			// prepare texture instances
+			for (int i = 0; i < numVertices; )
+			{
+				SpriteBatchItem item = _batcher.CreateBatchItem();
+				// use the vertex color R channel as index for the texture array (avoids an extra parameter)
+				item.Texture = fontTextures[characterVertices[i].Color.R];
+				item.Depth = 0;
+
+				item.vertexTL = characterVertices[i++];
+				item.vertexTR = characterVertices[i++];
+				item.vertexBL = characterVertices[i++];
+				item.vertexBR = characterVertices[i++];
+
+				item.vertexTL.Color = color;
+				item.vertexTR.Color = color;
+				item.vertexBL.Color = color;
+				item.vertexBR.Color = color;
+			}
+		}
+
 	}
 }
 

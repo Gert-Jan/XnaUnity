@@ -119,7 +119,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			if (typeof(T) == typeof(SpriteFont))
 			{
-                asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
+				asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
 			}
 			if (typeof(T) == typeof(string))
 			{
@@ -160,7 +160,7 @@ namespace Microsoft.Xna.Framework.Content
                 request = UnityEngine.Resources.LoadAsync(fileName, typeof(UnityAudioClip));
             }
             else if (type == typeof(SpriteFont))
-            {
+			{
                 request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
             }
             else if (type == typeof(string))
@@ -173,7 +173,7 @@ namespace Microsoft.Xna.Framework.Content
             }
             else
             {
-                UnityEngine.Debug.LogWarning("ContentManager: LoadAsync: type " + type + " not defined");
+				XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
                 request = UnityEngine.Resources.LoadAsync(fileName);
             }
 
@@ -185,7 +185,6 @@ namespace Microsoft.Xna.Framework.Content
             var res = UnityResources.Load(fileName, type);
 			if (res == null)
 			{
-                Console.WriteLine("Failed to load " + fileName + " as " + type);
                 throw new ContentLoadException("Failed to load " + fileName + " as " + type);
 			}
 			return res;
@@ -221,8 +220,8 @@ namespace Microsoft.Xna.Framework.Content
                 return ReadAsset<TextureAtlas>(asset, name, null);
             }
             else
-            {
-                UnityEngine.Debug.LogWarning("ContentManager: ConvertAsset: type " + type + " not defined");
+			{
+				XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
                 return asset;
             }
         }

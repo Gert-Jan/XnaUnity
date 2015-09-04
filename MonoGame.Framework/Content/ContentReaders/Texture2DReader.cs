@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using System;
+﻿using System;
+using Microsoft.Xna.Framework.Graphics;
+using XnaWrapper;
+
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Texture2DReader : ContentTypeReader<Texture2D>

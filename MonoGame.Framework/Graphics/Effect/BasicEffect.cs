@@ -11,7 +11,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using DDG.XnaWrapper;
+using XnaWrapper;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -195,14 +195,25 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private MatrixProperty worldViewProj_Property = new MatrixProperty("_WorldViewProj");
 		private IntegerProperty RT_Property = new IntegerProperty("_IsRT");
+		private IntegerProperty Font_Property = new IntegerProperty("_IsFont");
 
 		internal override void OnApplyPostTexture()
 		{
 			if (device.Textures[0] is RenderTarget2D)
+			{
 				RT_Property.Value = 1;
+				Font_Property.Value = 0;			
+			}
 			else
+			{
 				RT_Property.Value = 0;
+				if (device.Textures[0].UnityTexture.name == "Font Texture")
+					Font_Property.Value = 1;
+				else
+					Font_Property.Value = 0;
+			}
 			RT_Property.ApplyToMaterial(material);
+			Font_Property.ApplyToMaterial(material);
 		}
 
 		/// <summary>
@@ -216,7 +227,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			XnaToUnity.Matrix(worldViewProj, out worldViewProj_Property.Value);
 			worldViewProj_Property.Value.m23 = 0;
 
-			// apply the above settings
 			worldViewProj_Property.ApplyToMaterial(material);
 
 			//XX: set transform on material

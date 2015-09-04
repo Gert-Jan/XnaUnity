@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using XnaWrapper;
 using Debug = System.Diagnostics.Debug;
 using UnityGraphics = UnityEngine.Graphics;
 
@@ -68,27 +69,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
 			UnityEngine.Material mat = activeEffect.Material;
-
-			//XX: Find a better way to get the WorldViewProj matrix here
-			//mat = this.activeEffect.Material;
-			//mat.SetMatrix("_WorldViewProj", this.activeEffect.Material.GetMatrix("_WorldViewProj"));
 			mat.mainTexture = Textures[0].UnityTexture;
-
-			// Normal blending: SrcAlpha OneMinusSrcAlpha
-			// Premultiplied alpha blending: One OneMinusSrcAlpha
-			//int srcNormal = (int)UnityEngine.Rendering.BlendMode.SrcAlpha;
-			//int srcPremult = (int)UnityEngine.Rendering.BlendMode.One;
-			//int propID = Shader.PropertyToID("_BlendSrcMode");
-			//mat.SetInt("_BlendSrcPremult", srcPremult);
-			//if (Textures[0] is RenderTarget2D)
-			//	mat.SetInt(propID, srcNormal);
-			//else
-			//	mat.SetInt(propID, srcPremult);
-
 			activeEffect.OnApplyPostTexture();
-
 			mat.SetPass(0);
-			
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
@@ -244,14 +227,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				for (int i = 0; i < numVertices; i++)
 				{
-					var p = vertexData[i].Position;
-					Vertices[i] = new UnityEngine.Vector3(p.X, p.Y, p.Z);
+					XnaToUnity.Vector3(vertexData[i].Position, ref Vertices[i]);
 
-					var uv = vertexData[i].TextureCoordinate;
-					UVs[i] = new UnityEngine.Vector2(uv.X, 1 - uv.Y);
+					XnaToUnity.Vector2(vertexData[i].TextureCoordinate, ref UVs[i]);
+					UVs[i].y = 1 - UVs[i].y;
 
-					var c = vertexData[i].Color;
-					Colors[i] = new Color32(c.R, c.G, c.B, c.A);
+					XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
 				}
 				//we could clearly less if we remembered how many we used last time
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
@@ -259,7 +240,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh.vertices = Vertices;
 				Mesh.uv = UVs;
 				Mesh.colors32 = Colors;
-				Mesh.RecalculateBounds();
+				// possibly optional
+				//Mesh.RecalculateBounds();
 			}
 
 			public int NextPowerOf2(int minimum)
