@@ -1,104 +1,104 @@
 ﻿using System;
-using Xna = Microsoft.Xna.Framework;
+using System.Threading;
+using System.Collections.Generic;
+//using Xna = Microsoft.Xna.Framework;
 using XnaSurfaceFormat = Microsoft.Xna.Framework.Graphics.SurfaceFormat;
+using XVector2 = Microsoft.Xna.Framework.Vector2;
+using UVector2 = UnityEngine.Vector2;
+using XVector3 = Microsoft.Xna.Framework.Vector3;
+using UVector3 = UnityEngine.Vector3;
+using XMatrix = Microsoft.Xna.Framework.Matrix;
+using UMatrix = UnityEngine.Matrix4x4;
+using XColor = Microsoft.Xna.Framework.Color;
+using UColor = UnityEngine.Color;
+using UColor32 = UnityEngine.Color32;
 
 namespace XnaWrapper
 {
 	public static class UnityToXna
 	{
-		public static void Vector2(UnityEngine.Vector2 vector, ref Xna.Vector2 output)
+		public static XVector2 Vector2(UVector2 vector, out XVector2 output)
 		{
 			output.X = vector.x;
 			output.Y = vector.y;
+			return output;
 		}
 
-		public static Xna.Color Color(UnityEngine.Color color)
+		public static XColor Color(UColor color, ref XColor output)
 		{
-			return new Xna.Color(color.r, color.g, color.b, color.a);
+			output.R = (byte)(color.r * 255);
+			output.G = (byte)(color.g * 255);
+			output.B = (byte)(color.b * 255);
+			output.A = (byte)(color.a * 255);
+			return output;
 		}
 
-		public static void Color(UnityEngine.Color[] input, ref Xna.Color[] output)
-		{
-			for (int i = 0; i < input.Length && i < output.Length; i++)
-			{
-				output[i] = UnityToXna.Color(input[i]);
-			}
-		}
-
-		public static void Color<T>(UnityEngine.Color[] input, ref T[] output)
+		public static XColor[] Color(UColor[] input, ref XColor[] output)
 		{
 			for (int i = 0; i < input.Length && i < output.Length; i++)
-			{
-				output[i] = (T)(object)UnityToXna.Color(input[i]);
-			}
+				UnityToXna.Color(input[i], ref output[i]);
+			return output;
 		}
+
 	}
 
 	public static class XnaToUnity
 	{
-		public static void Color(Xna.Color color, ref UnityEngine.Color32 output)
+		public static UColor32 Color(XColor input, ref UColor32 output)
 		{
-			output.r = color.R;
-			output.g = color.G;
-			output.b = color.B;
-			output.a = color.A;
+			output.r = input.R;
+			output.g = input.G;
+			output.b = input.B;
+			output.a = input.A;
+			return output;
 		}
 
-		public static void Vector2(Xna.Vector2 vector, ref UnityEngine.Vector2 output)
+		public static UVector2 Vector2(XVector2 input, ref UVector2 output)
 		{
-			output.x = vector.X;
-			output.y = vector.Y;
+			output.x = input.X;
+			output.y = input.Y;
+			return output;
 		}
 
-		public static void Vector3(Xna.Vector3 vector, ref UnityEngine.Vector3 output)
+		public static UVector3 Vector3(XVector3 input, ref UVector3 output)
 		{
-			output.x = vector.X;
-			output.y = vector.Y;
-			output.z = vector.Z;
+			output.x = input.X;
+			output.y = input.Y;
+			output.z = input.Z;
+			return output;
 		}
 
-		public static UnityEngine.Color Color(Xna.Color color)
+		public static UColor Color(XColor input, ref UColor output)
 		{
-			return new UnityEngine.Color(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
+			output.r = input.R / 255f;
+			output.g = input.G / 255f;
+			output.b = input.B / 255f;
+			output.a = input.A / 255f;
+			return output;
 		}
 
-		public static void Color(Xna.Color[] input, ref UnityEngine.Color[] output)
+		public static UColor[] Color(XColor[] input, ref UColor[] output)
 		{
 			for (int i = 0; i < input.Length && i < output.Length; i++)
 			{
-				output[i] = XnaToUnity.Color(input[i]);
-			}
-		}
-
-		public static void Color<T>(T[] input, ref UnityEngine.Color[] output)
-		{
-			for (int i = 0; i < input.Length && i < output.Length; i++)
-			{
-				output[i] = XnaToUnity.Color((Xna.Color)(object)input[i]);
-			}
-		}
-
-		public static UnityEngine.Color[] Color(byte[] input)
-		{
-			UnityEngine.Color[] output = new UnityEngine.Color[input.Length / 4];
-			for (int i = 0; i < output.Length; i++)
-			{
-				output[i] = new UnityEngine.Color(
-					input[i * 4 + 0] / 255f,
-					input[i * 4 + 1] / 255f,
-					input[i * 4 + 2] / 255f,
-					input[i * 4 + 3] / 255f);
+				XnaToUnity.Color(input[i], ref output[i]);
 			}
 			return output;
 		}
 
-		public static UnityEngine.Matrix4x4 Matrix(Xna.Matrix input)
+		public static UColor[] Color(byte[] input, ref UColor[] output)
 		{
-			UnityEngine.Matrix4x4 output = new UnityEngine.Matrix4x4();
-			return Matrix(input, out output);
+			for (int i = 0; i < output.Length; i++)
+			{
+				output[i].r = input[i * 4 + 0] / 255f;
+				output[i].g = input[i * 4 + 1] / 255f;
+				output[i].b = input[i * 4 + 2] / 255f;
+				output[i].a = input[i * 4 + 3] / 255f;
+			}
+			return output;
 		}
 
-		public static UnityEngine.Matrix4x4 Matrix(Xna.Matrix input, out UnityEngine.Matrix4x4 output)
+		public static UnityEngine.Matrix4x4 Matrix(XMatrix input, out UMatrix output)
 		{
 			output.m00 = input.M11;
 			output.m01 = input.M21;

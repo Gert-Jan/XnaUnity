@@ -6,13 +6,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-    internal static class SoundEffectInstancePool
-    {
+	internal static class SoundEffectInstancePool
+	{
 
 #if WINDOWS || (WINRT && !WINDOWS_PHONE) || LINUX || WEB || ANGLE || UNITY
 
-        // These platforms are only limited by memory.
-        private const int MAX_PLAYING_INSTANCES = int.MaxValue;
+		// These platforms are only limited by memory.
+		private const int MAX_PLAYING_INSTANCES = int.MaxValue;
 
 #elif MONOMAC
 
@@ -41,137 +41,141 @@ namespace Microsoft.Xna.Framework.Audio
 
 #endif
 
-        private static readonly List<SoundEffectInstance> _playingInstances;
-        private static readonly List<SoundEffectInstance> _pooledInstances;
 
-        static SoundEffectInstancePool()
-        {
-            // Reduce garbage generation by allocating enough capacity for
-            // the maximum playing instances or at least some reasonable value.
-            var maxInstances = MAX_PLAYING_INSTANCES < 1024 ? MAX_PLAYING_INSTANCES : 1024;
-            _playingInstances = new List<SoundEffectInstance>(maxInstances);
-            _pooledInstances = new List<SoundEffectInstance>(maxInstances);
-        }
+		private static readonly List<SoundEffectInstance> _playingInstances;
+		private static readonly List<SoundEffectInstance> _pooledInstances;
 
-        /// <summary>
-        /// Gets a value indicating whether the platform has capacity for more sounds to be played at this time.
-        /// </summary>
-        /// <value><c>true</c> if more sounds can be played; otherwise, <c>false</c>.</value>
-        internal static bool SoundsAvailable
-        {
-            get
-            {
-                return _playingInstances.Count < MAX_PLAYING_INSTANCES;
-            }
-        }
+		static SoundEffectInstancePool()
+		{
+			// Reduce garbage generation by allocating enough capacity for
+			// the maximum playing instances or at least some reasonable value.
+			var maxInstances = MAX_PLAYING_INSTANCES < 1024 ? MAX_PLAYING_INSTANCES : 1024;
+			_playingInstances = new List<SoundEffectInstance>(maxInstances);
+			_pooledInstances = new List<SoundEffectInstance>(maxInstances);
+		}
 
-        /// <summary>
-        /// Add the specified instance to the pool if it is a pooled instance and removes it from the
-        /// list of playing instances.
-        /// </summary>
-        /// <param name="inst">The SoundEffectInstance</param>
-        internal static void Add(SoundEffectInstance inst)
-        {
-            if (inst._isPooled)
-            {
-                _pooledInstances.Add(inst);
-                inst._effect = null;
-            }
+		/// <summary>
+		/// Gets a value indicating whether the platform has capacity for more sounds to be played at this time.
+		/// </summary>
+		/// <value><c>true</c> if more sounds can be played; otherwise, <c>false</c>.</value>
+		internal static bool SoundsAvailable
+		{
+			get
+			{
+				return _playingInstances.Count < MAX_PLAYING_INSTANCES;
+			}
+		}
 
-            _playingInstances.Remove(inst);
-        }
+		/// <summary>
+		/// Add the specified instance to the pool if it is a pooled instance and removes it from the
+		/// list of playing instances.
+		/// </summary>
+		/// <param name="inst">The SoundEffectInstance</param>
+		internal static void Add(SoundEffectInstance inst)
+		{
+			if (inst._isPooled)
+			{
+				_pooledInstances.Add(inst);
+				inst._effect = null;
+			}
 
-        /// <summary>
-        /// Adds the SoundEffectInstance to the list of playing instances.
-        /// </summary>
-        /// <param name="inst">The SoundEffectInstance to add to the playing list.</param>
-        internal static void Remove(SoundEffectInstance inst)
-        {
-            _playingInstances.Add(inst);
-        }
+			_playingInstances.Remove(inst);
+		}
 
-        /// <summary>
-        /// Returns a pooled SoundEffectInstance if one is available, or allocates a new
-        /// SoundEffectInstance if the pool is empty.
-        /// </summary>
-        /// <returns>The SoundEffectInstance.</returns>
-        internal static SoundEffectInstance GetInstance(bool forXAct)
-        {
-            SoundEffectInstance inst = null;
-            var count = _pooledInstances.Count;
-            if (count > 0)
-            {
-                // Grab the item at the end of the list so the remove doesn't copy all
-                // the list items down one slot.
-                inst = _pooledInstances[count - 1];
-                _pooledInstances.RemoveAt(count - 1);
+		/// <summary>
+		/// Adds the SoundEffectInstance to the list of playing instances.
+		/// </summary>
+		/// <param name="inst">The SoundEffectInstance to add to the playing list.</param>
+		internal static void Remove(SoundEffectInstance inst)
+		{
+			_playingInstances.Add(inst);
+		}
 
-                // Reset used instance to the "default" state.
-                inst._isPooled = true;
-                inst._isXAct = forXAct;
-                inst.Volume = 1.0f;
-                inst.Pan = 0.0f;
-                inst.Pitch = 0.0f;
-                inst.IsLooped = false;
-            }
-            else
-            {
-                inst = new SoundEffectInstance();
-                inst._isPooled = true;
-                inst._isXAct = forXAct;
-            }
+		/// <summary>
+		/// Returns a pooled SoundEffectInstance if one is available, or allocates a new
+		/// SoundEffectInstance if the pool is empty.
+		/// </summary>
+		/// <returns>The SoundEffectInstance.</returns>
+		internal static SoundEffectInstance GetInstance(bool forXAct)
+		{
+			SoundEffectInstance inst = null;
+			var count = _pooledInstances.Count;
+			if (count > 0)
+			{
+				// Grab the item at the end of the list so the remove doesn't copy all
+				// the list items down one slot.
+				inst = _pooledInstances[count - 1];
+				_pooledInstances.RemoveAt(count - 1);
 
-            return inst;
-        }
+				// Reset used instance to the "default" state.
+				inst._isPooled = true;
+				inst._isXAct = forXAct;
+				inst.Volume = 1.0f;
+				inst.Pan = 0.0f;
+				inst.Pitch = 0.0f;
+				inst.IsLooped = false;
+			}
+			else
+			{
+				inst = new SoundEffectInstance();
+				inst._isPooled = true;
+				inst._isXAct = forXAct;
+			}
 
-        /// <summary>
-        /// Iterates the list of playing instances, returning them to the pool if they
-        /// have stopped playing.
-        /// </summary>
-        internal static void Update()
-        {
+			return inst;
+		}
+
+		/// <summary>
+		/// Iterates the list of playing instances, returning them to the pool if they
+		/// have stopped playing.
+		/// </summary>
+		internal static void Update()
+		{
 #if OPENAL
             OpenALSoundController.GetInstance.Update();
 #endif
 
-            SoundEffectInstance inst = null;
-            // Cleanup instances which have finished playing.                    
-            for (var x = 0; x < _playingInstances.Count;)
-            {
-                inst = _playingInstances[x];
+			SoundEffectInstance inst = null;
+			// Cleanup instances which have finished playing.                    
+			for (var x = 0; x < _playingInstances.Count; )
+			{
+				inst = _playingInstances[x];
 
-                if (inst.State == SoundState.Stopped || inst.IsDisposed || inst._effect == null)
-                {
-                    Add(inst);
-                    continue;
-                }
-                else if (inst._effect.IsDisposed)
-                {
-                    Add(inst);
-                    // Instances created through SoundEffect.CreateInstance need to be disposed when
-                    // their owner SoundEffect is disposed.
-                    if (!inst._isPooled)
-                        inst.Dispose();
-                    continue;
-                }
+				if (inst.State == SoundState.Stopped || inst.IsDisposed || inst._effect == null)
+				{
+					Add(inst);
+					continue;
+				}
+				else if (inst._effect.IsDisposed)
+				{
+					Add(inst);
+					// Instances created through SoundEffect.CreateInstance need to be disposed when
+					// their owner SoundEffect is disposed.
+					if (!inst._isPooled)
+						inst.Dispose();
+					continue;
+				}
 
-                x++;
-            }
-        }
+				x++;
+			}
+		}
 
-        internal static void UpdateMasterVolume()
-        {
-            foreach (var inst in _playingInstances)
-            {
-                // XAct sounds are not controlled by the SoundEffect
-                // master volume, so we can skip them completely.
-                if (inst._isXAct)
-                    continue;
+		internal static void UpdateMasterVolume()
+		{
+			foreach (var inst in _playingInstances)
+			{
+				// XAct sounds are not controlled by the SoundEffect
+				// master volume, so we can skip them completely.
+				if (inst._isXAct)
+					continue;
 
-                // Re-applying the volume to itself will update
-                // the sound with the current master volume.
-                inst.Volume = inst.Volume;
-            }
-        }
-    }
+				// Re-applying the volume to itself will update
+				// the sound with the current master volume.
+				inst.Volume = inst.Volume;
+			}
+		}
+
+	}
+
+
 }

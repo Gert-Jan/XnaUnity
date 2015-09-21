@@ -53,7 +53,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		private void PlatformSetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct
 		{
 			UnityEngine.Color[] unityData = new UnityEngine.Color[data.Length];
-			XnaToUnity.Color<T>(data, ref unityData);
+			Color[] xnaData = (Color[])(object)data;
+			XnaToUnity.Color(xnaData, ref unityData);
 			if (rect.HasValue)
 			{
 				UnityTexture2D.SetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, unityData);
@@ -86,7 +87,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			else
 				output = UnityTexture2D.GetPixels(level);
 
-			UnityToXna.Color<T>(output, ref data);
+			Color[] xnaData = (Color[])(object)data;
+			UnityToXna.Color(output, ref xnaData);
 		}
 
 		private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, Stream stream)

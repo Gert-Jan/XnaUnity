@@ -9,12 +9,12 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class GraphicsDevice : IDisposable
 	{
-        //public int drawcount;
+		//public int drawcount;
 		//public UnityEngine.Material Material;
 		public Texture2D[] Textures = new Texture2D[1];
 		public Effect activeEffect;
 		//private Matrix4x4 _baseMatrix;
-        private Matrix defaultProjection;
+		private Matrix defaultProjection;
 
 		internal GraphicsDevice(Viewport viewport)
 		{
@@ -29,7 +29,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		private Viewport _viewport;
-		public Viewport Viewport {
+		public Viewport Viewport
+		{
 			get { return _viewport; }
 			set
 			{
@@ -44,21 +45,21 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 		}
 
-        public Matrix DefaultProjection
-        {
-            get { return defaultProjection; }
-        }
+		public Matrix DefaultProjection
+		{
+			get { return defaultProjection; }
+		}
 
 		public bool IsDisposed
 		{
 			get { return false; }
 		}
 
-        //TODO: This is just a test
-        public DisplayMode DisplayMode 
-        {
-			get { return new DisplayMode(1920, 1080, 60, SurfaceFormat.Color); } 
-        }
+		//TODO: This is just a test
+		public DisplayMode DisplayMode
+		{
+			get { return new DisplayMode(1920, 1080, 60, SurfaceFormat.Color); }
+		}
 
 		private readonly MaterialPool _materialPool = new MaterialPool();
 		private readonly MeshPool _meshPool = new MeshPool();
@@ -84,9 +85,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			_meshPool.Reset();
 		}
 
+		private UnityEngine.Color tmp_uColor = new UnityEngine.Color();
 		public void Clear(Color color)
 		{
-			GL.Clear(true, true, XnaToUnity.Color(color));
+			XnaToUnity.Color(color, ref tmp_uColor);
+			GL.Clear(true, true, tmp_uColor);
 		}
 
 		public void Dispose()
@@ -96,14 +99,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void SetRenderTarget(RenderTarget2D renderTarget)
 		{
-            if (renderTarget != null)
-            {
+			if (renderTarget != null)
+			{
 				UnityGraphics.SetRenderTarget(renderTarget.UnityRenderTexture);
-            }
-            else
-            {
-                UnityGraphics.SetRenderTarget(null);
-            }
+			}
+			else
+			{
+				UnityGraphics.SetRenderTarget(null);
+			}
 
 		}
 
@@ -124,19 +127,19 @@ namespace Microsoft.Xna.Framework.Graphics
 			private readonly List<MaterialHolder> _materials = new List<MaterialHolder>();
 			private int _index;
 			private readonly Shader _shader = Shader.Find("Custom/SpriteShader");
-            private Material _defaultmaterial; 
+			private Material _defaultmaterial;
 
-            public MaterialPool()
-            {
-                _defaultmaterial = new Material(_shader);
-            }
+			public MaterialPool()
+			{
+				_defaultmaterial = new Material(_shader);
+			}
 
 			private MaterialHolder Create(Texture2D texture)
 			{
-                var mat = _defaultmaterial;
+				var mat = _defaultmaterial;
 				mat.mainTexture = texture.UnityTexture;
 				mat.renderQueue += _materials.Count;
-                return new MaterialHolder(mat, texture);
+				return new MaterialHolder(mat, texture);
 			}
 
 			public Material Get(Texture2D texture)
@@ -297,11 +300,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				//Double Buffer our Meshes (Doesnt seem to be a win on wp8)
 				//Ref http://forum.unity3d.com/threads/118723-Huge-performance-loss-in-Mesh-CreateVBO-for-dynamic-meshes-IOS
-				
+
 				//meshes from last frame are now unused
 				_unusedMeshes.AddRange(_otherMeshes);
 				_otherMeshes.Clear();
-				
+
 				//swap our use meshes and the now empty other meshes
 				var temp = _otherMeshes;
 				_otherMeshes = _usedMeshes;

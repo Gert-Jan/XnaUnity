@@ -135,7 +135,8 @@ namespace Microsoft.Xna.Framework.Content
  						levelData[p + j] = temp[j];
 				}
 
-				unityTexture.SetPixels(XnaToUnity.Color(levelData), level);
+				UnityEngine.Color[] unityColors = new UnityEngine.Color[levelData.Length * 4];
+				unityTexture.SetPixels(XnaToUnity.Color(levelData, ref unityColors), level);
 				unityTexture.Apply();
 				texture = new Texture2D(unityTexture);
 			}
