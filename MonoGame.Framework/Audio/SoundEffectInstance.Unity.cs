@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Audio
 {
 	public partial class SoundEffectInstance
 	{
+		public static List<AudioSource> disposed = new List<AudioSource>();
+
 		private AudioSource _source;
 		private bool isPaused;
 
@@ -29,6 +29,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void PlatformDispose(bool disposing)
 		{
+			disposed.Add(_source);
 		}
 
 		private void PlatformPlay()

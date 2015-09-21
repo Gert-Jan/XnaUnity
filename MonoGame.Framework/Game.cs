@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 using Microsoft.Xna.Framework.Media;
 using UnityEngine;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework.Audio;
 
 namespace Microsoft.Xna.Framework
 {
@@ -35,6 +37,7 @@ namespace Microsoft.Xna.Framework
 		{
 			LoadContent();
 			Initialize();
+			Instance = this;
 		}
 
 		/// <summary>
@@ -42,6 +45,10 @@ namespace Microsoft.Xna.Framework
 		/// </summary>
 		public void UnityUpdate()
 		{
+			foreach (AudioSource obj in SoundEffectInstance.disposed)
+				AudioSource.Destroy(obj);
+			SoundEffectInstance.disposed.Clear();
+
 			PreUpdate();
 			RunUpdates();
 		}
@@ -186,5 +193,6 @@ namespace Microsoft.Xna.Framework
 		protected virtual void OnActivated(object sender, EventArgs args)
 		{
 		}
+
 	}
 }
