@@ -16,6 +16,99 @@ using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Content
 {
+	public class AssetBundleManager
+	{
+		#region Singleton
+		static AssetBundleManager inst;
+		public static AssetBundleManager Instance
+		{
+			get
+			{
+				if (inst == null) 
+					inst = new AssetBundleManager();
+				return inst;
+			}
+		}
+		#endregion
+
+		/// <summary>
+		/// Each named asset can in theory belong to any number of bundles, a list is needed
+		/// </summary>
+		Dictionary<string, BundleDataList> assetToBundleMap = new Dictionary<string, BundleDataList>();
+
+		static string pathBase = Application.streamingAssetsPath + '/';
+
+		class BundleData
+		{
+			bool loadFailed = false;
+			readonly string bundleFilePath;
+
+			AssetBundle bundle = null;
+
+			int usageCount = 0;
+
+			public BundleData(string bundleFileName)
+			{
+				this.bundleFilePath = pathBase + bundleFileName;
+			}
+
+			public AssetBundleRequest LoadSingleAsync(string filepath, Type type)
+			{
+				if (loadFailed)
+					return null;
+
+				if (usageCount == 0)
+				{
+					bundle = WWW.LoadFromCacheOrDownload(filepath, 1).assetBundle;
+					if (bundle == null)
+					{
+						XnaWrapper.Debug.Log("Warning: Unable to find AssetBundle: {0}", bundleFilePath);
+						return null;
+					}
+				}
+
+				++usageCount;
+				return bundle.LoadAssetAsync(filepath, type);
+			}
+
+			public void ReleaseSingle()
+			{
+			}
+		}
+
+		class BundleDataList : List<BundleData>
+		{
+		}
+
+		AssetBundleManager()
+		{
+			// initialize assetToBundleMap
+
+			BundleData hotheadBundle = new BundleData("hotheadbundle");
+			BundleDataList bundles = new BundleDataList() { hotheadBundle };
+			assetToBundleMap.Add("Characters/Hothead/animation_variant00", bundles);
+			assetToBundleMap.Add("Characters/Hothead/animation_variant01", bundles);
+			assetToBundleMap.Add("Characters/Hothead/animation_variant02", bundles);
+			assetToBundleMap.Add("Characters/Hothead/animation_variant03", bundles);
+			assetToBundleMap.Add("Characters/Hothead/animation_variant04", bundles);
+			assetToBundleMap.Add("Characters/Hothead/win_variant00", bundles);
+			assetToBundleMap.Add("Characters/Hothead/win_variant01", bundles);
+			assetToBundleMap.Add("Characters/Hothead/win_variant02", bundles);
+			assetToBundleMap.Add("Characters/Hothead/win_variant03", bundles);
+			assetToBundleMap.Add("Characters/Hothead/win_variant04", bundles);
+
+			//long ms = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+			//AssetBundle bundle = WWW.LoadFromCacheOrDownload(path, 1).assetBundle;
+			//ms = (DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond) - ms;
+			//
+			//string[] names = bundle.GetAllAssetNames();
+			//string n = "";
+			//for (int i = 0; i < names.Length; ++i)
+			//	n += names[i];
+			//XnaWrapper.Debug.Log("TimeSpan: {0}, Error: {1}, Content: {2}", ms, www.error, n);
+		}
+	}
+
 	public class ContentManager
 	{
 		const byte ContentCompressedLzx = 0x80;
@@ -29,7 +122,9 @@ namespace Microsoft.Xna.Framework.Content
 		private bool disposed;
 
 		public ContentManager()
-		{ }
+		{
+			AssetBundleManager bundleManager = AssetBundleManager.Instance;
+		}
 
 		public ContentManager(IServiceProvider serviceProvider)
 		{
@@ -136,7 +231,7 @@ namespace Microsoft.Xna.Framework.Content
 			loadedAssets[fileName] = asset;
 			return (T)asset;
 		}
-
+		
         public ResourceRequest LoadAsync(string fileName, Type type)
         {
             if (string.IsNullOrEmpty(fileName))

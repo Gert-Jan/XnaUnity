@@ -419,6 +419,7 @@
     <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
+    <Compile Include="WrapperUtils\AssetBundles.cs" />
     <Compile Include="WrapperUtils\DataConvert.cs" />
     <Compile Include="WrapperUtils\Debug.cs" />
     <Compile Include="WrapperUtils\MaterialProperties.cs" />
