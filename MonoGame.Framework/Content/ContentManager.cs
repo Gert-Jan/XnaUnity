@@ -13,99 +13,30 @@ using Microsoft.Xna.Framework.Utilities;
 //using LZ4n;
 using TextureAtlasContent;
 using UnityEngine;
+using XnaWrapper;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class AssetBundleManager
+	public class ContentRequest
 	{
-		#region Singleton
-		static AssetBundleManager inst;
-		public static AssetBundleManager Instance
+		private AsyncOperation unityOperation;
+
+		internal ContentRequest(AsyncOperation unityOperation)
+		{
+			this.unityOperation = unityOperation;
+		}
+
+		public bool isDone { get { return unityOperation.isDone; } }
+
+		public UnityEngine.Object asset
 		{
 			get
 			{
-				if (inst == null) 
-					inst = new AssetBundleManager();
-				return inst;
+				if (unityOperation is ResourceRequest)
+					return (unityOperation as ResourceRequest).asset;
+				else
+					return (unityOperation as AssetBundleRequest).asset;
 			}
-		}
-		#endregion
-
-		/// <summary>
-		/// Each named asset can in theory belong to any number of bundles, a list is needed
-		/// </summary>
-		Dictionary<string, BundleDataList> assetToBundleMap = new Dictionary<string, BundleDataList>();
-
-		static string pathBase = Application.streamingAssetsPath + '/';
-
-		class BundleData
-		{
-			bool loadFailed = false;
-			readonly string bundleFilePath;
-
-			AssetBundle bundle = null;
-
-			int usageCount = 0;
-
-			public BundleData(string bundleFileName)
-			{
-				this.bundleFilePath = pathBase + bundleFileName;
-			}
-
-			public AssetBundleRequest LoadSingleAsync(string filepath, Type type)
-			{
-				if (loadFailed)
-					return null;
-
-				if (usageCount == 0)
-				{
-					bundle = WWW.LoadFromCacheOrDownload(filepath, 1).assetBundle;
-					if (bundle == null)
-					{
-						XnaWrapper.Debug.Log("Warning: Unable to find AssetBundle: {0}", bundleFilePath);
-						return null;
-					}
-				}
-
-				++usageCount;
-				return bundle.LoadAssetAsync(filepath, type);
-			}
-
-			public void ReleaseSingle()
-			{
-			}
-		}
-
-		class BundleDataList : List<BundleData>
-		{
-		}
-
-		AssetBundleManager()
-		{
-			// initialize assetToBundleMap
-
-			BundleData hotheadBundle = new BundleData("hotheadbundle");
-			BundleDataList bundles = new BundleDataList() { hotheadBundle };
-			assetToBundleMap.Add("Characters/Hothead/animation_variant00", bundles);
-			assetToBundleMap.Add("Characters/Hothead/animation_variant01", bundles);
-			assetToBundleMap.Add("Characters/Hothead/animation_variant02", bundles);
-			assetToBundleMap.Add("Characters/Hothead/animation_variant03", bundles);
-			assetToBundleMap.Add("Characters/Hothead/animation_variant04", bundles);
-			assetToBundleMap.Add("Characters/Hothead/win_variant00", bundles);
-			assetToBundleMap.Add("Characters/Hothead/win_variant01", bundles);
-			assetToBundleMap.Add("Characters/Hothead/win_variant02", bundles);
-			assetToBundleMap.Add("Characters/Hothead/win_variant03", bundles);
-			assetToBundleMap.Add("Characters/Hothead/win_variant04", bundles);
-
-			//long ms = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
-			//AssetBundle bundle = WWW.LoadFromCacheOrDownload(path, 1).assetBundle;
-			//ms = (DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond) - ms;
-			//
-			//string[] names = bundle.GetAllAssetNames();
-			//string n = "";
-			//for (int i = 0; i < names.Length; ++i)
-			//	n += names[i];
-			//XnaWrapper.Debug.Log("TimeSpan: {0}, Error: {1}, Content: {2}", ms, www.error, n);
 		}
 	}
 
@@ -113,6 +44,8 @@ namespace Microsoft.Xna.Framework.Content
 	{
 		const byte ContentCompressedLzx = 0x80;
 		const byte ContentCompressedLz4 = 0x40;
+
+		private static XnaBundleManager xnaBundles;
 
 		private string _rootDirectory = string.Empty;
 		private IServiceProvider serviceProvider;
@@ -123,7 +56,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public ContentManager()
 		{
-			AssetBundleManager bundleManager = AssetBundleManager.Instance;
+			InitXnaBundles();
 		}
 
 		public ContentManager(IServiceProvider serviceProvider)
@@ -133,6 +66,7 @@ namespace Microsoft.Xna.Framework.Content
 				throw new ArgumentNullException("serviceProvider");
 			}
 			this.serviceProvider = serviceProvider;
+			InitXnaBundles();
 		}
 
 		public ContentManager(IServiceProvider serviceProvider, string rootDirectory)
@@ -147,6 +81,32 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			this.RootDirectory = rootDirectory;
 			this.serviceProvider = serviceProvider;
+			InitXnaBundles();
+		}
+
+		private void InitXnaBundles()
+		{
+			if (xnaBundles == null)
+			{
+				StringReader bundleReader = new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text);
+				xnaBundles = new XnaBundleManager(bundleReader);
+				XnaWrapper.Debug.Log(xnaBundles.Bundles.Count + " bundles ready");
+			}
+		}
+
+		public void LoadBundle(string bundleName)
+		{
+			xnaBundles.LoadBundle(bundleName);
+		}
+
+		public bool IsBundleLoaded(string bundleName)
+		{
+			return xnaBundles.IsBundleLoaded(bundleName);
+		}
+
+		public void ReleaseBundle(string bundleName)
+		{
+			xnaBundles.ReleaseBundle(bundleName);
 		}
 
 		public void Dispose()
@@ -203,36 +163,38 @@ namespace Microsoft.Xna.Framework.Content
 				}
 			}
 
-            // Make Unity load the different XNA asset types in the right Unity way
-			if (typeof(T) == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
+			// Make Unity load the different XNA asset types in the right Unity way
+			Type xnaType = typeof(T);
+			if (xnaType == typeof(string))
 			{
-                asset = NativeLoad(fileName, typeof(UnityTexture));
+				asset = ((UnityEngine.TextAsset)NativeLoad(fileName, typeof(UnityEngine.TextAsset))).text;
 			}
-            if (typeof(T) == typeof(SoundEffect) || typeof(T) == typeof(Song))
+			else
 			{
-                asset = NativeLoad(fileName, typeof(UnityAudioClip));
+				Type unityType = GetUnityType(xnaType);
+				asset = NativeLoad(fileName, unityType);
 			}
-			if (typeof(T) == typeof(SpriteFont))
-			{
-				asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
-			}
-			if (typeof(T) == typeof(string))
-			{
-                asset = ((UnityEngine.TextAsset)NativeLoad(fileName, typeof(UnityEngine.TextAsset))).text;
-			}
-            if (typeof(T) == typeof(TextureAtlas))
-            {
-                asset = NativeLoad(fileName, typeof(UnityEngine.TextAsset));
-            }
 
             // Convert the Unity asset type to the right XNA asset type
-            asset = ConvertAsset(fileName, asset, typeof(T));
+			asset = ConvertAsset(fileName, asset, xnaType);
 
 			loadedAssets[fileName] = asset;
 			return (T)asset;
 		}
-		
-        public ResourceRequest LoadAsync(string fileName, Type type)
+
+		private Type GetUnityType(Type xnaType)
+		{
+			Type unityType = null;
+			if (xnaType == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
+				unityType = typeof(UnityTexture);
+			else if (xnaType == typeof(SoundEffect) || xnaType == typeof(Song))
+				unityType = typeof(UnityAudioClip);
+			else if (xnaType == typeof(SpriteFont) || xnaType == typeof(string) || xnaType == typeof(TextureAtlas))
+				unityType = typeof(TextAsset);
+			return unityType;
+		}
+
+		public ContentRequest LoadAsync(string fileName, Type type)
         {
             if (string.IsNullOrEmpty(fileName))
             {
@@ -242,46 +204,62 @@ namespace Microsoft.Xna.Framework.Content
             {
                 Console.WriteLine("ContentManager.Load: manager disposed");
                 throw new ObjectDisposedException("ContentManager");
-            }
+			}
 
-            ResourceRequest request;
+			Type unityType = GetUnityType(type);
 
-            if (type == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
-            {
-                request = UnityEngine.Resources.LoadAsync(fileName, typeof(UnityTexture));
-            }
-            else if (type == typeof(SoundEffect) || type == typeof(Song))
-            {
-                request = UnityEngine.Resources.LoadAsync(fileName, typeof(UnityAudioClip));
-            }
-            else if (type == typeof(SpriteFont))
+			// bundle asset
+			AsyncOperation request = BundleLoadAsync(fileName, unityType);
+			if (request == null)
 			{
-                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
-            }
-            else if (type == typeof(string))
-            {
-                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
-            }
-            else if (type == typeof(TextureAtlas))
-            {
-                request = UnityEngine.Resources.LoadAsync(fileName, typeof(TextAsset));
-            }
-            else
-            {
-				XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
-                request = UnityEngine.Resources.LoadAsync(fileName);
-            }
+				// asset not available in bundle, load as resource
 
-            return request;
+				if (unityType == null)
+				{
+					XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
+					request = UnityEngine.Resources.LoadAsync(fileName);
+				}
+				else
+				{
+					request = UnityEngine.Resources.LoadAsync(fileName, unityType);
+				}
+			} 
+
+            return new ContentRequest(request);
         }
 
-        private object NativeLoad(string fileName, Type type)
+		private AsyncOperation BundleLoadAsync(string fileName, Type unityType)
 		{
-            var res = UnityResources.Load(fileName, type);
-			if (res == null)
+			XnaBundleItem bundleItem;
+			if (xnaBundles.GetItem(fileName, out bundleItem))
 			{
-                throw new ContentLoadException("Failed to load " + fileName + " as " + type);
+				XnaWrapper.Debug.Log("async: " + fileName);
+				return bundleItem.LoadAsync(fileName, unityType);
 			}
+			else
+				return null;
+		}
+
+		private UnityEngine.Object BundleLoad(string fileName, Type unityType)
+		{
+			XnaBundleItem bundleItem;
+			if (xnaBundles.GetItem(fileName, out bundleItem))
+			{
+				XnaWrapper.Debug.Log("native: " + fileName);
+				return bundleItem.Load(fileName, unityType);
+			}
+			else
+				return null;
+		}
+
+		private UnityEngine.Object NativeLoad(string fileName, Type type)
+		{
+			UnityEngine.Object res;
+			res = BundleLoad(fileName, type);
+			if (res == null)
+				res = UnityEngine.Resources.Load(fileName, type);
+			if (res == null)
+                throw new ContentLoadException("Failed to load " + fileName + " as " + type);
 			return res;
 		}
 
