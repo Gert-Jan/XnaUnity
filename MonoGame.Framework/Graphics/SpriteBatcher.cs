@@ -84,38 +84,15 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Optimizations come from not setting unnecessary values, and explicit reallocation of backing array.
 		/// </summary>
-		private class BatchItemPool
+		private class BatchItemPool : XnaWrapper.Pool<SpriteBatchItem>
 		{
-			private SpriteBatchItem[] _freeItems;
-			private int _freeIndex;
-
-			public BatchItemPool(int initialCapacity)
+			private class Resetter : InstanceResetter<SpriteBatchItem>
 			{
-				_freeItems = new SpriteBatchItem[initialCapacity];
-				for (int i = 0; i < initialCapacity; ++i)
-					_freeItems[i] = new SpriteBatchItem();
-				_freeIndex = initialCapacity - 1;
+				public override SpriteBatchItem Create() { return new SpriteBatchItem(); }
+				public override void Reset(SpriteBatchItem poolable) { } // don't care about resetting
 			}
 
-			public SpriteBatchItem Fetch()
-			{
-				if (_freeIndex < 0)
-				{
-					// expand
-					int oldCapacity = _freeItems.Length;
-					_freeItems = new SpriteBatchItem[oldCapacity * 2];
-					// leave half free, to leave room for items being restored
-					for (int i = 0; i < oldCapacity; ++i)
-						_freeItems[i] = new SpriteBatchItem();
-					_freeIndex = oldCapacity - 1;
-				}
-				return _freeItems[_freeIndex--];
-			}
-
-			public void Restore(SpriteBatchItem item)
-			{
-				_freeItems[++_freeIndex] = item;
-			}
+			public BatchItemPool(int initialCapacity) : base(initialCapacity, new Resetter()) { }
 		}
 
 		/// <summary>
@@ -152,7 +129,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			SpriteBatchItem item;
 
-			item = _freeBatchItemPool.Fetch();
+			item = _freeBatchItemPool.Obtain();
 			//if (_freeBatchItemQueue.Count > 0)
 			//	item = _freeBatchItemQueue.Dequeue();
 			//else
