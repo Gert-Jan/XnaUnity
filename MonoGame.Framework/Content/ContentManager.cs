@@ -3,7 +3,8 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using UnityTexture = UnityEngine.Texture2D;
 using UnityAudioClip = UnityEngine.AudioClip;
-using UnityResources = UnityEngine.Resources;
+using UObject = UnityEngine.Object;
+using UResources = UnityEngine.Resources;
 using TextAsset = UnityEngine.TextAsset;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
@@ -19,23 +20,31 @@ namespace Microsoft.Xna.Framework.Content
 {
 	public class ContentRequest
 	{
-		private AsyncOperation unityOperation;
+		private AsyncOperation request;
+		private UObject obj;
 
-		internal ContentRequest(AsyncOperation unityOperation)
+		internal ContentRequest(AsyncOperation request)
 		{
-			this.unityOperation = unityOperation;
+			this.request = request;
 		}
 
-		public bool isDone { get { return unityOperation.isDone; } }
+		internal ContentRequest(UObject asset)
+		{
+			this.obj = asset;
+		}
 
-		public UnityEngine.Object asset
+		public bool isDone { get { return request == null ? true : request.isDone; } }
+
+		public UObject asset
 		{
 			get
 			{
-				if (unityOperation is ResourceRequest)
-					return (unityOperation as ResourceRequest).asset;
+				if (request == null)
+					return obj;
+				else if (request is ResourceRequest)
+					return (request as ResourceRequest).asset;
 				else
-					return (unityOperation as AssetBundleRequest).asset;
+					return (request as AssetBundleRequest).asset;
 			}
 		}
 	}
@@ -86,17 +95,17 @@ namespace Microsoft.Xna.Framework.Content
 
 		private void InitXnaBundles()
 		{
+			if (XnaBundleManager.GENERATE_ASSET_MAPPINGS)
+			{
+				xnaBundles = null;
+				return;
+			}
+
 			if (xnaBundles == null)
 			{
 				StringReader bundleReader = new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text);
 				xnaBundles = new XnaBundleManager(bundleReader);
-				XnaWrapper.Debug.Log(xnaBundles.Bundles.Count + " bundles ready");
 			}
-		}
-
-		public void LoadBundle(string bundleName)
-		{
-			xnaBundles.LoadBundle(bundleName);
 		}
 
 		public bool IsBundleLoaded(string bundleName)
@@ -104,9 +113,22 @@ namespace Microsoft.Xna.Framework.Content
 			return xnaBundles.IsBundleLoaded(bundleName);
 		}
 
+		public void LoadBundle(string bundleName, bool async)
+		{
+			if (xnaBundles != null)
+			{
+				//XnaWrapper.Debug.Log("loading: " + bundleName);
+				xnaBundles.LoadBundle(bundleName, async);
+			}
+		}
+
 		public void ReleaseBundle(string bundleName)
 		{
-			xnaBundles.ReleaseBundle(bundleName);
+			if (xnaBundles != null)
+			{
+				//XnaWrapper.Debug.Log("unloading: " + bundleName);
+				xnaBundles.ReleaseBundle(bundleName);
+			}
 		}
 
 		public void Dispose()
@@ -206,58 +228,50 @@ namespace Microsoft.Xna.Framework.Content
                 throw new ObjectDisposedException("ContentManager");
 			}
 
-			Type unityType = GetUnityType(type);
+			AsyncOperation request;
 
-			// bundle asset
-			AsyncOperation request = BundleLoadAsync(fileName, unityType);
-			if (request == null)
+			XnaBundleItem item;
+			bool isInBundle = xnaBundles.GetItem(fileName, out item);
+			if (isInBundle)
 			{
-				// asset not available in bundle, load as resource
-
+				if (item.request == null)
+					return new ContentRequest(item.loadedObject);
+				else
+					request = item.request;
+			}
+			else
+			{
+				Type unityType = GetUnityType(type);
+				fileName = UnityResourcePath(fileName);
 				if (unityType == null)
 				{
 					XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
-					request = UnityEngine.Resources.LoadAsync(fileName);
+					request = UResources.LoadAsync(fileName);
 				}
 				else
 				{
-					request = UnityEngine.Resources.LoadAsync(fileName, unityType);
+					request = UResources.LoadAsync(fileName, unityType);
 				}
-			} 
-
+			}
             return new ContentRequest(request);
         }
 
-		private AsyncOperation BundleLoadAsync(string fileName, Type unityType)
+		private static string UnityResourcePath(string xnaPath)
 		{
-			XnaBundleItem bundleItem;
-			if (xnaBundles.GetItem(fileName, out bundleItem))
-			{
-				XnaWrapper.Debug.Log("async: " + fileName);
-				return bundleItem.LoadAsync(fileName, unityType);
-			}
-			else
-				return null;
+			return "Content/" + xnaPath.Replace('\\', '/');
 		}
 
-		private UnityEngine.Object BundleLoad(string fileName, Type unityType)
+		private UObject NativeLoad(string fileName, Type type)
 		{
-			XnaBundleItem bundleItem;
-			if (xnaBundles.GetItem(fileName, out bundleItem))
-			{
-				XnaWrapper.Debug.Log("native: " + fileName);
-				return bundleItem.Load(fileName, unityType);
-			}
-			else
-				return null;
-		}
+			UObject res = null;
 
-		private UnityEngine.Object NativeLoad(string fileName, Type type)
-		{
-			UnityEngine.Object res;
-			res = BundleLoad(fileName, type);
-			if (res == null)
-				res = UnityEngine.Resources.Load(fileName, type);
+			XnaBundleItem item;
+			bool isInBundle = xnaBundles.GetItem(fileName, out item);
+			if (isInBundle)
+				res = item.loadedObject;
+			else
+				res = UResources.Load(UnityResourcePath(fileName), type);
+
 			if (res == null)
                 throw new ContentLoadException("Failed to load " + fileName + " as " + type);
 			return res;
@@ -301,7 +315,7 @@ namespace Microsoft.Xna.Framework.Content
 
         public static Stream ReadBytesFileToStream(string assetName)
         {
-            TextAsset binData = UnityResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+			TextAsset binData = UResources.Load(assetName, typeof(TextAsset)) as TextAsset;
             if (binData == null)
             {
                 throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));
@@ -311,7 +325,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public static string ReadTextFile(string assetName)
         {
-			TextAsset textasset = UnityResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+			TextAsset textasset = UResources.Load(assetName, typeof(TextAsset)) as TextAsset;
 			if (textasset == null)
 			{
 				throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));
@@ -713,5 +727,6 @@ namespace Microsoft.Xna.Framework.Content
 				return this.serviceProvider;
 			}
 		}
+
 	}
 }
