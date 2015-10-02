@@ -30,7 +30,7 @@ namespace XnaWrapper
 
 		public ICollection<XnaBundle> Bundles { get { return bundleMap.Values; } }
 
-		public bool GetItem(string fileName, out XnaBundleItem item)
+		public bool TryGetItem(string fileName, out XnaBundleItem item)
 		{
 			return bundleItemMap.TryGetValue(fileName, out item);
 		}
@@ -62,7 +62,7 @@ namespace XnaWrapper
 			XnaBundle[] bundles = new XnaBundle[totalBundles];
 
 			for (int i = 0; i < totalBundles; ++i)
-				bundles[i] = new XnaBundle(reader);
+				bundles[i] = new XnaBundle(reader, bundleItemMap);
 			
 			foreach (XnaBundle bundle in bundles)
 			{
@@ -77,150 +77,171 @@ namespace XnaWrapper
 		public void LoadBundle(string bundleName, bool async)
 		{
 			XnaBundle bundle;
-			if (!bundleMap.TryGetValue(bundleName, out bundle))
-				throw new Exception("(MapBundle) Bundle not present: " + bundleName);
-
-			XnaBundleItem existingItem;
-			List<string> duplicates = new List<string>();
-			foreach (XnaBundleItem item in bundle.Items)
+			if (bundleMap.TryGetValue(bundleName, out bundle))
 			{
-				if (bundleItemMap.TryGetValue(item.name, out existingItem))
-				{
-					if (bundle == existingItem.owner)
-						return;
-					duplicates.Add(String.Format("item[{0}], bundleA[{1}], bundleB[{2}]", item.name, bundle.bundleName, existingItem.owner.bundleName));
-				}
+
+				if (bundle.IsActive)
+					return;
+
+				if (assetProvider != null)
+					bundle.LoadBundleFromProvider(assetProvider);
+				else if (async)
+					bundle.LoadBundleAsync();
 				else
-					bundleItemMap.Add(item.name, item);
+					bundle.LoadBundle();
 			}
-
-			if (duplicates.Count > 0)
-			{
-				string warn = String.Format("Warning: {0} active duplicates detected: ", duplicates.Count);
-				foreach (string s in duplicates)
-					warn += '\n' + s;
-				Debug.Log(warn);
-			}
-
-			if (async)
-				bundle.LoadBundleAsync();
 			else
-				bundle.LoadBundle();
+				Debug.Log("(LoadBundle) Bundle not present: " + bundleName);
 		}
 
 		public void ReleaseBundle(string bundleName)
 		{
 			XnaBundle bundle;
-			if (!bundleMap.TryGetValue(bundleName, out bundle))
-				throw new Exception("(UnmapBundle) Bundle not present: " + bundleName);
+			if (bundleMap.TryGetValue(bundleName, out bundle))
+			{
+				throw new Exception("(ReleaseBundle) Bundle not present: " + bundleName);
 
-			foreach (XnaBundleItem item in bundle.Items)
-				bundleItemMap.Remove(item.name);
+				if (!bundle.IsDone)
+					throw new Exception("Attempt to release a bundle that is not yet loaded.");
 
-			bundle.ReleaseBundle();
+				if (bundle.IsActive)
+					bundle.ReleaseBundle();
+			}
+			else
+				Debug.Log("(ReleaseBundle) Bundle not present: " + bundleName);
 		}
 
 		public bool IsBundleLoaded(string bundleName)
 		{
 			XnaBundle bundle;
-			if (!bundleMap.TryGetValue(bundleName, out bundle))
-				throw new Exception("(IsBundleLoaded) Bundle not present: " + bundleName);
-
-			return bundle.isDone;
+			if (bundleMap.TryGetValue(bundleName, out bundle))
+				return bundle.IsDone;
+			else
+				return true;
 		}
 
 		#endregion
 
 	}
 
-	internal class XnaBundleAsyncLoader
-	{
-		private WWW data;
-		private AssetBundle assetBundle;
-
-		private XnaBundle xnaBundle;
-		private List<XnaBundleItem> busyRequests;
-
-		public XnaBundleAsyncLoader(XnaBundle xnaBundle)
-		{
-			this.xnaBundle = xnaBundle;
-
-			data = WWW.LoadFromCacheOrDownload(xnaBundle.bundlePath, 1);
-			assetBundle = data.assetBundle;
-			if (assetBundle == null)
-				throw new Exception("AssetBundle file could not be loaded. (" + xnaBundle.bundlePath + ")");
-
-			XnaBundleItem[] items = xnaBundle.items;
-			busyRequests = new List<XnaBundleItem>(xnaBundle.Items);
-			foreach (XnaBundleItem item in busyRequests)
-				item.request = assetBundle.LoadAssetAsync(item.unityPath);
-		}
-
-		private bool Update()
-		{
-			while (busyRequests.Count > 0)
-			{
-				int index = busyRequests.Count - 1;
-				XnaBundleItem item = busyRequests[index];
-				if (item.request.isDone)
-				{
-					item.loadedObject = item.request.asset;
-					busyRequests.RemoveAt(index);
-				}
-				else
-					return false;
-			}
-			return true;
-		}
-
-		public bool isDone
-		{
-			get
-			{
-				bool done = Update();
-				if (done)
-				{
-					data.Dispose();
-					assetBundle.Unload(false);
-				}
-				return done;
-			}
-		}
-	}
-
 	public class XnaBundle
 	{
+		internal class XnaBundleAsyncLoader
+		{
+			private WWW data;
+			private AssetBundle assetBundle;
+
+			private XnaBundle xnaBundle;
+			private Stack<XnaBundleItem> busyRequests;
+
+			public XnaBundleAsyncLoader(XnaBundle xnaBundle)
+			{
+				this.xnaBundle = xnaBundle;
+
+				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundlePath, 1);
+				assetBundle = data.assetBundle;
+				if (assetBundle == null)
+					throw new Exception("AssetBundle file could not be loaded. (" + xnaBundle.bundlePath + ")");
+
+				XnaBundleItem[] items = xnaBundle.items;
+				busyRequests = new Stack<XnaBundleItem>(items.Length);
+				for (int i = 0; i < items.Length; ++i)
+				{
+					XnaBundleItem item = items[i];
+					item.AddUsageReference();
+					if (!item.IsActive)
+					{
+						item.Request = assetBundle.LoadAssetAsync(xnaBundle.unityPaths[i]);
+						busyRequests.Push(item);
+					}
+				}
+			}
+
+			private bool Update()
+			{
+				while (busyRequests.Count > 0)
+				{
+					XnaBundleItem item = busyRequests.Peek();
+					if (item.Request.isDone)
+					{
+						item.Asset = item.Request.asset;
+						busyRequests.Pop();
+					}
+					else
+						return false;
+				}
+				return true;
+			}
+
+			public bool isDone
+			{
+				get
+				{
+					bool done = Update();
+					if (done)
+					{
+						data.Dispose();
+						assetBundle.Unload(false);
+					}
+					return done;
+				}
+			}
+		}
+
 		public readonly string bundleName;
 		public readonly string bundlePath;
 
 		internal XnaBundleItem[] items;
-		private bool wasPreviouslyLoaded = false;
+		internal string[] unityPaths;
 
 		private XnaBundleAsyncLoader loader;
 
+		private bool isActive = false;
+		public bool IsActive { get { return isActive; } }
+
 		public ICollection<XnaBundleItem> Items { get { return items; } }
 
-		internal XnaBundle(TextReader reader)
+		internal XnaBundle(TextReader reader, Dictionary<string, XnaBundleItem> bundleItemMap)
 		{
 			this.bundleName = reader.ReadLine();
 			int bundleSize = int.Parse(reader.ReadLine());
 			items = new XnaBundleItem[bundleSize];
 			for (int i = 0; i < bundleSize; ++i)
-				items[i] = new XnaBundleItem(this, reader);
+			{
+				string itemName = reader.ReadLine();
+				XnaBundleItem existingItem;
+				if (bundleItemMap.TryGetValue(itemName, out existingItem))
+					items[i] = existingItem;
+				else
+				{
+					items[i] = new XnaBundleItem(itemName);
+					bundleItemMap[itemName] = items[i];
+				}
+			}
 
 			if (Application.platform == RuntimePlatform.Android)
+			{
 				bundlePath = "jar:file://" + Application.streamingAssetsPath + '/' + bundleName.ToLower();
+			}
 			else
-				bundlePath = "file://" + Application.streamingAssetsPath + '/' + bundleName.ToLower();
+			{
+				bundlePath = Application.streamingAssetsPath + '/' + bundleName.ToLower();
+				//bundlePath = "file://" + Application.streamingAssetsPath + '/' + bundleName.ToLower();
+			}
 		}
 
-		internal void EnsureProperAssetPaths()
+		internal void PrepareLoad()
 		{
-			if (wasPreviouslyLoaded)
+			isActive = true;
+
+			// Ensure Proper Asset Paths
+			if (unityPaths != null)
 				return;
 
 			WWW data = WWW.LoadFromCacheOrDownload(bundlePath, 1);
 			AssetBundle assetBundle = data.assetBundle;
+			if (assetBundle == null)
+				throw new Exception("AssetBundle file could not be loaded. (" + bundlePath + ")");
 
 			// reconstruct content bundle item IDs from names present in the asset bundle
 			string[] validPaths = assetBundle.GetAllAssetNames();
@@ -234,66 +255,65 @@ namespace XnaWrapper
 			}
 
 			// supply all items with the new path
-			foreach (XnaBundleItem item in items)
-				item.unityPath = mappings[item.name.ToLower()];
+			unityPaths = new string[items.Length];
+			for (int i = 0; i < items.Length; ++i)
+				unityPaths[i] = mappings[items[i].name.ToLower()];
 
+			assetBundle.Unload(false);
 			data.Dispose();
-			wasPreviouslyLoaded = true;
 		}
 
 		internal void LoadBundle()
 		{
-			EnsureProperAssetPaths();
+			PrepareLoad();
 
-			if (XnaBundleManager.assetProvider != null)
-				LoadFromProvider();
-			else
+			WWW data = WWW.LoadFromCacheOrDownload(bundlePath, 1);
+			AssetBundle assetBundle = data.assetBundle;
+
+			for (int i = 0; i < items.Length; ++i)
 			{
-				WWW data = WWW.LoadFromCacheOrDownload(bundlePath, 1);
-				AssetBundle assetBundle = data.assetBundle;
-				if (assetBundle == null)
-					throw new Exception("AssetBundle file could not be loaded. (" + bundlePath + ")");
-
-				foreach (XnaBundleItem item in items)
-					item.loadedObject = assetBundle.LoadAsset(item.unityPath);
-
-				data.Dispose();
-				assetBundle.Unload(false);
+				XnaBundleItem item = items[i];
+				item.AddUsageReference();
+				if (item.Asset == null)
+					item.Asset = assetBundle.LoadAsset(unityPaths[i]);
 			}
+
+			data.Dispose();
+			assetBundle.Unload(false);
 		}
 		
 		internal void LoadBundleAsync()
 		{
-			EnsureProperAssetPaths();
+			PrepareLoad();
 
-			if (XnaBundleManager.assetProvider != null) 
-				LoadFromProvider();
-			else
-			{
-				if (loader == null)
-					loader = new XnaBundleAsyncLoader(this);
-			}
+			if (loader == null)
+				loader = new XnaBundleAsyncLoader(this);
 		}
 
-		private void LoadFromProvider()
+		internal void LoadBundleFromProvider(XnaAssetProvider assetProvider)
 		{
-			foreach (XnaBundleItem item in items)
-				item.loadedObject = XnaBundleManager.assetProvider.LoadAsset(item.unityPath);
+			PrepareLoad();
+
+			for (int i = 0; i < items.Length; ++i)
+			{
+				XnaBundleItem item = items[i];
+				item.AddUsageReference();
+				if (item.Asset == null)
+					item.Asset = assetProvider.LoadAsset(unityPaths[i]);
+			}
 		}
 
 		internal void ReleaseBundle()
 		{
-			if (!isDone)
-				throw new Exception("Attempt to release a bundle that is not yet loaded.");
+			isActive = false;
 
 			foreach (XnaBundleItem item in items)
 			{
-				UObject.DestroyImmediate(item.loadedObject, true);
-				item.loadedObject = null;
+				item.RemoveUsageReference();
 			}
 		}
 
-		public bool isDone
+		public bool IsDone
 		{
 			get
 			{
@@ -312,18 +332,55 @@ namespace XnaWrapper
 
 	public class XnaBundleItem
 	{
-		public readonly XnaBundle owner;
 		public readonly string name;
 
-		internal string unityPath;
+		private int objectReferences = 0;
+		private UObject loadedObject;
+		private AssetBundleRequest request;
 
-		internal UObject loadedObject;
-		internal AssetBundleRequest request;
-
-		internal XnaBundleItem(XnaBundle owner, TextReader reader)
+		public AssetBundleRequest Request
 		{
-			this.owner = owner;
-			name = reader.ReadLine();
+			get { return request; }
+			internal set { request = value; }
+		}
+
+		public UObject Asset
+		{
+			get { return loadedObject; }
+			internal set { loadedObject = value; }
+		}
+
+		public bool IsActive { get { return loadedObject != null || request != null; } }
+
+		internal XnaBundleItem(string name)
+		{
+			this.name = name;
+		}
+
+		internal void AddUsageReference()
+		{
+			++objectReferences;
+			if (name == "Backgrounds\\ENV_Area1\\ENV_Area1_Layer0")
+				Debug.Log("refs: " + objectReferences);
+			if (name == "Backgrounds\\ENV_Area1\\ENV_Area1_Layer0")
+				Debug.Log("active: " + IsActive);
+		}
+
+		internal void RemoveUsageReference()
+		{
+			--objectReferences;
+			if (name == "Backgrounds\\ENV_Area1\\ENV_Area1_Layer0")
+				Debug.Log("refs: " + objectReferences);
+			if (objectReferences == 0)
+			{
+				UObject.DestroyImmediate(loadedObject, true);
+				loadedObject = null;
+				request = null;
+			}
+			else if (objectReferences < 0)
+				throw new Exception("Failed to properly manage asset item references.");
+			if (name == "Backgrounds\\ENV_Area1\\ENV_Area1_Layer0")
+				Debug.Log("active: " + IsActive);
 		}
 	}
 

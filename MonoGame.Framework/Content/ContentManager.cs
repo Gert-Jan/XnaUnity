@@ -231,13 +231,16 @@ namespace Microsoft.Xna.Framework.Content
 			AsyncOperation request;
 
 			XnaBundleItem item;
-			bool isInBundle = xnaBundles.GetItem(fileName, out item);
+			bool isInBundle = xnaBundles.TryGetItem(fileName, out item);
 			if (isInBundle)
 			{
-				if (item.request == null)
-					return new ContentRequest(item.loadedObject);
+				if (!item.IsActive)
+					throw new Exception("Asset present, but not active in bundles: " + fileName);
+
+				if (item.Request == null)
+					return new ContentRequest(item.Asset);
 				else
-					request = item.request;
+					request = item.Request;
 			}
 			else
 			{
@@ -266,9 +269,14 @@ namespace Microsoft.Xna.Framework.Content
 			UObject res = null;
 
 			XnaBundleItem item;
-			bool isInBundle = xnaBundles.GetItem(fileName, out item);
+			bool isInBundle = xnaBundles.TryGetItem(fileName, out item);
 			if (isInBundle)
-				res = item.loadedObject;
+			{
+				if (!item.IsActive)
+					throw new Exception("Asset present, but not active in bundles: " + fileName);
+
+				res = item.Asset;
+			}
 			else
 				res = UResources.Load(UnityResourcePath(fileName), type);
 
