@@ -110,45 +110,45 @@ namespace Microsoft.Xna.Framework
 
 
 
-		private bool _mouseIsDown = false;
+		//private bool _mouseIsDown = false;
 		private UnityGameWindow _window;
 
 		private const int MouseId = int.MinValue;
 
 		private void UpdateInput()
 		{
-			if (UnityEngine.Input.mousePresent)
-			{
-				bool mouseIsDown = UnityEngine.Input.GetMouseButton(0);
-				if (!_mouseIsDown && mouseIsDown)
-					TouchPanel.AddEvent(MouseId, TouchLocationState.Pressed, ToMonoGame(UnityEngine.Input.mousePosition));
-				else if (_mouseIsDown && !mouseIsDown)
-					TouchPanel.AddEvent(MouseId, TouchLocationState.Released, ToMonoGame(UnityEngine.Input.mousePosition));
-				else if (_mouseIsDown)
-					TouchPanel.AddEvent(MouseId, TouchLocationState.Moved, ToMonoGame(UnityEngine.Input.mousePosition));
-				_mouseIsDown = mouseIsDown;
-			}
-
-			for (var i = 0; i < UnityEngine.Input.touchCount; i++)
-			{
-				var touch = UnityEngine.Input.touches[i];
-				switch (touch.phase)
-				{
-					case TouchPhase.Began:
-						TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Pressed, ToMonoGame(touch.position));
-						break;
-					case TouchPhase.Moved:
-						TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Moved, ToMonoGame(touch.position));
-						break;
-					case TouchPhase.Canceled:
-					case TouchPhase.Ended:
-						TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Released, ToMonoGame(touch.position));
-						break;
-					case TouchPhase.Stationary:
-						//do nothing
-						break;
-				}
-			}
+			//if (UnityEngine.Input.mousePresent)
+			//{
+			//	bool mouseIsDown = UnityEngine.Input.GetMouseButton(0);
+			//	if (!_mouseIsDown && mouseIsDown)
+			//		TouchPanel.AddEvent(MouseId, TouchLocationState.Pressed, ToMonoGame(UnityEngine.Input.mousePosition));
+			//	else if (_mouseIsDown && !mouseIsDown)
+			//		TouchPanel.AddEvent(MouseId, TouchLocationState.Released, ToMonoGame(UnityEngine.Input.mousePosition));
+			//	else if (_mouseIsDown)
+			//		TouchPanel.AddEvent(MouseId, TouchLocationState.Moved, ToMonoGame(UnityEngine.Input.mousePosition));
+			//	_mouseIsDown = mouseIsDown;
+			//}
+			//
+			//for (var i = 0; i < UnityEngine.Input.touchCount; i++)
+			//{
+			//	var touch = UnityEngine.Input.touches[i];
+			//	switch (touch.phase)
+			//	{
+			//		case TouchPhase.Began:
+			//			TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Pressed, ToMonoGame(touch.position));
+			//			break;
+			//		case TouchPhase.Moved:
+			//			TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Moved, ToMonoGame(touch.position));
+			//			break;
+			//		case TouchPhase.Canceled:
+			//		case TouchPhase.Ended:
+			//			TouchPanel.AddEvent(touch.fingerId, TouchLocationState.Released, ToMonoGame(touch.position));
+			//			break;
+			//		case TouchPhase.Stationary:
+			//			//do nothing
+			//			break;
+			//	}
+			//}
 		}
 
 		private Vector2 ToMonoGame(UnityEngine.Vector3 vec)
