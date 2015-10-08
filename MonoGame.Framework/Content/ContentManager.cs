@@ -20,39 +20,52 @@ namespace Microsoft.Xna.Framework.Content
 {
 	public class ContentRequest
 	{
-		private AsyncOperation request;
-		private UObject obj;
+		private AsyncOperation operation;
+		private UObject asset;
 
-		internal ContentRequest(AsyncOperation request)
+		internal ContentRequest() { }
+
+		internal AsyncOperation Operation
 		{
-			this.request = request;
+			set { this.operation = value; }
+			get { return this.operation; }
 		}
 
-		internal ContentRequest(UObject asset)
-		{
-			this.obj = asset;
-		}
-
-		public bool isDone { get { return request == null ? true : request.isDone; } }
-
-		public UObject asset
+		public bool isDone
 		{
 			get
 			{
-				if (request == null)
-					return obj;
-				else if (request is ResourceRequest)
-					return (request as ResourceRequest).asset;
-				else
-					return (request as AssetBundleRequest).asset;
+				if (operation == null)
+				{
+					return asset != null;
+				}
+				else if (operation.isDone)
+				{
+					if (operation is ResourceRequest)
+						asset = (operation as ResourceRequest).asset;
+					else
+						asset = (operation as AssetBundleRequest).asset;
+					operation = null;
+					return true;
+				}
+				return false;
 			}
 		}
+
+		public UObject Asset
+		{
+			internal set { asset = value; }
+			get { return asset; }
+		}
+
 	}
 
 	public class ContentManager
 	{
 		const byte ContentCompressedLzx = 0x80;
 		const byte ContentCompressedLz4 = 0x40;
+
+		public static bool enableLoading = true;
 
 		private static XnaBundleManager xnaBundles;
 
@@ -65,7 +78,6 @@ namespace Microsoft.Xna.Framework.Content
 
 		public ContentManager()
 		{
-			InitXnaBundles();
 		}
 
 		public ContentManager(IServiceProvider serviceProvider)
@@ -75,7 +87,6 @@ namespace Microsoft.Xna.Framework.Content
 				throw new ArgumentNullException("serviceProvider");
 			}
 			this.serviceProvider = serviceProvider;
-			InitXnaBundles();
 		}
 
 		public ContentManager(IServiceProvider serviceProvider, string rootDirectory)
@@ -90,45 +101,38 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			this.RootDirectory = rootDirectory;
 			this.serviceProvider = serviceProvider;
-			InitXnaBundles();
 		}
 
 		private void InitXnaBundles()
 		{
-			if (XnaBundleManager.GENERATE_ASSET_MAPPINGS)
-			{
-				xnaBundles = null;
-				return;
-			}
-
-			if (xnaBundles == null)
-			{
-				StringReader bundleReader = new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text);
-				xnaBundles = new XnaBundleManager(bundleReader);
-			}
+			if (enableLoading)
+				xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text));
 		}
 
-		public bool IsBundleLoaded(string bundleName)
+		public void UpdateBundleLoading()
 		{
-			return xnaBundles.IsBundleLoaded(bundleName);
+			if (xnaBundles == null)
+				InitXnaBundles();
+
+			xnaBundles.UpdateBundleLoading();
 		}
 
 		public void LoadBundle(string bundleName, bool async)
 		{
-			if (xnaBundles != null)
-			{
-				//XnaWrapper.Debug.Log("loading: " + bundleName);
-				xnaBundles.LoadBundle(bundleName, async);
-			}
+			if (xnaBundles == null)
+				InitXnaBundles();
+
+			//XnaWrapper.Debug.Log("loading: " + bundleName);
+			xnaBundles.LoadBundle(bundleName, async);
 		}
 
 		public void ReleaseBundle(string bundleName)
 		{
-			if (xnaBundles != null)
-			{
-				//XnaWrapper.Debug.Log("unloading: " + bundleName);
-				xnaBundles.ReleaseBundle(bundleName);
-			}
+			if (xnaBundles == null)
+				InitXnaBundles();
+
+			//XnaWrapper.Debug.Log("unloading: " + bundleName);
+			xnaBundles.ReleaseBundle(bundleName);
 		}
 
 		public void Dispose()
@@ -228,8 +232,6 @@ namespace Microsoft.Xna.Framework.Content
                 throw new ObjectDisposedException("ContentManager");
 			}
 
-			AsyncOperation request;
-
 			XnaBundleItem item;
 			bool isInBundle = xnaBundles.TryGetItem(fileName, out item);
 			if (isInBundle)
@@ -237,26 +239,25 @@ namespace Microsoft.Xna.Framework.Content
 				if (!item.IsActive)
 					throw new Exception("Asset present, but not active in bundles: " + fileName);
 
-				if (item.Request == null)
-					return new ContentRequest(item.Asset);
-				else
-					request = item.Request;
+				return item.Request;
 			}
 			else
 			{
+				ContentRequest request = new ContentRequest();
+
 				Type unityType = GetUnityType(type);
 				fileName = UnityResourcePath(fileName);
 				if (unityType == null)
 				{
 					XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
-					request = UResources.LoadAsync(fileName);
+					request.Operation = UResources.LoadAsync(fileName);
 				}
 				else
 				{
-					request = UResources.LoadAsync(fileName, unityType);
+					request.Operation = UResources.LoadAsync(fileName, unityType);
 				}
+				return request;
 			}
-            return new ContentRequest(request);
         }
 
 		private static string UnityResourcePath(string xnaPath)
@@ -275,7 +276,7 @@ namespace Microsoft.Xna.Framework.Content
 				if (!item.IsActive)
 					throw new Exception("Asset present, but not active in bundles: " + fileName);
 
-				res = item.Asset;
+				res = item.Request.Asset;
 			}
 			else
 				res = UResources.Load(UnityResourcePath(fileName), type);

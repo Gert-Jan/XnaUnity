@@ -22,6 +22,10 @@ namespace Microsoft.Xna.Framework
 		private readonly GameTime _gameTime = new GameTime(new TimeSpan(), TimeSpan.FromSeconds(Time.fixedDeltaTime));
 		private readonly TimeSpan _fixedDeltaTime = TimeSpan.FromSeconds(Time.fixedDeltaTime);
 
+		public readonly string UnityStoragePath;
+
+		public bool IsDummy = false;
+
 		public Game()
 		{
 			GraphicsDevice = new GraphicsDevice(new Viewport(0, 0, Screen.width, Screen.height));
@@ -29,10 +33,20 @@ namespace Microsoft.Xna.Framework
 
 			_window = new UnityGameWindow(GraphicsDevice);
 
+			UnityStoragePath = UnityEngine.Application.persistentDataPath;
+
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
-		}		
-        
+		}
+
+		public virtual void DummyInitialize(out string bundleMappings)
+		{
+			bundleMappings = null;
+			IsDummy = true;
+			ContentManager.enableLoading = false;
+			UnityInitialize();
+		}
+
         public void UnityInitialize()
 		{
 			LoadContent();
@@ -161,8 +175,10 @@ namespace Microsoft.Xna.Framework
 			Application.Quit();
 		}
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
+			UnloadContent();
+			Instance = null;
 		}
 
 		protected virtual void Initialize()
@@ -193,6 +209,5 @@ namespace Microsoft.Xna.Framework
 		protected virtual void OnActivated(object sender, EventArgs args)
 		{
 		}
-
 	}
 }

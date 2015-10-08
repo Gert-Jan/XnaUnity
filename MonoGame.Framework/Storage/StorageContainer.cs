@@ -121,6 +121,8 @@ namespace Microsoft.Xna.Framework.Storage
 #elif LINUX || MONOMAC
             // We already have a SaveData folder on Mac/Linux.
             var saved = StorageDevice.StorageRoot;
+#elif UNITY
+			var saved = Path.Combine(Game.Instance.UnityStoragePath, "SavedGames"); 
 #else
 			var root = StorageDevice.StorageRoot;
 			var saved = Path.Combine(root,"SavedGames");
