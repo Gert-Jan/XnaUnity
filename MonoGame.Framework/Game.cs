@@ -2,16 +2,16 @@
 using System.Diagnostics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input.Touch;
-using Microsoft.Xna.Framework.Media;
 using UnityEngine;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 
 namespace Microsoft.Xna.Framework
 {
-	public class Game : IDisposable
+	public abstract class Game : IDisposable
 	{
+        // 
+        public static bool IsDummy = false; 
+
 		public bool IsMouseVisible { get; set; }
 		public GraphicsDevice GraphicsDevice { get; private set; }
 
@@ -23,9 +23,7 @@ namespace Microsoft.Xna.Framework
 		private readonly TimeSpan _fixedDeltaTime = TimeSpan.FromSeconds(Time.fixedDeltaTime);
 
 		public readonly string UnityStoragePath;
-
-		public bool IsDummy = false;
-
+        
 		public Game()
 		{
 			GraphicsDevice = new GraphicsDevice(new Viewport(0, 0, Screen.width, Screen.height));
@@ -33,23 +31,17 @@ namespace Microsoft.Xna.Framework
 
 			_window = new UnityGameWindow(GraphicsDevice);
 
-			UnityStoragePath = UnityEngine.Application.persistentDataPath;
+			UnityStoragePath = Application.persistentDataPath;
 
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
 		}
 
-		public virtual void DummyInitialize(out string bundleMappings)
-		{
-			bundleMappings = null;
-			IsDummy = true;
-			ContentManager.enableLoading = false;
-			UnityInitialize();
-		}
+        public abstract void DummyInitialize(System.Text.StringBuilder bundleMappings);
 
         public void UnityInitialize()
-		{
-			LoadContent();
+        {
+            LoadContent();
 			Initialize();
 			Instance = this;
 		}
@@ -60,7 +52,7 @@ namespace Microsoft.Xna.Framework
 		public void UnityUpdate()
 		{
 			foreach (AudioSource obj in SoundEffectInstance.disposed)
-				AudioSource.Destroy(obj);
+                UnityEngine.Object.Destroy(obj);
 			SoundEffectInstance.disposed.Clear();
 
 			PreUpdate();

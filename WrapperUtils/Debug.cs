@@ -8,7 +8,7 @@ namespace XnaWrapper
 		public static void Log(object message)
 		{
 			if (UnityEngine.Application.isEditor)
-				UnityEngine.Debug.Log(message.ToString() + '\n');
+				UnityEngine.Debug.Log((message != null ? message.ToString() : "null") + '\n');
 			else
 				Console.WriteLine(message);
 		}

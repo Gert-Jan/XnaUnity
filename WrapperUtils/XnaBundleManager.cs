@@ -31,25 +31,20 @@ namespace XnaWrapper
 
 		#region Init
 
-		public XnaBundleManager(TextReader bundleMappingsText)
-		{
-			InitBundles(bundleMappingsText);
-		}
+		public XnaBundleManager(TextReader bundleMappingsReader, bool readUnityPaths)
+        {
+            int totalBundles = int.Parse(bundleMappingsReader.ReadLine());
+            XnaBundle[] bundles = new XnaBundle[totalBundles];
 
-		void InitBundles(TextReader reader)
-		{
-			int totalBundles = int.Parse(reader.ReadLine());
-			XnaBundle[] bundles = new XnaBundle[totalBundles];
+            for (int i = 0; i < totalBundles; ++i)
+                bundles[i] = new XnaBundle(bundleMappingsReader, bundleItemMap, readUnityPaths);
 
-			for (int i = 0; i < totalBundles; ++i)
-				bundles[i] = new XnaBundle(reader, bundleItemMap);
-			
-			foreach (XnaBundle bundle in bundles)
-			{
-				bundleMap.Add(bundle.bundleName, bundle);
-			}
-		}
-
+            foreach (XnaBundle bundle in bundles)
+            {
+                bundleMap.Add(bundle.bundleName, bundle);
+            }
+        }
+        
 		#endregion
 
 		#region Management
@@ -260,25 +255,30 @@ namespace XnaWrapper
 			}
 		}
 
-		internal XnaBundle(TextReader reader, Dictionary<string, XnaBundleItem> bundleItemMap)
-		{
-			this.bundleName = reader.ReadLine();
-			int bundleSize = int.Parse(reader.ReadLine());
-			items = new XnaBundleItem[bundleSize];
-			itemUnityPaths = new string[bundleSize];
-			for (int i = 0; i < bundleSize; ++i)
-			{
-				string id = reader.ReadLine();
-				int semicolonIndex = id.IndexOf(';');
-				string name;
+        internal XnaBundle(TextReader reader, Dictionary<string, XnaBundleItem> bundleItemMap, bool readUnityPaths)
+        {
+            this.bundleName = reader.ReadLine();
+            int bundleSize = int.Parse(reader.ReadLine());
+            items = new XnaBundleItem[bundleSize];
+            itemUnityPaths = new string[bundleSize];
+            for (int i = 0; i < bundleSize; ++i)
+            {
+                string id = reader.ReadLine();
+                int semicolonIndex = id.IndexOf(';');
+                string name;
 
-				if (semicolonIndex == -1)
-					name = id;
-				else
-				{
-					name = id.Substring(0, semicolonIndex);
-					itemUnityPaths[i] = id.Substring(semicolonIndex + 1, id.Length - semicolonIndex - 1);
-				}
+
+                if (semicolonIndex == -1)
+                {
+                    if (readUnityPaths)
+                        throw new Exception("Unable to find unity paths in input mappings.");
+                    name = id;
+                }
+                else
+                {
+                    name = id.Substring(0, semicolonIndex);
+                    itemUnityPaths[i] = id.Substring(semicolonIndex + 1, id.Length - semicolonIndex - 1);
+                }
 
 				XnaBundleItem existingItem;
 				if (bundleItemMap.TryGetValue(name, out existingItem))
@@ -313,20 +313,20 @@ namespace XnaWrapper
 
 		internal XnaBundleStatus Update()
 		{
-			if (loader != null && loader.TryFinishLoading())
-			{
-				bool shouldAbort = loader.shouldAbort;
-				loader = null;
-				if (shouldAbort)
-				{
-					ReleaseBundle();
-					return XnaBundleStatus.Initialized;
-				}
-				else
-					return XnaBundleStatus.Ready;
-			}
-			else
-				return loader.Status;
+            if (loader != null && loader.TryFinishLoading())
+            {
+                bool shouldAbort = loader.shouldAbort;
+                loader = null;
+                if (shouldAbort)
+                {
+                    ReleaseBundle();
+                    return XnaBundleStatus.Initialized;
+                }
+                else
+                    return XnaBundleStatus.Ready;
+            }
+            else
+                return Status;
 		}
 
 	}

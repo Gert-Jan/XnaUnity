@@ -1,17 +1,16 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
-using UnityTexture = UnityEngine.Texture2D;
-using UnityAudioClip = UnityEngine.AudioClip;
+using UTexture = UnityEngine.Texture2D;
+using UAudioClip = UnityEngine.AudioClip;
 using UObject = UnityEngine.Object;
 using UResources = UnityEngine.Resources;
 using TextAsset = UnityEngine.TextAsset;
+using XTexture = Microsoft.Xna.Framework.Graphics.Texture2D;
 using Microsoft.Xna.Framework.Graphics;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework.Utilities;
-//using LZ4n;
 using TextureAtlasContent;
 using UnityEngine;
 using XnaWrapper;
@@ -64,9 +63,7 @@ namespace Microsoft.Xna.Framework.Content
 	{
 		const byte ContentCompressedLzx = 0x80;
 		const byte ContentCompressedLz4 = 0x40;
-
-		public static bool enableLoading = true;
-
+        
 		private static XnaBundleManager xnaBundles;
 
 		private string _rootDirectory = string.Empty;
@@ -89,50 +86,47 @@ namespace Microsoft.Xna.Framework.Content
 			this.serviceProvider = serviceProvider;
 		}
 
-		public ContentManager(IServiceProvider serviceProvider, string rootDirectory)
+		public ContentManager(IServiceProvider serviceProvider, string RootDirectory)
 		{
 			if (serviceProvider == null)
 			{
 				throw new ArgumentNullException("serviceProvider");
 			}
-			if (rootDirectory == null)
+			if (RootDirectory == null)
 			{
 				throw new ArgumentNullException("rootDirectory");
 			}
-			this.RootDirectory = rootDirectory;
+			this.RootDirectory = RootDirectory;
 			this.serviceProvider = serviceProvider;
 		}
 
-		private void InitXnaBundles()
-		{
-			if (enableLoading)
-				xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text));
+		private void CheckXnaBundles()
+        {
+            if (xnaBundles == null && !Game.IsDummy)
+                xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
 		}
 
 		public void UpdateBundleLoading()
 		{
-			if (xnaBundles == null)
-				InitXnaBundles();
+            CheckXnaBundles();
 
-			xnaBundles.UpdateBundleLoading();
+            xnaBundles.UpdateBundleLoading();
 		}
 
 		public void LoadBundle(string bundleName, bool async)
-		{
-			if (xnaBundles == null)
-				InitXnaBundles();
+        {
+            CheckXnaBundles();
 
-			//XnaWrapper.Debug.Log("loading: " + bundleName);
-			xnaBundles.LoadBundle(bundleName, async);
+            //XnaWrapper.Debug.Log("loading: " + bundleName);
+            xnaBundles.LoadBundle(bundleName, async);
 		}
 
 		public void ReleaseBundle(string bundleName)
-		{
-			if (xnaBundles == null)
-				InitXnaBundles();
+        {
+            CheckXnaBundles();
 
-			//XnaWrapper.Debug.Log("unloading: " + bundleName);
-			xnaBundles.ReleaseBundle(bundleName);
+            //XnaWrapper.Debug.Log("unloading: " + bundleName);
+            xnaBundles.ReleaseBundle(bundleName);
 		}
 
 		public void Dispose()
@@ -158,7 +152,7 @@ namespace Microsoft.Xna.Framework.Content
         // Show AOT which types will be used in combination with this function; this function can't ever be called
         public void _dummy_Load()
         {
-            this.Load<Microsoft.Xna.Framework.Graphics.Texture2D>("");
+            this.Load<XTexture>("");
             this.Load<SoundEffect>("");
             this.Load<Song>("");
             this.Load<SpriteFont>("");
@@ -211,14 +205,22 @@ namespace Microsoft.Xna.Framework.Content
 		private Type GetUnityType(Type xnaType)
 		{
 			Type unityType = null;
-			if (xnaType == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
-				unityType = typeof(UnityTexture);
+			if (xnaType == typeof(XTexture))
+				unityType = typeof(UTexture);
 			else if (xnaType == typeof(SoundEffect) || xnaType == typeof(Song))
-				unityType = typeof(UnityAudioClip);
+				unityType = typeof(UAudioClip);
 			else if (xnaType == typeof(SpriteFont) || xnaType == typeof(string) || xnaType == typeof(TextureAtlas))
 				unityType = typeof(TextAsset);
 			return unityType;
 		}
+
+        private XnaBundleItem GetBundleItem(string fileName)
+        {
+            CheckXnaBundles();
+            XnaBundleItem item = null;
+            xnaBundles.TryGetItem(fileName, out item);
+            return item;
+        }
 
 		public ContentRequest LoadAsync(string fileName, Type type)
         {
@@ -231,10 +233,9 @@ namespace Microsoft.Xna.Framework.Content
                 Console.WriteLine("ContentManager.Load: manager disposed");
                 throw new ObjectDisposedException("ContentManager");
 			}
-
-			XnaBundleItem item;
-			bool isInBundle = xnaBundles.TryGetItem(fileName, out item);
-			if (isInBundle)
+            
+            XnaBundleItem item = GetBundleItem(fileName);
+			if (item != null)
 			{
 				if (!item.IsActive)
 					throw new Exception("Asset present, but not active in bundles: " + fileName);
@@ -269,10 +270,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			UObject res = null;
 
-			XnaBundleItem item;
-			bool isInBundle = xnaBundles.TryGetItem(fileName, out item);
-			if (isInBundle)
-			{
+            XnaBundleItem item = GetBundleItem(fileName);
+            if (item != null)
+            {
 				if (!item.IsActive)
 					throw new Exception("Asset present, but not active in bundles: " + fileName);
 
@@ -295,9 +295,9 @@ namespace Microsoft.Xna.Framework.Content
             {
                 return new Song((UnityEngine.AudioClip)asset);
             }
-            else if (type == typeof(Microsoft.Xna.Framework.Graphics.Texture2D))
+            else if (type == typeof(XTexture))
             {
-                return new Microsoft.Xna.Framework.Graphics.Texture2D((UnityEngine.Texture2D)asset);
+                return new XTexture((UnityEngine.Texture2D)asset);
             }
             else if (type == typeof(SoundEffect))
             {
