@@ -420,6 +420,7 @@
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
     <Compile Include="WrapperUtils\Pool.cs" />
+    <Compile Include="WrapperUtils\SystemUtils.cs" />
     <Compile Include="WrapperUtils\XnaBundleManager.cs" />
     <Compile Include="WrapperUtils\DataConvert.cs" />
     <Compile Include="WrapperUtils\Debug.cs" />
