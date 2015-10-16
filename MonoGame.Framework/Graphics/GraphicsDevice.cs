@@ -41,7 +41,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 				// Calculate the right projection matrix, used when a draw call doesn't have specified a specific effect
 				// defined to calculate the projection matrix
-				Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.X + Viewport.Width, Viewport.Y, Viewport.Y + Viewport.Height, 0, 1, out defaultProjection);
+				if (Application.platform == RuntimePlatform.Android)
+					Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.X + Viewport.Width, Viewport.Y + Viewport.Height, Viewport.Y, 0, 1, out defaultProjection);
+				else
+					Matrix.CreateOrthographicOffCenter(Viewport.X, Viewport.X + Viewport.Width, Viewport.Y, Viewport.Y + Viewport.Height, 0, 1, out defaultProjection);
 			}
 		}
 
@@ -225,18 +228,17 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh.colors32 = Colors;
 				Mesh.triangles = triangles;
 			}
-
+			
 			public void Populate(VertexPositionColorTexture[] vertexData, int numVertices)
 			{
 				for (int i = 0; i < numVertices; i++)
 				{
 					XnaToUnity.Vector3(vertexData[i].Position, ref Vertices[i]);
-
 					XnaToUnity.Vector2(vertexData[i].TextureCoordinate, ref UVs[i]);
 					UVs[i].y = 1 - UVs[i].y;
-
 					XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
 				}
+				
 				//we could clearly less if we remembered how many we used last time
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
 
