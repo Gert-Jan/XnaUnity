@@ -18,6 +18,8 @@ namespace XnaWrapper
 		// Providing a null assetProvider will default to loading from assetbundles. 
 		public static XnaAssetProvider assetProvider = null;
 
+		internal static string validPathFormat = null;
+
 		private LinkedList<XnaBundle> bundlesLoading = new LinkedList<XnaBundle>();
 		private Dictionary<string, XnaBundle> bundleMap = new Dictionary<string, XnaBundle>();
 		private Dictionary<string, XnaBundleItem> bundleItemMap = new Dictionary<string, XnaBundleItem>();
@@ -33,18 +35,41 @@ namespace XnaWrapper
 
 		public XnaBundleManager(TextReader bundleMappingsReader, bool readUnityPaths)
         {
-            int totalBundles = int.Parse(bundleMappingsReader.ReadLine());
-            XnaBundle[] bundles = new XnaBundle[totalBundles];
+			InitPathFormat();
 
-            for (int i = 0; i < totalBundles; ++i)
-                bundles[i] = new XnaBundle(bundleMappingsReader, bundleItemMap, readUnityPaths);
-
-            foreach (XnaBundle bundle in bundles)
-            {
-                bundleMap.Add(bundle.bundleName, bundle);
-            }
+			InitBundlesFromMappings(bundleMappingsReader, readUnityPaths);
         }
-        
+
+		void InitBundlesFromMappings(TextReader bundleMappingsReader, bool readUnityPaths)
+		{
+			int totalBundles = int.Parse(bundleMappingsReader.ReadLine());
+			XnaBundle[] bundles = new XnaBundle[totalBundles];
+
+			for (int i = 0; i < totalBundles; ++i)
+				bundles[i] = new XnaBundle(bundleMappingsReader, bundleItemMap, readUnityPaths);
+
+			foreach (XnaBundle bundle in bundles)
+			{
+				bundleMap.Add(bundle.bundleName, bundle);
+			}
+		}
+
+		void InitPathFormat()
+		{
+			if (validPathFormat != null)
+				return;
+
+			switch (Application.platform)
+			{
+				case RuntimePlatform.WindowsEditor:
+					validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
+					break;
+				default:
+					validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
+					break;
+			}
+		}
+
 		#endregion
 
 		#region Management
@@ -110,9 +135,6 @@ namespace XnaWrapper
 	{
 		private class Loader
 		{
-			private static string[] pathFormatAttempts = new string[] { "file://{0}/{1}", "{0}/{1}", "jar:file://{0}/{1}" };
-			private static string validPathFormat = null;
-
 			private WWW data;
 
 			private XnaBundle xnaBundle;
@@ -191,24 +213,9 @@ namespace XnaWrapper
 
 			private void LoadFromWWW()
 			{
-				if (validPathFormat == null)
-				{
-					// Find what path format is valid. If none are, pathFormatAttempts will need expanding
-					for (int i = 0; i < pathFormatAttempts.Length; ++i)
-					{
-						string path = String.Format(pathFormatAttempts[i], Application.streamingAssetsPath, xnaBundle.bundleName);
-						data = WWW.LoadFromCacheOrDownload(path, 1);
-						if (string.IsNullOrEmpty(data.error))
-						{
-							validPathFormat = String.Format(pathFormatAttempts[i], Application.streamingAssetsPath, "");
-							break;
-						}
-					}
-					if (validPathFormat == null)
-						throw new FileNotFoundException(xnaBundle.bundleName);
-				}
-				else
-					data = WWW.LoadFromCacheOrDownload(validPathFormat + xnaBundle.bundleName, 1);
+				string path = XnaBundleManager.validPathFormat + xnaBundle.bundleName.ToLower();
+                //Debug.Log(path);
+				data = WWW.LoadFromCacheOrDownload(path, 1);
 			}
 
 			private void InitRequests()
