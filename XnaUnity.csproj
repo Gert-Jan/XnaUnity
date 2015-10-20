@@ -420,6 +420,7 @@
     <Compile Include="WrapperUtils\PlatformInterfaces\XnaGamePad.cs" />
     <Compile Include="WrapperUtils\PlatformInterfaces\XnaAssetProvider.cs" />
     <Compile Include="WrapperUtils\Pool.cs" />
+    <Compile Include="WrapperUtils\PlatformData.cs" />
     <Compile Include="WrapperUtils\SystemUtils.cs" />
     <Compile Include="WrapperUtils\XnaBundleManager.cs" />
     <Compile Include="WrapperUtils\DataConvert.cs" />

@@ -7,9 +7,7 @@ namespace XnaWrapper.PlatformInterfaces
 	public abstract class XnaGamePad
 	{
 		public const int MAX_GAMEPADS = 4;
-
-		public static XnaGamePad Instance;
-
+		
 		public abstract GamePadState GetState(PlayerIndex playerIndex);
 	}
 }

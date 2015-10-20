@@ -51,9 +51,9 @@ namespace XnaWrapper
 			if (validPathFormat != null)
 				return;
 
-			switch (Application.platform)
+			switch (PlatformData.ActivePlatform)
 			{
-				case RuntimePlatform.WindowsEditor:
+				case PlatformID.Windows:
 					validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
 					break;
 				default:
@@ -68,7 +68,7 @@ namespace XnaWrapper
 
 		public void LoadBundle(string bundleName, bool async)
 		{
-			if (!async && XnaAssetProvider.Instance.LoadsFromAssetBundles())
+			if (!async && PlatformData.AssetProvider == null)
 				Debug.Log("(LoadBundle) Synchronized loading of bundles not supported: " + bundleName);
 
 			XnaBundle bundle;
@@ -157,7 +157,7 @@ namespace XnaWrapper
 			// Returns true once all requests are done
 			public bool TryFinishLoading()
 			{
-				if (!XnaAssetProvider.Instance.LoadsFromAssetBundles())
+				if (PlatformData.AssetProvider != null)
 					return LoadFromProvider();
 
 				if (data == null)
@@ -184,13 +184,12 @@ namespace XnaWrapper
 
 			private bool LoadFromProvider()
 			{
-                XnaAssetProvider provider = XnaAssetProvider.Instance;
-				int max = provider.MaxAssetsPerUpdate();
+				int max = PlatformData.AssetProvider.MaxAssetsPerUpdate();
 
 				for (int i = 0; i < max; ++i)
 				{
 					ContentRequest request = xnaBundle.items[index].Request;
-					request.Asset = provider.LoadAsset(xnaBundle.itemUnityPaths[index]);
+					request.Asset = PlatformData.AssetProvider.LoadAsset(xnaBundle.itemUnityPaths[index]);
 
 					++index;
 					if (index == xnaBundle.items.Length)
@@ -206,7 +205,6 @@ namespace XnaWrapper
 			private void LoadFromWWW()
 			{
 				string path = XnaBundleManager.validPathFormat + xnaBundle.bundleName.ToLower();
-                //Debug.Log(path);
 				data = WWW.LoadFromCacheOrDownload(path, 1);
 			}
 
@@ -363,7 +361,7 @@ namespace XnaWrapper
 			if (objectReferences == 0)
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (XnaAssetProvider.Instance.LoadsFromAssetBundles())
+				if (PlatformData.AssetProvider == null)
 					UObject.DestroyImmediate(Request.Asset, true);
 
 				request = null;

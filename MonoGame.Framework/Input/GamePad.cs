@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using Microsoft.Xna.Framework.Input;
-
-//Joystick xbox 360 layout: www.visualstudiogallery.msdn.microsoft.com
-
-namespace Microsoft.Xna.Framework.Input
+﻿namespace Microsoft.Xna.Framework.Input
 {
 	public static class GamePad
 	{
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
-			return XnaWrapper.PlatformInterfaces.XnaGamePad.Instance.GetState(playerIndex);
+			return XnaWrapper.PlatformData.GamePad.GetState(playerIndex);
 		}
 
 		//private struct ButtonMapStruct
