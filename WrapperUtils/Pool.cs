@@ -7,14 +7,14 @@ namespace XnaWrapper
 {
 	public abstract class Pool<T>
 	{
-		public abstract class InstanceResetter<T>
+		public abstract class InstanceResetter<U>
 		{
-			public abstract T Create();
-			public abstract void Reset(T poolable);
+			public abstract U Create();
+			public abstract void Reset(U poolable);
 
-			internal T CreateReset()
+			internal U CreateReset()
 			{
-				T instance = Create();
+				U instance = Create();
 				Reset(instance);
 				return instance;
 			}
@@ -27,6 +27,7 @@ namespace XnaWrapper
 
 		protected Pool(int initialCapacity, InstanceResetter<T> resetter)
 		{
+
 			instanceResetter = resetter;
 
 			freeItems = new T[initialCapacity];
