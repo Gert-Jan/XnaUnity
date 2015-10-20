@@ -2,22 +2,14 @@
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
+using XnaWrapper.PlatformInterfaces;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
 namespace XnaWrapper
 {
-	public abstract class XnaAssetProvider
-	{
-		public abstract UObject LoadAsset(string path);
-		public abstract int MaxAssetsPerUpdate();
-	}
-
 	public class XnaBundleManager
 	{
-		// Providing a null assetProvider will default to loading from assetbundles. 
-		public static XnaAssetProvider assetProvider = null;
-
 		internal static string validPathFormat = null;
 
 		private LinkedList<XnaBundle> bundlesLoading = new LinkedList<XnaBundle>();
@@ -76,7 +68,7 @@ namespace XnaWrapper
 
 		public void LoadBundle(string bundleName, bool async)
 		{
-			if (!async && assetProvider == null)
+			if (!async && XnaAssetProvider.Instance.LoadsFromAssetBundles())
 				Debug.Log("(LoadBundle) Synchronized loading of bundles not supported: " + bundleName);
 
 			XnaBundle bundle;
@@ -165,7 +157,7 @@ namespace XnaWrapper
 			// Returns true once all requests are done
 			public bool TryFinishLoading()
 			{
-				if (XnaBundleManager.assetProvider != null)
+				if (!XnaAssetProvider.Instance.LoadsFromAssetBundles())
 					return LoadFromProvider();
 
 				if (data == null)
@@ -192,7 +184,7 @@ namespace XnaWrapper
 
 			private bool LoadFromProvider()
 			{
-				XnaAssetProvider provider = XnaBundleManager.assetProvider;
+                XnaAssetProvider provider = XnaAssetProvider.Instance;
 				int max = provider.MaxAssetsPerUpdate();
 
 				for (int i = 0; i < max; ++i)
@@ -371,7 +363,7 @@ namespace XnaWrapper
 			if (objectReferences == 0)
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (XnaBundleManager.assetProvider == null)
+				if (XnaAssetProvider.Instance.LoadsFromAssetBundles())
 					UObject.DestroyImmediate(Request.Asset, true);
 
 				request = null;
