@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
-using XnaWrapper.PlatformInterfaces;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
@@ -13,6 +12,7 @@ namespace XnaWrapper
 		internal static string validPathFormat = null;
 
 		private LinkedList<XnaBundle> bundlesLoading = new LinkedList<XnaBundle>();
+
 		private Dictionary<string, XnaBundle> bundleMap = new Dictionary<string, XnaBundle>();
 		private Dictionary<string, XnaBundleItem> bundleItemMap = new Dictionary<string, XnaBundleItem>();
 
@@ -160,8 +160,12 @@ namespace XnaWrapper
 				if (PlatformData.AssetProvider != null)
 					return LoadFromProvider();
 
+
 				if (data == null)
+				{
+					//Debug.LogT(xnaBundle.bundleName);
 					LoadFromWWW();
+				}
 				if (!data.isDone)
 					return false;
 

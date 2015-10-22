@@ -238,7 +238,10 @@ namespace Microsoft.Xna.Framework.Content
 			if (item != null)
 			{
 				if (!item.IsActive)
-					throw new Exception("Asset present, but not active in bundles: " + fileName);
+				{
+					LoadBundle(fileName.Replace("\\", "-_-"), true);
+					//throw new Exception("Asset present, but not active in bundles: " + fileName);
+				}
 
 				return item.Request;
 			}
@@ -274,7 +277,10 @@ namespace Microsoft.Xna.Framework.Content
             if (item != null)
             {
 				if (!item.IsActive)
+				{
+					LoadBundle(fileName.Replace("\\", "-_-"), true);
 					throw new Exception("Asset present, but not active in bundles: " + fileName);
+				}
 
 				res = item.Request.Asset;
 			}
