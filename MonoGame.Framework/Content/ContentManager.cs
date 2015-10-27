@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework.Utilities;
 using TextureAtlasContent;
 using UnityEngine;
 using XnaWrapper;
+using XDebug = XnaWrapper.Debug;
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -26,28 +27,23 @@ namespace Microsoft.Xna.Framework.Content
 
 		internal AsyncOperation Operation
 		{
-			set { this.operation = value; }
-			get { return this.operation; }
+			set { operation = value; }
+			get { return operation; }
 		}
 
 		public bool isDone
 		{
 			get
 			{
-				if (operation == null)
-				{
-					return asset != null;
-				}
-				else if (operation.isDone)
+				if (operation != null && operation.isDone)
 				{
 					if (operation is ResourceRequest)
 						asset = (operation as ResourceRequest).asset;
 					else
 						asset = (operation as AssetBundleRequest).asset;
 					operation = null;
-					return true;
 				}
-				return false;
+				return asset != null;
 			}
 		}
 
@@ -68,7 +64,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		private string _rootDirectory = string.Empty;
 		private IServiceProvider serviceProvider;
-		//QQQ private IGraphicsDeviceService graphicsDeviceService;
+		
 		private Dictionary<string, object> loadedAssets = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 		private List<IDisposable> disposableAssets = new List<IDisposable>();
 		private bool disposed;
@@ -102,8 +98,12 @@ namespace Microsoft.Xna.Framework.Content
 
 		private void CheckXnaBundles()
         {
-            if (xnaBundles == null && !Game.IsDummy)
-                xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
+			if (xnaBundles == null && !Game.IsDummy)
+			{
+				XDebug.LogT("Initializing XnaBundleManager...");
+				xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
+				XDebug.LogT("XnaBundleManager Initialized");
+			}
 		}
 
 		public void UpdateBundleLoading()
@@ -113,12 +113,12 @@ namespace Microsoft.Xna.Framework.Content
             xnaBundles.UpdateBundleLoading();
 		}
 
-		public void LoadBundle(string bundleName, bool async)
+		public void LoadBundle(string bundleName)
         {
             CheckXnaBundles();
 
             //XnaWrapper.Debug.Log("loading: " + bundleName);
-            xnaBundles.LoadBundle(bundleName, async);
+            xnaBundles.LoadBundle(bundleName);
 		}
 
 		public void ReleaseBundle(string bundleName)
@@ -147,8 +147,7 @@ namespace Microsoft.Xna.Framework.Content
 				disposed = true;
 			}
 		}
-
-#if UNITY
+		
         // Show AOT which types will be used in combination with this function; this function can't ever be called
         public void _dummy_Load()
         {
@@ -160,7 +159,6 @@ namespace Microsoft.Xna.Framework.Content
             this.Load<TextureAtlas>("");
             this.Load<Effect>("");
         }
-#endif
 
 		public T Load<T>(string fileName)
 		{
@@ -187,7 +185,7 @@ namespace Microsoft.Xna.Framework.Content
 			Type xnaType = typeof(T);
 			if (xnaType == typeof(string))
 			{
-				asset = ((UnityEngine.TextAsset)NativeLoad(fileName, typeof(UnityEngine.TextAsset))).text;
+				asset = ((TextAsset)NativeLoad(fileName, typeof(TextAsset))).text;
 			}
 			else
 			{
@@ -233,15 +231,20 @@ namespace Microsoft.Xna.Framework.Content
                 Console.WriteLine("ContentManager.Load: manager disposed");
                 throw new ObjectDisposedException("ContentManager");
 			}
-            
-            XnaBundleItem item = GetBundleItem(fileName);
+
+			XnaBundleItem item = GetBundleItem(fileName);
 			if (item != null)
 			{
 				if (!item.IsActive)
 				{
-					LoadBundle(fileName.Replace("\\", "-_-"), true);
-					//throw new Exception("Asset present, but not active in bundles: " + fileName);
+					if (xnaBundles.oneAssetPerBundle)
+						LoadBundle(fileName);
+					else
+						throw new Exception("Asset present in bundles, but has never started loading: " + fileName);
 				}
+
+				if (item.Request == null)
+					throw new Exception("Unable to find asset file " + fileName);
 
 				return item.Request;
 			}
@@ -253,7 +256,7 @@ namespace Microsoft.Xna.Framework.Content
 				fileName = UnityResourcePath(fileName);
 				if (unityType == null)
 				{
-					XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
+					XDebug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
 					request.Operation = UResources.LoadAsync(fileName);
 				}
 				else
@@ -271,21 +274,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		private UObject NativeLoad(string fileName, Type type)
 		{
-			UObject res = null;
-
-            XnaBundleItem item = GetBundleItem(fileName);
-            if (item != null)
-            {
-				if (!item.IsActive)
-				{
-					LoadBundle(fileName.Replace("\\", "-_-"), true);
-					throw new Exception("Asset present, but not active in bundles: " + fileName);
-				}
-
-				res = item.Request.Asset;
-			}
-			else
-				res = UResources.Load(UnityResourcePath(fileName), type);
+			UObject res = UResources.Load(UnityResourcePath(fileName), type);
 
 			if (res == null)
                 throw new ContentLoadException("Failed to load " + fileName + " as " + type);
@@ -299,15 +288,15 @@ namespace Microsoft.Xna.Framework.Content
         {
             if (type == typeof(Song))
             {
-                return new Song((UnityEngine.AudioClip)asset);
+                return new Song((UAudioClip)asset);
             }
             else if (type == typeof(XTexture))
             {
-                return new XTexture((UnityEngine.Texture2D)asset);
+                return new XTexture((UTexture)asset);
             }
             else if (type == typeof(SoundEffect))
             {
-                return new SoundEffect((UnityEngine.AudioClip)asset);
+                return new SoundEffect((UAudioClip)asset);
             }
             else if (type == typeof(SpriteFont))
             {
@@ -323,7 +312,7 @@ namespace Microsoft.Xna.Framework.Content
             }
             else
 			{
-				XnaWrapper.Debug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
+				XDebug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
                 return asset;
             }
         }
