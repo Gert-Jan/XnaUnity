@@ -319,7 +319,8 @@ namespace Microsoft.Xna.Framework.Content
 
         public static Stream ReadBytesFileToStream(string assetName)
         {
-			TextAsset binData = UResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+			assetName = assetName.Replace("\\", "/");
+            TextAsset binData = UResources.Load(assetName, typeof(TextAsset)) as TextAsset;
             if (binData == null)
             {
                 throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));

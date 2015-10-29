@@ -283,6 +283,9 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\KeyState.cs">
       <Link>MonoGame.Framework\Input\KeyState.cs</Link>
     </Compile>
+    <Compile Include="..\MonoGame\MonoGame.Framework\Input\Mouse.cs">
+      <Link>MonoGame.Framework\Mouse.cs</Link>
+    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\MouseState.cs">
       <Link>MonoGame.Framework\Input\MouseState.cs</Link>
     </Compile>
