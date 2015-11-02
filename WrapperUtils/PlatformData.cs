@@ -6,7 +6,8 @@ namespace XnaWrapper
 	{
 		XboxOne,
 		Fuze, 
-		Windows
+		Windows, 
+		Unknown
 	}
 
 	public static class PlatformData
@@ -16,5 +17,18 @@ namespace XnaWrapper
 
 		public static XnaGamePad GamePad;
 		public static XnaAssetProvider AssetProvider;
+
+		private static PlatformID dllPlatform =
+#if U_FUZE
+			PlatformID.Fuze;
+#elif U_XBOXONE
+			PlatformID.XboxOne;
+#elif U_WINDOWS
+			PlatformID.Windows;
+#else
+			PlatformID.Unknown;
+#endif
+		public static PlatformID DllPlatform { get { return dllPlatform; } }
+
 	}
 }
