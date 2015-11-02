@@ -16,14 +16,13 @@ namespace XnaWrapper
 			{
 				switch (PlatformData.ActivePlatform)
 				{
-					case PlatformID.XboxOne:
-						Console.WriteLine(message);
+					case PlatformID.Fuze:
+						UDebug.Log(message + '\n');
 						break;
 					default:
 						Console.Write(message);
 						break;
 				}
-
 			}
 		}
 		
