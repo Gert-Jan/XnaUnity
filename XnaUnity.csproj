@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'XB1|AnyCPU'">
     <OutputPath>bin\XB1\</OutputPath>
-    <DefineConstants>TRACE;UNITY;XB1;U_FUZE</DefineConstants>
+    <DefineConstants>TRACE;UNITY;XB1;U_WINDOWS</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,7 +36,7 @@
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;UNITY;U_FUZE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;UNITY;U_WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -44,13 +44,13 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>..\Assets\Dlls\</OutputPath>
-    <DefineConstants>TRACE;UNITY;U_FUZE</DefineConstants>
+    <DefineConstants>TRACE;UNITY;U_WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Unity-WinRt|AnyCPU'">
     <OutputPath>bin\Unity-WinRt\</OutputPath>
-    <DefineConstants>TRACE;WINRT1;U_FUZE</DefineConstants>
+    <DefineConstants>TRACE;WINRT1;U_WINDOWS</DefineConstants>
     <Optimize>True</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -417,6 +417,7 @@
     <Compile Include="MonoGame.Framework\Storage\StorageDevice.cs" />
     <Compile Include="MonoGame.Framework\Storage\StorageDeviceHelper.cs" />
     <Compile Include="MonoGame.Framework\UnityGameWindow.cs" />
+    <Compile Include="DllPlatformCheck.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />

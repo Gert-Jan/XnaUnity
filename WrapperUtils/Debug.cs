@@ -17,7 +17,7 @@ namespace XnaWrapper
 				switch (PlatformData.ActivePlatform)
 				{
 					case PlatformID.Fuze:
-						UDebug.Log(message + '\n');
+						Console.WriteLine(message);
 						break;
 					default:
 						Console.Write(message);
