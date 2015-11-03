@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Collections.Generic;
-//using Xna = Microsoft.Xna.Framework;
-using XnaSurfaceFormat = Microsoft.Xna.Framework.Graphics.SurfaceFormat;
+﻿using XSurfaceFormat = Microsoft.Xna.Framework.Graphics.SurfaceFormat;
 using XVector2 = Microsoft.Xna.Framework.Vector2;
 using UVector2 = UnityEngine.Vector2;
 using XVector3 = Microsoft.Xna.Framework.Vector3;
@@ -119,52 +115,52 @@ namespace XnaWrapper
 			return output;
 		}
 
-		public static UnityEngine.TextureFormat TextureFormat(XnaSurfaceFormat surfaceFormat)
+		public static UnityEngine.TextureFormat TextureFormat(XSurfaceFormat surfaceFormat)
 		{
 
 			switch (surfaceFormat)
 			{
-				case XnaSurfaceFormat.Alpha8:
+				case XSurfaceFormat.Alpha8:
 					return UnityEngine.TextureFormat.Alpha8;
-				case XnaSurfaceFormat.Vector4:
+				case XSurfaceFormat.Vector4:
 					return UnityEngine.TextureFormat.ARGB32;
-				case XnaSurfaceFormat.Bgra32:
+				case XSurfaceFormat.Bgra32:
 					return UnityEngine.TextureFormat.BGRA32;
-				case XnaSurfaceFormat.Dxt1:
+				case XSurfaceFormat.Dxt1:
 					return UnityEngine.TextureFormat.DXT1;
-				case XnaSurfaceFormat.Dxt5:
+				case XSurfaceFormat.Dxt5:
 					return UnityEngine.TextureFormat.DXT5;
-				case XnaSurfaceFormat.RgbEtc1:
+				case XSurfaceFormat.RgbEtc1:
 					return UnityEngine.TextureFormat.ETC_RGB4;
-				case XnaSurfaceFormat.RgbPvrtc2Bpp:
+				case XSurfaceFormat.RgbPvrtc2Bpp:
 					return UnityEngine.TextureFormat.PVRTC_RGB2;
-				case XnaSurfaceFormat.RgbaPvrtc2Bpp:
+				case XSurfaceFormat.RgbaPvrtc2Bpp:
 					return UnityEngine.TextureFormat.PVRTC_RGBA2;
-				case XnaSurfaceFormat.RgbPvrtc4Bpp:
+				case XSurfaceFormat.RgbPvrtc4Bpp:
 					return UnityEngine.TextureFormat.PVRTC_RGB4;
-				case XnaSurfaceFormat.RgbaPvrtc4Bpp:
+				case XSurfaceFormat.RgbaPvrtc4Bpp:
 					return UnityEngine.TextureFormat.PVRTC_RGBA4;
 				default:
-				case XnaSurfaceFormat.Single:
-				case XnaSurfaceFormat.Color:
+				case XSurfaceFormat.Single:
+				case XSurfaceFormat.Color:
 					return UnityEngine.TextureFormat.RGBA32;
-				case XnaSurfaceFormat.HalfSingle:
+				case XSurfaceFormat.HalfSingle:
 					return UnityEngine.TextureFormat.RGBA4444;
-				case XnaSurfaceFormat.Bgr32:
-				case XnaSurfaceFormat.Bgr565:
-				case XnaSurfaceFormat.Bgra4444:
-				case XnaSurfaceFormat.Bgra5551:
-				case XnaSurfaceFormat.Dxt1a:
-				case XnaSurfaceFormat.Dxt3:
-				case XnaSurfaceFormat.HalfVector2:
-				case XnaSurfaceFormat.HalfVector4:
-				case XnaSurfaceFormat.HdrBlendable:
-				case XnaSurfaceFormat.NormalizedByte2:
-				case XnaSurfaceFormat.NormalizedByte4:
-				case XnaSurfaceFormat.Rg32:
-				case XnaSurfaceFormat.Rgba1010102:
-				case XnaSurfaceFormat.Rgba64:
-				case XnaSurfaceFormat.Vector2:
+				case XSurfaceFormat.Bgr32:
+				case XSurfaceFormat.Bgr565:
+				case XSurfaceFormat.Bgra4444:
+				case XSurfaceFormat.Bgra5551:
+				case XSurfaceFormat.Dxt1a:
+				case XSurfaceFormat.Dxt3:
+				case XSurfaceFormat.HalfVector2:
+				case XSurfaceFormat.HalfVector4:
+				case XSurfaceFormat.HdrBlendable:
+				case XSurfaceFormat.NormalizedByte2:
+				case XSurfaceFormat.NormalizedByte4:
+				case XSurfaceFormat.Rg32:
+				case XSurfaceFormat.Rgba1010102:
+				case XSurfaceFormat.Rgba64:
+				case XSurfaceFormat.Vector2:
 					return UnityEngine.TextureFormat.RGBA32;
 				/*
 				return UnityEngine.TextureFormat.ARGB4444;

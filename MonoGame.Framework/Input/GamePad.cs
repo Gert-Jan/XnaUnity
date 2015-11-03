@@ -4,7 +4,7 @@
 	{
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
-			return XnaWrapper.PlatformData.GamePad.GetState(playerIndex);
+			return XnaWrapper.PlatformInstances.GamePad.GetState(playerIndex);
 		}
 
 		//private struct ButtonMapStruct

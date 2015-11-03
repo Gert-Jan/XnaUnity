@@ -1,35 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using UDebug = UnityEngine.Debug;
 
 namespace XnaWrapper
 {
-	public static class Debug
+	public static class Log
 	{
 		private static List<string> buffer = new List<string>();
 
-		private static void Log_internal(string message)
+		private static void Internal_Write(string message)
 		{
 			if (UnityEngine.Application.isEditor) // must query unity directly to allow this being used from editor scripts
-				UDebug.Log(message + '\n');
+				UnityEngine.Debug.Log(message + '\n');
 			else
-			{
-				switch (PlatformData.ActivePlatform)
-				{
-					case PlatformID.Fuze:
-						Console.WriteLine(message);
-						break;
-					default:
-						Console.Write(message);
-						break;
-				}
-			}
+#if U_FUZE
+				Console.WriteLine(message);
+#else
+				Console.Write(message);
+#endif
 		}
 		
 		/// <summary>
 		/// Log, buffered
 		/// </summary>
-		public static void LogB(object message)
+		public static void Buffer(object message)
 		{
 			buffer.Add(SafeToString(message));
         }
@@ -37,7 +30,7 @@ namespace XnaWrapper
 		/// <summary>
 		/// Log formatted, buffered
 		/// </summary>
-		public static void LogB(string message, object arg0, params object[] args)
+		public static void Buffer(string message, object arg0, params object[] args)
 		{
 			buffer.Add(string.Format(message, ConvertArgs(arg0, args)));
 		}
@@ -45,43 +38,43 @@ namespace XnaWrapper
 		/// <summary>
 		/// Flush any buffered logs
 		/// </summary>
-		public static void LogF()
+		public static void Flush()
 		{
 			if (buffer.Count > 0)
-				Log_internal(Time() + " " + string.Join("", buffer.ToArray()));
+				Internal_Write(Time() + " " + string.Join("", buffer.ToArray()));
 			buffer.Clear();
         }
 
 		/// <summary>
 		/// Log
 		/// </summary>
-		public static void Log(object message)
+		public static void Write(object message)
 		{
-			Log_internal(SafeToString(message));
+			Internal_Write(SafeToString(message));
 		}
 
 		/// <summary>
 		/// Log formatted
 		/// </summary>
-		public static void Log(string message, object arg0, params object[] args)
+		public static void Write(string message, object arg0, params object[] args)
 		{
-			Log_internal(string.Format(message, ConvertArgs(arg0, args)));
+			Internal_Write(string.Format(message, ConvertArgs(arg0, args)));
 		}
 		
 		/// <summary>
 		/// Log, time prepended
 		/// </summary>
-		public static void LogT(object message)
+		public static void WriteT(object message)
 		{
-			Log_internal(Time() + SafeToString(message));
+			Internal_Write(Time() + SafeToString(message));
 		}
 
 		/// <summary>
 		/// Log formatted, time prepended
 		/// </summary>
-		public static void LogT(string message, object arg0, params object[] args)
+		public static void WriteT(string message, object arg0, params object[] args)
 		{
-			Log_internal(Time() + string.Format(message, ConvertArgs(arg0, args)));
+			Internal_Write(Time() + string.Format(message, ConvertArgs(arg0, args)));
 		}
 
 		private static string[] ConvertArgs(object arg0, params object[] args)

@@ -10,28 +10,28 @@ using UObject = UnityEngine.Object;
 
 namespace XnaWrapper
 {
-	public class XnaBundleManager
+	public class BundleManager
 	{
 		public const string DirSeparator = "$";
 		internal static string validPathFormat = null;
 		public readonly bool oneAssetPerBundle;
 		private readonly int totalBundles;
 
-		private LinkedList<XnaBundle> bundlesLoading = new LinkedList<XnaBundle>();
+		private LinkedList<Bundle> bundlesLoading = new LinkedList<Bundle>();
 
-		private Dictionary<string, XnaBundle> bundleMap = new Dictionary<string, XnaBundle>();
-		private Dictionary<string, XnaBundleItem> bundleItemMap = new Dictionary<string, XnaBundleItem>();
+		private Dictionary<string, Bundle> bundleMap = new Dictionary<string, Bundle>();
+		private Dictionary<string, BundleItem> bundleItemMap = new Dictionary<string, BundleItem>();
 
-		public ICollection<XnaBundle> Bundles { get { return bundleMap.Values; } }
+		public ICollection<Bundle> Bundles { get { return bundleMap.Values; } }
 
-		public bool TryGetItem(string fileName, out XnaBundleItem item)
+		public bool TryGetItem(string fileName, out BundleItem item)
 		{
 			return bundleItemMap.TryGetValue(fileName, out item);
 		}
 
 		#region Init
 
-		public XnaBundleManager(TextReader bundleMappingsReader, bool readUnityPaths)
+		public BundleManager(TextReader bundleMappingsReader, bool readUnityPaths)
         {
 			InitPathFormat();
 
@@ -55,11 +55,11 @@ namespace XnaWrapper
 
 		void InitBundlesFromMappings(TextReader bundleMappingsReader, bool readUnityPaths)
 		{
-			XnaBundle[] bundles = new XnaBundle[totalBundles];
+			Bundle[] bundles = new Bundle[totalBundles];
 			for (int i = 0; i < totalBundles; ++i)
-				bundles[i] = new XnaBundle(bundleMappingsReader, bundleItemMap, readUnityPaths, oneAssetPerBundle);
+				bundles[i] = new Bundle(bundleMappingsReader, bundleItemMap, readUnityPaths, oneAssetPerBundle);
 
-			foreach (XnaBundle bundle in bundles)
+			foreach (Bundle bundle in bundles)
 			{
 				bundleMap.Add(bundle.bundleName, bundle);
 			}
@@ -69,25 +69,20 @@ namespace XnaWrapper
 		{
 			if (validPathFormat != null)
 				return;
-
-			switch (PlatformData.ActivePlatform)
-			{
-				case PlatformID.Windows:
-					validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
-					break;
-				default:
-					validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
-					break;
-			}
+#if U_WINDOWS
+			validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
+#else
+			validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
+#endif
 		}
 
-		#endregion
+#endregion
 
-		#region Management
+#region Management
 
 		public void LoadBundle(string bundleName)
 		{
-			XnaBundle bundle;
+			Bundle bundle;
 			if (bundleMap.TryGetValue(bundleName, out bundle))
 			{
 				if (bundle.Status != XnaBundleStatus.Initialized)
@@ -97,12 +92,12 @@ namespace XnaWrapper
 				bundlesLoading.AddLast(bundle);
 			}
 			else if (!oneAssetPerBundle)
-				Debug.Log("(LoadBundle) Bundle not present: " + bundleName);
+				Log.Write("(LoadBundle) Bundle not present: " + bundleName);
 		}
 
 		public void ReleaseBundle(string bundleName)
 		{
-			XnaBundle bundle;
+			Bundle bundle;
 			if (bundleMap.TryGetValue(bundleName, out bundle))
 			{
 				XnaBundleStatus status = bundle.Status;
@@ -114,7 +109,7 @@ namespace XnaWrapper
 					bundle.AbortLoad();
 			}
 			else if (!oneAssetPerBundle)
-				Debug.Log("(ReleaseBundle) Bundle not present: " + bundleName);
+				Log.Write("(ReleaseBundle) Bundle not present: " + bundleName);
 		}
 
 		public void UpdateBundleLoading()
@@ -122,10 +117,10 @@ namespace XnaWrapper
 #if LOAD_PARALLEL //  compiler condition at the top of this file
 			if (bundlesLoading.Count > 0)
 			{
-				LinkedListNode<XnaBundle> node = bundlesLoading.First;
+				LinkedListNode<Bundle> node = bundlesLoading.First;
 				while (node != null)
 				{
-					LinkedListNode<XnaBundle> nextNode = node.Next;
+					LinkedListNode<Bundle> nextNode = node.Next;
 
 					if (node.Value.Update() == XnaBundleStatus.Ready)
 						bundlesLoading.Remove(node);
@@ -155,23 +150,23 @@ namespace XnaWrapper
 		Ready
 	}
 
-	public class XnaBundle
+	public class Bundle
 	{
 		private class Loader
 		{
 			private WWW data;
 
-			private XnaBundle xnaBundle;
+			private Bundle xnaBundle;
 			private Stack<ContentRequest> busyRequests;
 
 			private int index = 0;
 			public bool shouldAbort = false;
 
-			public Loader(XnaBundle xnaBundle)
+			public Loader(Bundle xnaBundle)
 			{
 				this.xnaBundle = xnaBundle;
 
-				foreach (XnaBundleItem item in xnaBundle.items)
+				foreach (BundleItem item in xnaBundle.items)
 					item.AddUsageReference();
 			}
 
@@ -189,7 +184,7 @@ namespace XnaWrapper
 			// Returns true once all requests are done
 			public bool TryFinishLoading()
 			{
-				if (PlatformData.AssetProvider != null)
+				if (PlatformInstances.AssetProvider != null)
 					return LoadFromProvider();
 
 				if (busyRequests == null)
@@ -222,12 +217,12 @@ namespace XnaWrapper
 
 			private bool LoadFromProvider()
 			{
-				int max = PlatformData.AssetProvider.MaxAssetsPerUpdate();
+				int max = PlatformInstances.AssetProvider.MaxAssetsPerUpdate();
 
 				for (int i = 0; i < max; ++i)
 				{
 					ContentRequest request = xnaBundle.items[index].Request;
-					request.Asset = PlatformData.AssetProvider.LoadAsset(xnaBundle.itemUnityPaths[index]);
+					request.Asset = PlatformInstances.AssetProvider.LoadAsset(xnaBundle.itemUnityPaths[index]);
 
 					++index;
 					if (index == xnaBundle.items.Length)
@@ -242,7 +237,7 @@ namespace XnaWrapper
 			
 			private void InitRequests()
 			{
-				XnaBundleItem[] items = xnaBundle.items;
+				BundleItem[] items = xnaBundle.items;
 				int numItems = items.Length;
 				busyRequests = new Stack<ContentRequest>(numItems);
 
@@ -254,7 +249,7 @@ namespace XnaWrapper
 					{
 						string guaranteedValidPath = data.assetBundle.GetAllAssetNames()[0];
 						if (guaranteedValidPath != xnaBundle.itemUnityPaths[0])
-							Debug.LogT("Mismatched asset path: {0}   {1}", guaranteedValidPath, xnaBundle.itemUnityPaths[0]);
+							Log.WriteT("Mismatched asset path: {0}   {1}", guaranteedValidPath, xnaBundle.itemUnityPaths[0]);
 						request.Operation = data.assetBundle.LoadAssetAsync(guaranteedValidPath);
 						busyRequests.Push(request);
 					}
@@ -279,13 +274,13 @@ namespace XnaWrapper
 		private readonly string bundleFilePath;
 		public readonly string bundleName;
 
-		private XnaBundleItem[] items;
+		private BundleItem[] items;
 		private string[] itemUnityPaths;
 
 		private Loader loader = null;
 		private bool isActive = false;
 
-		public ICollection<XnaBundleItem> Items { get { return items; } }
+		public ICollection<BundleItem> Items { get { return items; } }
 		public ICollection<string> ItemUnityPaths { get { return itemUnityPaths; } }
 
 		public XnaBundleStatus Status
@@ -303,7 +298,7 @@ namespace XnaWrapper
 			}
 		}
 
-        internal XnaBundle(TextReader reader, Dictionary<string, XnaBundleItem> bundleItemMap, bool readUnityPaths, bool oneAssetPerBundle)
+        internal Bundle(TextReader reader, Dictionary<string, BundleItem> bundleItemMap, bool readUnityPaths, bool oneAssetPerBundle)
         {
 			int bundleSize;
             if (oneAssetPerBundle)
@@ -311,11 +306,11 @@ namespace XnaWrapper
 			else
 			{
 				bundleName = reader.ReadLine();
-				bundleFilePath = XnaBundleManager.validPathFormat + bundleName;
+				bundleFilePath = BundleManager.validPathFormat + bundleName;
                 bundleSize = int.Parse(reader.ReadLine());
 			}
 			
-			items = new XnaBundleItem[bundleSize];
+			items = new BundleItem[bundleSize];
 			itemUnityPaths = new string[bundleSize];
 
 			string name = null;
@@ -336,12 +331,12 @@ namespace XnaWrapper
 					itemUnityPaths[i] = id.Substring(semicolonIndex + 1, id.Length - semicolonIndex - 1);
 				}
 
-				XnaBundleItem existingItem;
+				BundleItem existingItem;
 				if (bundleItemMap.TryGetValue(name, out existingItem))
 					items[i] = existingItem;
 				else
 				{
-					items[i] = new XnaBundleItem(name);
+					items[i] = new BundleItem(name);
 					bundleItemMap[name] = items[i];
 				}
 			}
@@ -349,7 +344,7 @@ namespace XnaWrapper
 			if (oneAssetPerBundle)
 			{
 				bundleName = name;
-				bundleFilePath = XnaBundleManager.validPathFormat + name.Replace("\\", XnaBundleManager.DirSeparator);
+				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator);
 			}
 			bundleFilePath = bundleFilePath.ToLower();
         }
@@ -365,7 +360,7 @@ namespace XnaWrapper
 		{
 			isActive = false;
 
-			foreach (XnaBundleItem item in items)
+			foreach (BundleItem item in items)
 				item.RemoveUsageReference();
 		}
 
@@ -394,7 +389,7 @@ namespace XnaWrapper
 
 	}
 
-	public class XnaBundleItem
+	public class BundleItem
 	{
 		public readonly string name;
 
@@ -408,7 +403,7 @@ namespace XnaWrapper
 			get { return request; }
 		}
 
-		internal XnaBundleItem(string name)
+		internal BundleItem(string name)
 		{
 			this.name = name;
 		}
@@ -427,7 +422,7 @@ namespace XnaWrapper
 			if (objectReferences == 0)
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (PlatformData.AssetProvider == null)
+				if (PlatformInstances.AssetProvider == null)
 					UObject.DestroyImmediate(Request.Asset, true);
 
 				request = null;

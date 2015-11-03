@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Utilities;
 using TextureAtlasContent;
 using UnityEngine;
 using XnaWrapper;
-using XDebug = XnaWrapper.Debug;
+using XDebug = XnaWrapper.Log;
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -60,7 +60,7 @@ namespace Microsoft.Xna.Framework.Content
 		const byte ContentCompressedLzx = 0x80;
 		const byte ContentCompressedLz4 = 0x40;
         
-		private static XnaBundleManager xnaBundles;
+		private static BundleManager xnaBundles;
 
 		private string _rootDirectory = string.Empty;
 		private IServiceProvider serviceProvider;
@@ -100,9 +100,9 @@ namespace Microsoft.Xna.Framework.Content
         {
 			if (xnaBundles == null && !Game.IsDummy)
 			{
-				XDebug.LogT("Initializing XnaBundleManager...");
-				xnaBundles = new XnaBundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
-				XDebug.LogT("XnaBundleManager Initialized");
+				XDebug.WriteT("Initializing XnaBundleManager...");
+				xnaBundles = new BundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
+				XDebug.WriteT("XnaBundleManager Initialized");
 			}
 		}
 
@@ -212,10 +212,10 @@ namespace Microsoft.Xna.Framework.Content
 			return unityType;
 		}
 
-        private XnaBundleItem GetBundleItem(string fileName)
+        private BundleItem GetBundleItem(string fileName)
         {
             CheckXnaBundles();
-            XnaBundleItem item = null;
+            BundleItem item = null;
             xnaBundles.TryGetItem(fileName, out item);
             return item;
         }
@@ -232,7 +232,7 @@ namespace Microsoft.Xna.Framework.Content
                 throw new ObjectDisposedException("ContentManager");
 			}
 
-			XnaBundleItem item = GetBundleItem(fileName);
+			BundleItem item = GetBundleItem(fileName);
 			if (item != null)
 			{
 				if (!item.IsActive)
@@ -256,7 +256,7 @@ namespace Microsoft.Xna.Framework.Content
 				fileName = UnityResourcePath(fileName);
 				if (unityType == null)
 				{
-					XDebug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
+					XDebug.Write("ContentManager: LoadAsync: type {0} not defined.", type);
 					request.Operation = UResources.LoadAsync(fileName);
 				}
 				else
@@ -312,7 +312,7 @@ namespace Microsoft.Xna.Framework.Content
             }
             else
 			{
-				XDebug.Log("ContentManager: LoadAsync: type {0} not defined.", type);
+				XDebug.Write("ContentManager: LoadAsync: type {0} not defined.", type);
                 return asset;
             }
         }

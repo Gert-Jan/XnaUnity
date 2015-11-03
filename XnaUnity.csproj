@@ -1,21 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'XB1|AnyCPU'">
-    <OutputPath>bin\XB1\</OutputPath>
-    <DefineConstants>TRACE;UNITY;XB1;U_WINDOWS</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Release\XnaUnitySpriteBatch.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -35,8 +19,8 @@
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;UNITY;U_WINDOWS</DefineConstants>
+    <OutputPath>..\Assets\Dlls\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;UNITY;U_FUZE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -44,18 +28,8 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>..\Assets\Dlls\</OutputPath>
-    <DefineConstants>TRACE;UNITY;U_WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;UNITY;U_FUZE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Unity-WinRt|AnyCPU'">
-    <OutputPath>bin\Unity-WinRt\</OutputPath>
-    <DefineConstants>TRACE;WINRT1;U_WINDOWS</DefineConstants>
-    <Optimize>True</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
@@ -421,15 +395,15 @@
     <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
-    <Compile Include="WrapperUtils\PlatformInterfaces\XnaGamePad.cs" />
-    <Compile Include="WrapperUtils\PlatformInterfaces\XnaAssetProvider.cs" />
-    <Compile Include="WrapperUtils\Pool.cs" />
-    <Compile Include="WrapperUtils\PlatformData.cs" />
-    <Compile Include="WrapperUtils\SystemUtils.cs" />
-    <Compile Include="WrapperUtils\XnaBundleManager.cs" />
-    <Compile Include="WrapperUtils\DataConvert.cs" />
-    <Compile Include="WrapperUtils\Debug.cs" />
-    <Compile Include="WrapperUtils\MaterialProperties.cs" />
+    <Compile Include="XnaWrapper\PlatformInterfaces\XnaGamePad.cs" />
+    <Compile Include="XnaWrapper\PlatformInterfaces\XnaAssetProvider.cs" />
+    <Compile Include="XnaWrapper\Pool.cs" />
+    <Compile Include="XnaWrapper\PlatformInstances.cs" />
+    <Compile Include="XnaWrapper\SystemUtils.cs" />
+    <Compile Include="XnaWrapper\BundleManager.cs" />
+    <Compile Include="XnaWrapper\DataConversion.cs" />
+    <Compile Include="XnaWrapper\Debug.cs" />
+    <Compile Include="XnaWrapper\MaterialProperties.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
