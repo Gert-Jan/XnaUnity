@@ -69,10 +69,14 @@ namespace XnaWrapper
 		{
 			if (validPathFormat != null)
 				return;
+
+			if (Application.isEditor)
+				validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
+			else
 #if U_WINDOWS
-			validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
+				validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
 #else
-			validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
+				validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
 #endif
 		}
 

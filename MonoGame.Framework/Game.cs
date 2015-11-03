@@ -21,18 +21,14 @@ namespace Microsoft.Xna.Framework
 
 		private readonly GameTime _gameTime = new GameTime(new TimeSpan(), TimeSpan.FromSeconds(Time.fixedDeltaTime));
 		private readonly TimeSpan _fixedDeltaTime = TimeSpan.FromSeconds(Time.fixedDeltaTime);
-
-		public readonly string UnityStoragePath;
-        
+		
 		public Game()
 		{
 			GraphicsDevice = new GraphicsDevice(new Viewport(0, 0, Screen.width, Screen.height));
 			Content = new ContentManager();
 
 			_window = new UnityGameWindow(GraphicsDevice);
-
-			UnityStoragePath = Application.persistentDataPath;
-
+			
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
 		}

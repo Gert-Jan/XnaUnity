@@ -44,6 +44,7 @@ purpose and non-infringement.
 using Microsoft.Xna.Framework;
 using System;
 using System.IO;
+using XnaWrapper;
 
 #if WINDOWS_STOREAPP
 using Windows.Storage;
@@ -115,19 +116,19 @@ namespace Microsoft.Xna.Framework.Storage
 			_device = device;
 			_name = name;
 
+
 			// From the examples the root is based on MyDocuments folder
-#if WINDOWS_STOREAPP
-            var saved = "";
-#elif LINUX || MONOMAC
-            // We already have a SaveData folder on Mac/Linux.
-            var saved = StorageDevice.StorageRoot;
-#elif UNITY
-			var saved = Path.Combine(Game.Instance.UnityStoragePath, "SavedGames"); 
+#if UNITY
+			string saved = "";
+			if (playerIndex.HasValue)
+				saved = Path.Combine(PlatformInstances.Storage.GetLocalStorage(playerIndex.Value), "SavedGames"); 
+			else
+				saved = Path.Combine(PlatformInstances.Storage.GetLocalStorage(), "SavedGames");
 #else
 			var root = StorageDevice.StorageRoot;
 			var saved = Path.Combine(root,"SavedGames");
 #endif
-            _storagePath = Path.Combine(saved, name);
+			_storagePath = Path.Combine(saved, name);
 			
 			var playerSave = string.Empty;
 			if (playerIndex.HasValue) {
