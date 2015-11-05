@@ -9,8 +9,8 @@ namespace Microsoft.Xna.Framework
 {
 	public abstract class Game : IDisposable
 	{
-        // 
-        public static bool IsDummy = false; 
+		// 
+		public static bool IsDummy = false;
 
 		public bool IsMouseVisible { get; set; }
 		public GraphicsDevice GraphicsDevice { get; private set; }
@@ -21,23 +21,27 @@ namespace Microsoft.Xna.Framework
 
 		private readonly GameTime _gameTime = new GameTime(new TimeSpan(), TimeSpan.FromSeconds(Time.fixedDeltaTime));
 		private readonly TimeSpan _fixedDeltaTime = TimeSpan.FromSeconds(Time.fixedDeltaTime);
-		
+
+		public readonly string UnityStoragePath;
+
 		public Game()
 		{
 			GraphicsDevice = new GraphicsDevice(new Viewport(0, 0, Screen.width, Screen.height));
 			Content = new ContentManager();
 
 			_window = new UnityGameWindow(GraphicsDevice);
-			
+
+			UnityStoragePath = Application.persistentDataPath;
+
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
 		}
 
-        public abstract void DummyInitialize(System.Text.StringBuilder bundleMappings);
+		public abstract void DummyInitialize(System.Text.StringBuilder bundleMappings);
 
-        public void UnityInitialize()
-        {
-            LoadContent();
+		public void UnityInitialize()
+		{
+			LoadContent();
 			Initialize();
 			Instance = this;
 		}
@@ -48,7 +52,7 @@ namespace Microsoft.Xna.Framework
 		public void UnityUpdate()
 		{
 			foreach (AudioSource obj in SoundEffectInstance.disposed)
-                UnityEngine.Object.Destroy(obj);
+				UnityEngine.Object.Destroy(obj);
 			SoundEffectInstance.disposed.Clear();
 
 			PreUpdate();
@@ -86,17 +90,17 @@ namespace Microsoft.Xna.Framework
 			_gameTimer.Reset();
 			_gameTimer.Start();
 			// Perform as many full fixed length time steps as we can.
-            //bool wasInWhile = false;
+			//bool wasInWhile = false;
 			//while (_accumulatedElapsedTime >= _targetElapsedTime)
 			//{
-             //   wasInWhile = true;
-                _gameTime.TotalGameTime += _targetElapsedTime;
-				_accumulatedElapsedTime -= _targetElapsedTime;
+			//   wasInWhile = true;
+			_gameTime.TotalGameTime += _targetElapsedTime;
+			_accumulatedElapsedTime -= _targetElapsedTime;
 			//	++stepCount;
 
-				//MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
-				Update(_gameTime);
-               
+			//MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
+			Update(_gameTime);
+
 			//}
 
 			// Draw needs to know the total elapsed time
