@@ -36,29 +36,36 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			get
 			{
-				return AudioSource.volume;
+				if (AudioSource != null)
+					return AudioSource.volume;
+				else
+					return 0;
 			}
 			set
 			{
-				AudioSource.volume = value;
+				if (AudioSource != null)
+					AudioSource.volume = value;
 			}
 		}
 
 		public static void Stop()
 		{
-			AudioSource.Stop();
+			if (AudioSource != null)
+				AudioSource.Stop();
 			State = MediaState.Stopped;
 		}
 
 		public static void Resume()
 		{
-			AudioSource.Play();
+			if (AudioSource != null)
+				AudioSource.Play();
 			State = MediaState.Playing;
 		}
 
 		public static void Pause()
 		{
-			AudioSource.Pause();
+			if (AudioSource != null)
+				AudioSource.Pause();
 			State = MediaState.Paused;
 		}
 

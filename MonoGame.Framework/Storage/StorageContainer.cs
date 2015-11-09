@@ -122,7 +122,7 @@ namespace Microsoft.Xna.Framework.Storage
             // We already have a SaveData folder on Mac/Linux.
             var saved = StorageDevice.StorageRoot;
 #elif UNITY
-			var saved = Path.Combine(Game.Instance.UnityStoragePath, "SavedGames");
+			var saved = Path.Combine("unknown", "SavedGames");
 #else
 			var root = StorageDevice.StorageRoot;
 			var saved = Path.Combine(root,"SavedGames");
@@ -200,8 +200,6 @@ namespace Microsoft.Xna.Framework.Storage
             var task = folder.CreateFolderAsync(path, CreationCollisionOption.OpenIfExists);
             task.AsTask().Wait();
 #else
-			XnaWrapper.Log.Write("CreateDirectoryAbsolute");
-
 			if (!Directory.Exists(path))
 			{
 				Directory.CreateDirectory(path);

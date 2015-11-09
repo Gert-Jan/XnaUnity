@@ -9,16 +9,16 @@ namespace XnaWrapper
 
 		private static void Internal_Write(string message)
 		{
-			if (UnityEngine.Application.isEditor) // must query unity directly to allow this being used from editor scripts
+			if (PlatformInstances.IsEditor) // must query unity directly to allow this being used from editor scripts
 				UnityEngine.Debug.Log(message + '\n');
 			else
 #if U_FUZE
-				Console.WriteLine(message);
-#else
 				Console.Write(message);
+#else
+				Console.WriteLine(message);
 #endif
 		}
-		
+
 		/// <summary>
 		/// Log, buffered
 		/// </summary>

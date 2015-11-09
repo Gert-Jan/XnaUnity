@@ -403,7 +403,7 @@
     <Compile Include="XnaWrapper\SystemUtils.cs" />
     <Compile Include="XnaWrapper\BundleManager.cs" />
     <Compile Include="XnaWrapper\DataConversion.cs" />
-    <Compile Include="XnaWrapper\Debug.cs" />
+    <Compile Include="XnaWrapper\Log.cs" />
     <Compile Include="XnaWrapper\MaterialProperties.cs" />
   </ItemGroup>
   <ItemGroup>
