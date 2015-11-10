@@ -4,7 +4,7 @@ namespace XnaWrapper
 {
 	public static class PlatformInstances
 	{
-		public static bool IsEditor;
+		public static bool IsEditor = true;
 
 		public static IGamePad GamePad;
 		public static IAssetProvider AssetProvider;
