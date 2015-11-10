@@ -4,8 +4,20 @@
 	{
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
-			return XnaWrapper.PlatformInstances.GamePad.GetState(playerIndex);
-		}
+			GamePadState state = XnaWrapper.PlatformInstances.GamePad.GetState(playerIndex);
+			string dpad = "";
+			if (state.DPad.Up == ButtonState.Pressed)
+				dpad += "Up ";
+			if (state.DPad.Right == ButtonState.Pressed)
+				dpad += "Right ";
+			if (state.DPad.Down == ButtonState.Pressed)
+				dpad += "Down ";
+			if (state.DPad.Left == ButtonState.Pressed)
+				dpad += "Left ";
+			if (!string.IsNullOrEmpty(dpad))
+				XnaWrapper.Log.WriteT(dpad);
+			return state;
+        }
 
 		//private struct ButtonMapStruct
 		//{
