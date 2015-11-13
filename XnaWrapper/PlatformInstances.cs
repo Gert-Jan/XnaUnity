@@ -7,7 +7,7 @@ namespace XnaWrapper
 		public static bool IsEditor = true;
 
 		public static IGamePad GamePad;
-		public static IAssetProvider AssetProvider;
+		public static IAssetLoadingInfo AssetLoadingInfo;
 		public static IStorage Storage;
 	}
 

@@ -1,7 +1,4 @@
-﻿#define LOAD_PARALLEL
-#define INCONSISTENCY_DETECTION
-
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
@@ -16,8 +13,10 @@ namespace XnaWrapper
 		internal static string validPathFormat = null;
 		public readonly bool oneAssetPerBundle;
 		private readonly int totalBundles;
+		private readonly int maxParallel;
 
-		private LinkedList<Bundle> bundlesLoading = new LinkedList<Bundle>();
+		private LinkedList<Bundle> bundlesQueuedLoading = new LinkedList<Bundle>();
+		private LinkedList<Bundle> bundlesLoadings = new LinkedList<Bundle>();
 
 		private Dictionary<string, Bundle> bundleMap = new Dictionary<string, Bundle>();
 		private Dictionary<string, BundleItem> bundleItemMap = new Dictionary<string, BundleItem>();
@@ -36,6 +35,7 @@ namespace XnaWrapper
 			InitPathFormat();
 
 			totalBundles = int.Parse(bundleMappingsReader.ReadLine());
+			maxParallel = PlatformInstances.AssetLoadingInfo.MaxAssetsLoadingParallel();
 
 			string mode = bundleMappingsReader.ReadLine().ToLower();
 			switch (mode)
@@ -93,7 +93,7 @@ namespace XnaWrapper
 					return;
 
 				bundle.LoadBundle();
-				bundlesLoading.AddLast(bundle);
+				bundlesQueuedLoading.AddLast(bundle);
 			}
 			else if (!oneAssetPerBundle)
 				Log.Write("(LoadBundle) Bundle not present: " + bundleName);
@@ -108,7 +108,7 @@ namespace XnaWrapper
 				if (status == XnaBundleStatus.Ready)
 					bundle.ReleaseBundle();
 				else if (status == XnaBundleStatus.LoadingQueued)
-					bundlesLoading.Remove(bundle);
+					bundlesQueuedLoading.Remove(bundle);
 				else if (status == XnaBundleStatus.Loading)
 					bundle.AbortLoad();
 			}
@@ -118,29 +118,25 @@ namespace XnaWrapper
 
 		public void UpdateBundleLoading()
 		{
-#if LOAD_PARALLEL //  compiler condition at the top of this file
-			if (bundlesLoading.Count > 0)
+			while (bundlesQueuedLoading.Count > 0 && bundlesLoadings.Count < maxParallel)
 			{
-				LinkedListNode<Bundle> node = bundlesLoading.First;
+				bundlesLoadings.AddLast(bundlesQueuedLoading.First.Value);
+				bundlesQueuedLoading.RemoveFirst();
+			}
+			
+			if (bundlesLoadings.Count > 0)
+			{
+				LinkedListNode<Bundle> node = bundlesLoadings.First;
 				while (node != null)
 				{
 					LinkedListNode<Bundle> nextNode = node.Next;
 
 					if (node.Value.Update() == XnaBundleStatus.Ready)
-						bundlesLoading.Remove(node);
+						bundlesLoadings.Remove(node);
 
 					node = nextNode;
 				}
 			}
-#else
-			while (bundlesLoading.Count > 0)
-			{
-				if (bundlesLoading.First.Value.Update() == XnaBundleStatus.Ready)
-					bundlesLoading.RemoveFirst();
-				else
-					break;
-			}
-#endif
 		}
 
 #endregion
@@ -162,8 +158,7 @@ namespace XnaWrapper
 
 			private Bundle xnaBundle;
 			private Stack<ContentRequest> busyRequests;
-
-			private int index = 0;
+			
 			public bool shouldAbort = false;
 
 			public Loader(Bundle xnaBundle)
@@ -185,16 +180,28 @@ namespace XnaWrapper
 				}
 			}
 
+			private void LoadWWW()
+			{
+#if U_FUZE
+				if (PlatformInstances.IsEditor)
+					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+				else
+					data = new WWW(xnaBundle.bundleFilePath);
+#else
+				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+#endif
+			}
+
 			// Returns true once all requests are done
 			public bool TryFinishLoading()
 			{
-				if (PlatformInstances.AssetProvider != null)
+				if (PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
 					return LoadFromProvider();
 
 				if (busyRequests == null)
 				{
-                    if (data == null)
-						data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+					if (data == null)
+						LoadWWW();
 
 					if (!string.IsNullOrEmpty(data.error))
 						throw new Exception(data.error);
@@ -221,22 +228,13 @@ namespace XnaWrapper
 
 			private bool LoadFromProvider()
 			{
-				int max = PlatformInstances.AssetProvider.MaxAssetsPerUpdate();
-
-				for (int i = 0; i < max; ++i)
+				for (int i = 0; i < xnaBundle.items.Length; ++i)
 				{
-					ContentRequest request = xnaBundle.items[index].Request;
-					request.Asset = PlatformInstances.AssetProvider.LoadAsset(xnaBundle.itemUnityPaths[index]);
-
-					++index;
-					if (index == xnaBundle.items.Length)
-					{
-						index = 0;
-						return true;
-					}
+					ContentRequest request = xnaBundle.items[i].Request;
+					request.Asset = PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase(xnaBundle.itemUnityPaths[i]);
 				}
 
-				return false;
+				return true;
 			}
 			
 			private void InitRequests()
@@ -245,30 +243,13 @@ namespace XnaWrapper
 				int numItems = items.Length;
 				busyRequests = new Stack<ContentRequest>(numItems);
 
-#if INCONSISTENCY_DETECTION
-				if (numItems == 1)
+				for (int i = 0; i < numItems; ++i)
 				{
-					ContentRequest request = items[0].Request;
+					ContentRequest request = items[i].Request;
 					if (!request.isDone && request.Operation == null)
 					{
-						string guaranteedValidPath = data.assetBundle.GetAllAssetNames()[0];
-						if (guaranteedValidPath != xnaBundle.itemUnityPaths[0])
-							Log.WriteT("Mismatched asset path: {0}   {1}", guaranteedValidPath, xnaBundle.itemUnityPaths[0]);
-						request.Operation = data.assetBundle.LoadAssetAsync(guaranteedValidPath);
+						request.Operation = data.assetBundle.LoadAssetAsync(xnaBundle.itemUnityPaths[i]);
 						busyRequests.Push(request);
-					}
-				}
-				else
-#endif
-				{
-					for (int i = 0; i < numItems; ++i)
-					{
-						ContentRequest request = items[i].Request;
-						if (!request.isDone && request.Operation == null)
-						{
-							request.Operation = data.assetBundle.LoadAssetAsync(xnaBundle.itemUnityPaths[i]);
-							busyRequests.Push(request);
-						}
 					}
 				}
 			}
@@ -426,7 +407,7 @@ namespace XnaWrapper
 			if (objectReferences == 0)
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (PlatformInstances.AssetProvider == null)
+				if (!PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
 					UObject.DestroyImmediate(Request.Asset, true);
 
 				request = null;

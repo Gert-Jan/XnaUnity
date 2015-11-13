@@ -41,9 +41,19 @@ namespace XnaWrapper
 		public static void Flush()
 		{
 			if (buffer.Count > 0)
-				Internal_Write(Time() + " " + string.Join("", buffer.ToArray()));
+				Internal_Write(string.Join("", buffer.ToArray()));
 			buffer.Clear();
         }
+
+		/// <summary>
+		/// Flush any buffered logs
+		/// </summary>
+		public static void FlushT()
+		{
+			if (buffer.Count > 0)
+				Internal_Write(Time() + " " + string.Join("", buffer.ToArray()));
+			buffer.Clear();
+		}
 
 		/// <summary>
 		/// Log
