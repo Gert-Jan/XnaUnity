@@ -14,7 +14,6 @@ using Microsoft.Xna.Framework.Utilities;
 using TextureAtlasContent;
 using UnityEngine;
 using XnaWrapper;
-using XDebug = XnaWrapper.Log;
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -100,9 +99,9 @@ namespace Microsoft.Xna.Framework.Content
         {
 			if (xnaBundles == null && !Game.IsDummy)
 			{
-				XDebug.WriteT("Initializing XnaBundleManager...");
+				Log.WriteT("Initializing XnaBundleManager...");
 				xnaBundles = new BundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
-				XDebug.WriteT("XnaBundleManager Initialized");
+				Log.WriteT("XnaBundleManager Initialized");
 			}
 		}
 
@@ -171,6 +170,7 @@ namespace Microsoft.Xna.Framework.Content
                 Console.WriteLine("ContentManager.Load: manager disposed");
 				throw new ObjectDisposedException("ContentManager");
 			}
+			fileName = fileName.ToLower();
 
 			object asset = null;
 			if (loadedAssets.TryGetValue(fileName, out asset))
@@ -221,8 +221,8 @@ namespace Microsoft.Xna.Framework.Content
         }
 
 		public ContentRequest LoadAsync(string fileName, Type type)
-        {
-            if (string.IsNullOrEmpty(fileName))
+		{
+			if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException("assetName");
             }
@@ -231,6 +231,7 @@ namespace Microsoft.Xna.Framework.Content
                 Console.WriteLine("ContentManager.Load: manager disposed");
                 throw new ObjectDisposedException("ContentManager");
 			}
+			fileName = fileName.ToLower();
 
 			BundleItem item = GetBundleItem(fileName);
 			if (item != null)
@@ -256,7 +257,7 @@ namespace Microsoft.Xna.Framework.Content
 				fileName = UnityResourcePath(fileName);
 				if (unityType == null)
 				{
-					XDebug.Write("ContentManager: LoadAsync: type {0} not defined.", type);
+					Log.Write("ContentManager: LoadAsync: type {0} not defined.", type);
 					request.Operation = UResources.LoadAsync(fileName);
 				}
 				else
@@ -312,18 +313,18 @@ namespace Microsoft.Xna.Framework.Content
             }
             else
 			{
-				XDebug.Write("ContentManager: LoadAsync: type {0} not defined.", type);
+				Log.Write("ContentManager: LoadAsync: type {0} not defined.", type);
                 return asset;
             }
         }
 
-        public static Stream ReadBytesFileToStream(string assetName)
-        {
-			assetName = assetName.Replace("\\", "/");
-            TextAsset binData = UResources.Load(assetName, typeof(TextAsset)) as TextAsset;
+        public static Stream ReadBytesFileToStream(string fileName)
+		{
+			fileName = fileName.ToLower().Replace("\\", "/");
+            TextAsset binData = UResources.Load(fileName, typeof(TextAsset)) as TextAsset;
             if (binData == null)
             {
-                throw new ContentLoadException("Failed to load " + assetName + " as " + typeof(TextAsset));
+                throw new ContentLoadException("Failed to load " + fileName + " as " + typeof(TextAsset));
             }
             return new MemoryStream(binData.bytes);
         }
