@@ -38,48 +38,12 @@ purpose and non-infringement.
 */
 #endregion License
 
-//﻿using System;
-//
-//namespace Microsoft.Xna.Framework.Storage
-//{
-//    public class StorageDevice
-//    {
-//        public bool IsConnected
-//        {
-//            get
-//            {
-//                return true;
-//            }
-//        }
-//
-//        public StorageContainer OpenContainer(string containerName)
-//        {
-//            return new StorageContainer(this,containerName);
-//        }
-//		
-//		public static StorageDevice ShowStorageDeviceGuide()
-//		{
-//			return new StorageDevice();
-//		}
-//    }
-//}
-
-#region Assembly Microsoft.Xna.Framework.Storage.dll, v4.0.30319
-// C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Storage.dll
-#endregion
-using Microsoft.Xna.Framework;
 using System;
-using System.IO;
-
-#if WINRT
-using Windows.Storage;
-#else
-using System.Runtime.Remoting.Messaging;
-#endif
 
 namespace Microsoft.Xna.Framework.Storage
 {
-	
+	/*
+
 	// The delegate must have the same signature as the method
 	// it will call asynchronously.
 	public delegate StorageDevice ShowSelectorAsynchronousShow (PlayerIndex player, int sizeInBytes, int directoryCount);
@@ -91,14 +55,98 @@ namespace Microsoft.Xna.Framework.Storage
 	// The delegate must have the same signature as the method
 	// it will call asynchronously.
 	public delegate StorageContainer OpenContainerAsynchronous (string displayName);
-	
-    /// <summary>
-    /// Exposes a storage device for storing user data.
-    /// </summary>
-    /// <remarks>MSDN documentation contains related conceptual article: http://msdn.microsoft.com/en-us/library/bb200105.aspx</remarks>
+
+	//*/
+
+	/// <summary>
+	/// Exposes a storage device for storing user data.
+	/// </summary>
+	/// <remarks>MSDN documentation contains related conceptual article: http://msdn.microsoft.com/en-us/library/bb200105.aspx</remarks>
 	public sealed class StorageDevice
 	{
-		
+		public bool IsConnected { get; set; }
+
+		// Summary:
+		//     Begins the process for displaying the storage device selector user interface,
+		//     and for specifying a callback implemented when the player chooses a device.
+		//     Reference page contains links to related code samples.
+		//
+		// Parameters:
+		//   callback:
+		//     An AsyncCallback that represents the method called when the player chooses
+		//     a device.
+		//
+		//   state:
+		//     A user-created object used to uniquely identify the request, or null.
+		public static IAsyncResult BeginShowSelector(AsyncCallback callback, object state)
+		{
+			throw new NotImplementedException();
+		}
+
+		// Summary:
+		//     Begins the process for displaying the storage device selector user interface;
+		//     specifies the callback implemented when the player chooses a device. Reference
+		//     page contains links to related code samples.
+		//
+		// Parameters:
+		//   player:
+		//     The PlayerIndex that represents the player who requested the save operation.
+		//     On Windows, the only valid option is PlayerIndex.One.
+		//
+		//   callback:
+		//     An AsyncCallback that represents the method called when the player chooses
+		//     a device.
+		//
+		//   state:
+		//     A user-created object used to uniquely identify the request, or null.
+		public static IAsyncResult BeginShowSelector(PlayerIndex player, AsyncCallback callback, object state)
+		{
+			throw new NotImplementedException();
+		}
+
+		// Summary:
+		//     Ends the display of the storage selector user interface. Reference page contains
+		//     links to related code samples.
+		//
+		// Parameters:
+		//   result:
+		//     The IAsyncResult returned from BeginShowSelector.
+		public static StorageDevice EndShowSelector(IAsyncResult result)
+		{
+			throw new NotImplementedException();
+		}
+
+		// Summary:
+		//     Begins the process for opening a StorageContainer containing any files for
+		//     the specified title.
+		//
+		// Parameters:
+		//   displayName:
+		//     A constant human-readable string that names the file.
+		//
+		//   callback:
+		//     An AsyncCallback that represents the method called when the operation is
+		//     complete.
+		//
+		//   state:
+		//     A user-created object used to uniquely identify the request, or null.
+		public IAsyncResult BeginOpenContainer(string displayName, AsyncCallback callback, object state)
+		{
+			throw new NotImplementedException();
+		}
+
+		// Summary:
+		//     Ends the process for opening a StorageContainer.
+		//
+		// Parameters:
+		//   result:
+		//     The IAsyncResult returned from BeginOpenContainer.
+		public StorageContainer EndOpenContainer(IAsyncResult result)
+		{
+			throw new NotImplementedException();
+		}
+
+		/*
 		PlayerIndex? player;
 
 		int directoryCount;
@@ -369,7 +417,6 @@ namespace Microsoft.Xna.Framework.Storage
 			return new StorageDevice (null, sizeInBytes, directoryCount);
 		}
 		
-		/*
 		//
 		//
 		// Parameters:
@@ -378,8 +425,7 @@ namespace Microsoft.Xna.Framework.Storage
 		public void DeleteContainer (string titleName)
 		{
 			throw new NotImplementedException ();
-		}			
-        */
+		}	
 
 		//
 		// Summary:
@@ -508,5 +554,6 @@ namespace Microsoft.Xna.Framework.Storage
 #endif
             }
 		}
+		//*/
 	}
 }

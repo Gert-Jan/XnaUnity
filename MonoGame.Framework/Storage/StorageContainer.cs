@@ -38,48 +38,8 @@ purpose and non-infringement.
 */
 #endregion License
 
-#region Assembly Microsoft.Xna.Framework.Storage.dll, v4.0.30319
-// C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Storage.dll
-#endregion
-using Microsoft.Xna.Framework;
 using System;
 using System.IO;
-
-#if WINDOWS_STOREAPP
-using Windows.Storage;
-using System.Linq;
-using Windows.Storage.Search;
-
-namespace System.IO
-{
-    public enum FileMode
-    {
-        CreateNew = 1,
-        Create = 2,
-        Open = 3,
-        OpenOrCreate = 4,
-        Truncate = 5,
-        Append = 6,
-    }
-
-    public enum FileAccess
-    {
-        Read = 1,
-        Write = 2,
-        ReadWrite = 3,
-    }
-
-    public enum FileShare
-    {
-        None = 0,
-        Read = 1,
-        Write = 2,
-        ReadWrite = 3,
-        Delete = 4,
-        Inheritable = 0x10,
-    }
-}
-#endif
 
 namespace Microsoft.Xna.Framework.Storage
 {
@@ -95,8 +55,38 @@ namespace Microsoft.Xna.Framework.Storage
 	/// Contains a logical collection of files used for user-data storage.
 	/// </summary>			
 	/// <remarks>MSDN documentation contains related conceptual article: http://msdn.microsoft.com/en-us/library/bb200105.aspx#ID4EDB</remarks>
-	public class StorageContainer : IDisposable
+	public class StorageContainer
 	{
+		public bool IsDisposed { get; private set; }
+
+		public void Dispose()
+		{
+			// Fill this in when we figure out what we should be disposing
+			IsDisposed = true;
+		}
+
+		/// <summary>
+		/// Opens a file contained in storage-container.
+		/// </summary>
+		/// <param name="file">Relative path of the file.</param>
+		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
+		/// <param name="fileAccess"><see cref="FileAccess"/> that specifies access mode.</param>
+		/// <returns><see cref="Stream"/> object for the opened file.</returns>
+		public Stream OpenFile(string file, FileMode fileMode, FileAccess fileAccess)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Deletes a file from the storage-container.
+		/// </summary>
+		/// <param name="file">The relative path of the file to be deleted.</param>
+		public void DeleteFile(string file)
+		{
+			throw new NotImplementedException();
+		}
+
+		/*
 		internal readonly string _storagePath;
 		private readonly StorageDevice _device;
 		private readonly string _name;
@@ -149,11 +139,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get { return _name; }
 		}
-
-		/// <summary>
-		/// Gets a bool value indicating whether the instance has been disposed.
-		/// </summary>
-		public bool IsDisposed { get; private set; }
 
 		/// <summary>
 		/// Returns the <see cref="StorageDevice"/> that holds logical files for the container.
@@ -306,16 +291,6 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 
 		/// <summary>
-		/// Disposes un-managed objects referenced by this object.
-		/// </summary>
-		public void Dispose()
-		{
-
-			// Fill this in when we figure out what we should be disposing
-			IsDisposed = true;
-		}
-
-		/// <summary>
 		/// Returns true if the specified file exists in the storage-container, false otherwise.
 		/// </summary>
 		/// <param name="file">The relative path of file to query for.</param>
@@ -360,8 +335,7 @@ namespace Microsoft.Xna.Framework.Storage
 			return Directory.GetDirectories(_storagePath);
 #endif
 		}
-
-		/*
+		
         /// <summary>
         /// Returns list of directory names with given search pattern.
         /// </summary>
@@ -371,7 +345,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			throw new NotImplementedException ();
 		}
-        */
 
 		/// <summary>
 		/// Returns list of file names in the storage-container.
@@ -482,5 +455,6 @@ namespace Microsoft.Xna.Framework.Storage
 			return File.Open(filePath, fileMode, fileAccess, fileShare);
 #endif
 		}
+		//*/
 	}
 }

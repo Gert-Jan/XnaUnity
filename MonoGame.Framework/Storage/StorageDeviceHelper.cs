@@ -38,6 +38,7 @@ purpose and non-infringement.
 */
 #endregion License
 
+/*
 using System;
 
 namespace Microsoft.Xna.Framework.Storage
@@ -85,4 +86,5 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 	}
 }
+//*/
 
