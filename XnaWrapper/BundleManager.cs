@@ -16,7 +16,7 @@ namespace XnaWrapper
 		private readonly int maxParallel;
 
 		private LinkedList<Bundle> bundlesQueuedLoading = new LinkedList<Bundle>();
-		private LinkedList<Bundle> bundlesLoadings = new LinkedList<Bundle>();
+		private LinkedList<Bundle> bundlesLoading = new LinkedList<Bundle>();
 
 		private Dictionary<string, Bundle> bundleMap = new Dictionary<string, Bundle>();
 		private Dictionary<string, BundleItem> bundleItemMap = new Dictionary<string, BundleItem>();
@@ -118,21 +118,21 @@ namespace XnaWrapper
 
 		public void UpdateBundleLoading()
 		{
-			while (bundlesQueuedLoading.Count > 0 && bundlesLoadings.Count < maxParallel)
+			while (bundlesQueuedLoading.Count > 0 && bundlesLoading.Count < maxParallel)
 			{
-				bundlesLoadings.AddLast(bundlesQueuedLoading.First.Value);
+				bundlesLoading.AddLast(bundlesQueuedLoading.First.Value);
 				bundlesQueuedLoading.RemoveFirst();
 			}
 			
-			if (bundlesLoadings.Count > 0)
+			if (bundlesLoading.Count > 0)
 			{
-				LinkedListNode<Bundle> node = bundlesLoadings.First;
+				LinkedListNode<Bundle> node = bundlesLoading.First;
 				while (node != null)
 				{
 					LinkedListNode<Bundle> nextNode = node.Next;
 
 					if (node.Value.Update() == XnaBundleStatus.Ready)
-						bundlesLoadings.Remove(node);
+						bundlesLoading.Remove(node);
 
 					node = nextNode;
 				}
