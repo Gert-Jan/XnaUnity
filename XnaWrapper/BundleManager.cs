@@ -35,7 +35,8 @@ namespace XnaWrapper
 			InitPathFormat();
 
 			totalBundles = int.Parse(bundleMappingsReader.ReadLine());
-			maxParallel = PlatformInstances.AssetLoadingInfo.MaxAssetsLoadingParallel();
+			if (PlatformInstances.AssetLoadingInfo != null)
+				maxParallel = PlatformInstances.AssetLoadingInfo.MaxAssetsLoadingParallel();
 
 			string mode = bundleMappingsReader.ReadLine().ToLower();
 			switch (mode)
