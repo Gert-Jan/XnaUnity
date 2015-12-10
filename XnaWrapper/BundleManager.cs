@@ -181,16 +181,21 @@ namespace XnaWrapper
 				}
 			}
 
+			private float startLoadTime;
+			private float finishDecompressTime;
+
 			private void LoadWWW()
 			{
-#if U_FUZE
-				if (PlatformInstances.IsEditor)
-					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
-				else
-					data = new WWW(xnaBundle.bundleFilePath);
-#else
-				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
-#endif
+				startLoadTime = Time.realtimeSinceStartup;
+				data = new WWW(xnaBundle.bundleFilePath);
+//#if U_FUZE
+//				if (PlatformInstances.IsEditor)
+//					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+//				else
+//					data = new WWW(xnaBundle.bundleFilePath);
+//#else
+//				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+//#endif
 			}
 
 			// Returns true once all requests are done
@@ -198,6 +203,7 @@ namespace XnaWrapper
 			{
 				if (PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
 					return LoadFromProvider();
+
 
 				if (busyRequests == null)
 				{
@@ -210,7 +216,8 @@ namespace XnaWrapper
 					if (!data.isDone)
 						return false;
 
-					InitRequests();
+					finishDecompressTime = Time.realtimeSinceStartup;
+                    InitRequests();
 				}
 
 				while (busyRequests.Count > 0)
@@ -223,6 +230,14 @@ namespace XnaWrapper
 
 				data.assetBundle.Unload(false);
 				data.Dispose();
+
+				float totalTime = Time.realtimeSinceStartup - startLoadTime;
+				if (totalTime > 0.5f)
+				{
+					float decompressTime = finishDecompressTime - startLoadTime;
+					float loadTime = Time.realtimeSinceStartup - finishDecompressTime;
+					Log.WriteT("Bundle {0} took long to load (decompressing: {1}, integration: {2})", xnaBundle.bundleName, decompressTime, loadTime);
+				}
 
 				return true;
 			}

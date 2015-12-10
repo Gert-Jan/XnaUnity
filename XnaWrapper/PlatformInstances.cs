@@ -8,7 +8,6 @@ namespace XnaWrapper
 
 		public static IGamePad GamePad;
 		public static IAssetLoadingInfo AssetLoadingInfo;
-		public static IStorage Storage;
 	}
 
 }
