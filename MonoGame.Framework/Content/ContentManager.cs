@@ -38,7 +38,7 @@ namespace Microsoft.Xna.Framework.Content
 				{
 					if (operation is ResourceRequest)
 						asset = (operation as ResourceRequest).asset;
-					else
+					else if (operation is AssetBundleRequest)
 						asset = (operation as AssetBundleRequest).asset;
 					operation = null;
 				}
@@ -60,6 +60,7 @@ namespace Microsoft.Xna.Framework.Content
 		const byte ContentCompressedLz4 = 0x40;
         
 		private static BundleManager xnaBundles;
+		private static StreamedContentManager streams;
 
 		private string _rootDirectory = string.Empty;
 		private IServiceProvider serviceProvider;
@@ -95,26 +96,44 @@ namespace Microsoft.Xna.Framework.Content
 			this.serviceProvider = serviceProvider;
 		}
 
-		private void CheckXnaBundles()
+		private void EnsureMappingsExist()
         {
 			if (xnaBundles == null && !Game.IsDummy)
 			{
-				Log.WriteT("Initializing XnaBundleManager...");
-				xnaBundles = new BundleManager(new StringReader(Resources.Load<TextAsset>("AssetBundleMappings").text), true);
-				Log.WriteT("XnaBundleManager Initialized");
+				string streamingAssetsPath;
+				if (PlatformInstances.IsEditor)
+					streamingAssetsPath = string.Format("file://{0}/", Application.streamingAssetsPath);
+				else
+#if U_WINDOWS
+					streamingAssetsPath = string.Format("file://{0}/", Application.streamingAssetsPath);
+#else
+					streamingAssetsPath = string.Format("{0}/", Application.streamingAssetsPath);
+#endif
+
+				Log.WriteT("Initializing Mapped Content...");
+				
+                xnaBundles = new BundleManager(streamingAssetsPath, 
+					new StringReader(UResources.Load<TextAsset>("AssetBundleMappings").text), 
+					true);
+				
+				streams = new StreamedContentManager(streamingAssetsPath, 
+					new StringReader(UResources.Load<TextAsset>("StreamedMappings").text));
+
+				Log.WriteT("Mapped Content Initialized");
 			}
 		}
 
 		public void UpdateBundleLoading()
 		{
-            CheckXnaBundles();
+			EnsureMappingsExist();
 
             xnaBundles.UpdateBundleLoading();
+			streams.UpdateLoading();
 		}
 
 		public void LoadBundle(string bundleName)
         {
-            CheckXnaBundles();
+			EnsureMappingsExist();
 
             //XnaWrapper.Debug.Log("loading: " + bundleName);
             xnaBundles.LoadBundle(bundleName);
@@ -122,7 +141,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public void ReleaseBundle(string bundleName)
         {
-            CheckXnaBundles();
+			EnsureMappingsExist();
 
             //XnaWrapper.Debug.Log("unloading: " + bundleName);
             xnaBundles.ReleaseBundle(bundleName);
@@ -158,7 +177,7 @@ namespace Microsoft.Xna.Framework.Content
             this.Load<TextureAtlas>("");
             this.Load<Effect>("");
         }
-
+		
 		public T Load<T>(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
@@ -211,11 +230,19 @@ namespace Microsoft.Xna.Framework.Content
 				unityType = typeof(TextAsset);
 			return unityType;
 		}
+		
+		private ContentItem GetStreamedItem(string fileName)
+		{
+			EnsureMappingsExist();
+			ContentItem item;
+			streams.TryGetItem(fileName, out item);
+			return item;
+		}
 
-        private BundleItem GetBundleItem(string fileName)
+		private ContentItem GetBundleItem(string fileName)
         {
-            CheckXnaBundles();
-            BundleItem item = null;
+			EnsureMappingsExist();
+			ContentItem item;
             xnaBundles.TryGetItem(fileName, out item);
             return item;
         }
@@ -233,7 +260,21 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			fileName = fileName.ToLower();
 
-			BundleItem item = GetBundleItem(fileName);
+            ContentItem item = GetStreamedItem(fileName);
+			if (item != null)
+			{
+				if (!item.IsActive)
+				{
+					streams.LoadItem(fileName, GetUnityType(type));
+				}
+
+				if (item.Request == null)
+					throw new Exception("Unable to find streaming asset file " + fileName);
+
+				return item.Request;
+			}
+
+			item = GetBundleItem(fileName);
 			if (item != null)
 			{
 				if (!item.IsActive)
@@ -245,27 +286,25 @@ namespace Microsoft.Xna.Framework.Content
 				}
 
 				if (item.Request == null)
-					throw new Exception("Unable to find asset file " + fileName);
+					throw new Exception("Unable to find asset bundle file " + fileName);
 
 				return item.Request;
 			}
+
+			ContentRequest request = new ContentRequest();
+
+			Type unityType = GetUnityType(type);
+			fileName = UnityResourcePath(fileName);
+			if (unityType == null)
+			{
+				Log.Write("ContentManager: LoadAsync: type {0} not defined.", type);
+				request.Operation = UResources.LoadAsync(fileName);
+			}
 			else
 			{
-				ContentRequest request = new ContentRequest();
-
-				Type unityType = GetUnityType(type);
-				fileName = UnityResourcePath(fileName);
-				if (unityType == null)
-				{
-					Log.Write("ContentManager: LoadAsync: type {0} not defined.", type);
-					request.Operation = UResources.LoadAsync(fileName);
-				}
-				else
-				{
-					request.Operation = UResources.LoadAsync(fileName, unityType);
-				}
-				return request;
+				request.Operation = UResources.LoadAsync(fileName, unityType);
 			}
+			return request;
         }
 
 		private static string UnityResourcePath(string xnaPath)

@@ -19,20 +19,20 @@ namespace XnaWrapper
 		private LinkedList<Bundle> bundlesLoading = new LinkedList<Bundle>();
 
 		private Dictionary<string, Bundle> bundleMap = new Dictionary<string, Bundle>();
-		private Dictionary<string, BundleItem> bundleItemMap = new Dictionary<string, BundleItem>();
+		private Dictionary<string, ContentItem> bundleItemMap = new Dictionary<string, ContentItem>();
 
 		public ICollection<Bundle> Bundles { get { return bundleMap.Values; } }
 
-		public bool TryGetItem(string fileName, out BundleItem item)
+		public bool TryGetItem(string fileName, out ContentItem item)
 		{
 			return bundleItemMap.TryGetValue(fileName, out item);
 		}
 
 		#region Init
 
-		public BundleManager(TextReader bundleMappingsReader, bool readUnityPaths)
-        {
-			InitPathFormat();
+		public BundleManager(string streamingAssetsPath, TextReader bundleMappingsReader, bool readUnityPaths)
+		{
+			validPathFormat = streamingAssetsPath;
 
 			totalBundles = int.Parse(bundleMappingsReader.ReadLine());
 			if (PlatformInstances.AssetLoadingInfo != null)
@@ -43,16 +43,16 @@ namespace XnaWrapper
 			{
 				case "single":
 					oneAssetPerBundle = true;
-                    break;
+					break;
 				case "multiple":
 					oneAssetPerBundle = false;
 					break;
 				default:
 					throw new Exception("Unknown AssetBundleMapping source mode: " + mode);
-            }
-			
+			}
+
 			InitBundlesFromMappings(bundleMappingsReader, readUnityPaths);
-        }
+		}
 
 		void InitBundlesFromMappings(TextReader bundleMappingsReader, bool readUnityPaths)
 		{
@@ -66,24 +66,9 @@ namespace XnaWrapper
 			}
 		}
 
-		void InitPathFormat()
-		{
-			if (validPathFormat != null)
-				return;
+		#endregion
 
-			if (Application.isEditor)
-				validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
-			else
-#if U_WINDOWS
-				validPathFormat = string.Format("file://{0}/", Application.streamingAssetsPath);
-#else
-				validPathFormat = string.Format("{0}/", Application.streamingAssetsPath);
-#endif
-		}
-
-#endregion
-
-#region Management
+		#region Management
 
 		public void LoadBundle(string bundleName)
 		{
@@ -124,7 +109,7 @@ namespace XnaWrapper
 				bundlesLoading.AddLast(bundlesQueuedLoading.First.Value);
 				bundlesQueuedLoading.RemoveFirst();
 			}
-			
+
 			if (bundlesLoading.Count > 0)
 			{
 				LinkedListNode<Bundle> node = bundlesLoading.First;
@@ -140,7 +125,7 @@ namespace XnaWrapper
 			}
 		}
 
-#endregion
+		#endregion
 	}
 
 	public enum XnaBundleStatus
@@ -159,14 +144,14 @@ namespace XnaWrapper
 
 			private Bundle xnaBundle;
 			private Stack<ContentRequest> busyRequests;
-			
+
 			public bool shouldAbort = false;
 
 			public Loader(Bundle xnaBundle)
 			{
 				this.xnaBundle = xnaBundle;
 
-				foreach (BundleItem item in xnaBundle.items)
+				foreach (ContentItem item in xnaBundle.items)
 					item.AddUsageReference();
 			}
 
@@ -188,14 +173,14 @@ namespace XnaWrapper
 			{
 				startLoadTime = Time.realtimeSinceStartup;
 				data = new WWW(xnaBundle.bundleFilePath);
-//#if U_FUZE
-//				if (PlatformInstances.IsEditor)
-//					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
-//				else
-//					data = new WWW(xnaBundle.bundleFilePath);
-//#else
-//				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
-//#endif
+				//#if U_FUZE
+				//				if (PlatformInstances.IsEditor)
+				//					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+				//				else
+				//					data = new WWW(xnaBundle.bundleFilePath);
+				//#else
+				//				data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
+				//#endif
 			}
 
 			// Returns true once all requests are done
@@ -217,7 +202,7 @@ namespace XnaWrapper
 						return false;
 
 					finishDecompressTime = Time.realtimeSinceStartup;
-                    InitRequests();
+					InitRequests();
 				}
 
 				while (busyRequests.Count > 0)
@@ -252,10 +237,10 @@ namespace XnaWrapper
 
 				return true;
 			}
-			
+
 			private void InitRequests()
 			{
-				BundleItem[] items = xnaBundle.items;
+				ContentItem[] items = xnaBundle.items;
 				int numItems = items.Length;
 				busyRequests = new Stack<ContentRequest>(numItems);
 
@@ -275,13 +260,13 @@ namespace XnaWrapper
 		private readonly string bundleFilePath;
 		public readonly string bundleName;
 
-		private BundleItem[] items;
+		private ContentItem[] items;
 		private string[] itemUnityPaths;
 
 		private Loader loader = null;
 		private bool isActive = false;
 
-		public ICollection<BundleItem> Items { get { return items; } }
+		public ICollection<ContentItem> Items { get { return items; } }
 		public ICollection<string> ItemUnityPaths { get { return itemUnityPaths; } }
 
 		public XnaBundleStatus Status
@@ -299,19 +284,19 @@ namespace XnaWrapper
 			}
 		}
 
-        internal Bundle(TextReader reader, Dictionary<string, BundleItem> bundleItemMap, bool readUnityPaths, bool oneAssetPerBundle)
-        {
+		internal Bundle(TextReader reader, Dictionary<string, ContentItem> bundleItemMap, bool readUnityPaths, bool oneAssetPerBundle)
+		{
 			int bundleSize;
-            if (oneAssetPerBundle)
+			if (oneAssetPerBundle)
 				bundleSize = 1;
 			else
 			{
 				bundleName = reader.ReadLine();
 				bundleFilePath = BundleManager.validPathFormat + bundleName;
-                bundleSize = int.Parse(reader.ReadLine());
+				bundleSize = int.Parse(reader.ReadLine());
 			}
-			
-			items = new BundleItem[bundleSize];
+
+			items = new ContentItem[bundleSize];
 			itemUnityPaths = new string[bundleSize];
 
 			string name = null;
@@ -332,12 +317,12 @@ namespace XnaWrapper
 					itemUnityPaths[i] = id.Substring(semicolonIndex + 1, id.Length - semicolonIndex - 1);
 				}
 
-				BundleItem existingItem;
+				ContentItem existingItem;
 				if (bundleItemMap.TryGetValue(name, out existingItem))
 					items[i] = existingItem;
 				else
 				{
-					items[i] = new BundleItem(name);
+					items[i] = new ContentItem(name);
 					bundleItemMap[name] = items[i];
 				}
 			}
@@ -348,20 +333,20 @@ namespace XnaWrapper
 				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator);
 			}
 			bundleFilePath = bundleFilePath.ToLower();
-        }
-		
+		}
+
 		internal void LoadBundle()
 		{
 			isActive = true;
 
 			loader = new Loader(this);
 		}
-		
+
 		internal void ReleaseBundle()
 		{
 			isActive = false;
 
-			foreach (BundleItem item in items)
+			foreach (ContentItem item in items)
 				item.RemoveUsageReference();
 		}
 
@@ -372,65 +357,21 @@ namespace XnaWrapper
 
 		internal XnaBundleStatus Update()
 		{
-            if (loader != null && loader.TryFinishLoading())
-            {
-               //bool shouldAbort = loader.shouldAbort;
-               //loader = null;
-               //if (shouldAbort)
-               //{
-               //    ReleaseBundle();
-               //    return XnaBundleStatus.Initialized;
-               //}
-               //else
-                    return XnaBundleStatus.Ready;
-            }
-            else
-                return Status;
-		}
-
-	}
-
-	public class BundleItem
-	{
-		public readonly string name;
-
-		private int objectReferences = 0;
-		private ContentRequest request;
-
-		public bool IsActive { get { return request != null; } }
-
-		public ContentRequest Request
-		{
-			get { return request; }
-		}
-
-		internal BundleItem(string name)
-		{
-			this.name = name;
-		}
-
-		internal void AddUsageReference()
-		{
-			++objectReferences;
-
-			if (request == null)
-				request = new ContentRequest();
-		}
-
-		internal void RemoveUsageReference()
-		{
-			--objectReferences;
-			if (objectReferences == 0)
+			if (loader != null && loader.TryFinishLoading())
 			{
-				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (!PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
-					UObject.DestroyImmediate(Request.Asset, true);
-
-				request = null;
+				//bool shouldAbort = loader.shouldAbort;
+				//loader = null;
+				//if (shouldAbort)
+				//{
+				//    ReleaseBundle();
+				//    return XnaBundleStatus.Initialized;
+				//}
+				//else
+				return XnaBundleStatus.Ready;
 			}
-			else if (objectReferences < 0)
-				throw new Exception("Failed to properly manage asset item references.");
+			else
+				return Status;
 		}
-	}
 
+	}
 }
