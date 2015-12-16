@@ -4,19 +4,57 @@ using System.Collections.Generic;
 namespace XnaWrapper
 {
 	public static class Log
-	{
+	{	
 		private static List<string> buffer = new List<string>();
 
-		private static void Internal_Write(string message)
+		public static Action<string> ExternalLogFunction = null;
+		private static Action<string> InternalLogFunction = Variant_Chooser;
+		
+		private static void Variant_Chooser(string message)
 		{
-			if (PlatformInstances.IsEditor) // must query unity directly to allow this being used from editor scripts
-				UnityEngine.Debug.Log(message + '\n');
+			if (UnityEngine.Application.isEditor)
+				InternalLogFunction = Variant_Editor;
 			else
+			{
 #if U_FUZE
-				Console.Write(message);
+				if (UnityEngine.Debug.isDebugBuild)
+					InternalLogFunction = Variant_Write;
+				else
+					InternalLogFunction = Variant_ReleaseWrite;
 #else
-				Console.WriteLine(message);
+				if (UnityEngine.Debug.isDebugBuild)
+					InternalLogFunction = Variant_WriteLine;
+				else
+					InternalLogFunction = Variant_ReleaseWriteLine;
 #endif
+			}
+		}
+
+		private static void Variant_Editor(string message)
+		{
+			UnityEngine.Debug.Log(message + '\n');
+		}
+
+		private static void Variant_WriteLine(string message)
+		{
+			ExternalLogFunction.Invoke(message);
+            Console.WriteLine(message);
+		}
+
+		private static void Variant_Write(string message)
+		{
+			ExternalLogFunction.Invoke(message);
+			Console.Write(message);
+		}
+
+		private static void Variant_ReleaseWrite(string message)
+		{
+			Console.Write(message);
+		}
+
+		private static void Variant_ReleaseWriteLine(string message)
+		{
+			Console.WriteLine(message);
 		}
 
 		/// <summary>
@@ -41,7 +79,7 @@ namespace XnaWrapper
 		public static void Flush()
 		{
 			if (buffer.Count > 0)
-				Internal_Write(string.Join("", buffer.ToArray()));
+				InternalLogFunction(string.Join("", buffer.ToArray()));
 			buffer.Clear();
         }
 
@@ -51,7 +89,7 @@ namespace XnaWrapper
 		public static void FlushT()
 		{
 			if (buffer.Count > 0)
-				Internal_Write(Time() + " " + string.Join("", buffer.ToArray()));
+				InternalLogFunction(Time() + " " + string.Join("", buffer.ToArray()));
 			buffer.Clear();
 		}
 
@@ -60,7 +98,7 @@ namespace XnaWrapper
 		/// </summary>
 		public static void Write(object message)
 		{
-			Internal_Write(SafeToString(message));
+			InternalLogFunction(SafeToString(message));
 		}
 
 		/// <summary>
@@ -68,7 +106,7 @@ namespace XnaWrapper
 		/// </summary>
 		public static void Write(string message, object arg0, params object[] args)
 		{
-			Internal_Write(string.Format(message, ConvertArgs(arg0, args)));
+			InternalLogFunction(string.Format(message, ConvertArgs(arg0, args)));
 		}
 		
 		/// <summary>
@@ -76,7 +114,7 @@ namespace XnaWrapper
 		/// </summary>
 		public static void WriteT(object message)
 		{
-			Internal_Write(Time() + SafeToString(message));
+			InternalLogFunction(Time() + SafeToString(message));
 		}
 
 		/// <summary>
@@ -84,7 +122,7 @@ namespace XnaWrapper
 		/// </summary>
 		public static void WriteT(string message, object arg0, params object[] args)
 		{
-			Internal_Write(Time() + string.Format(message, ConvertArgs(arg0, args)));
+			InternalLogFunction(Time() + string.Format(message, ConvertArgs(arg0, args)));
 		}
 
 		private static string[] ConvertArgs(object arg0, params object[] args)

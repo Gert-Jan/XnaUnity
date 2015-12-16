@@ -1,13 +1,39 @@
-﻿//#define TESTING
+﻿//#define GAMEPAD_TESTING
+
+using XnaWrapper;
 
 namespace Microsoft.Xna.Framework.Input
 {
 	public static class GamePad
 	{
-#if !TESTING
+#if !GAMEPAD_TESTING
+		private static GamePadState prevState;
+
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
-			return XnaWrapper.PlatformInstances.GamePad.GetState(playerIndex);
+			// code for controlling overlays
+			if (UnityEngine.Debug.isDebugBuild && playerIndex == PlayerIndex.One)
+			{
+				GamePadState newState = PlatformInstances.GamePad.GetState(playerIndex);
+				if (newState.Triggers.Left > 0.5f && prevState.Triggers.Left <= 0.5f)
+					PlatformInstances.LogOverlay = !PlatformInstances.LogOverlay;
+				if (newState.Buttons.LeftShoulder == ButtonState.Pressed && prevState.Buttons.LeftShoulder == ButtonState.Released)
+					PlatformInstances.InfoOverlay = !PlatformInstances.InfoOverlay;
+
+				if (PlatformInstances.LogOverlay)
+				{
+					PlatformInstances.LogToBottom = newState.Buttons.RightStick == ButtonState.Pressed;
+					PlatformInstances.LogUp = newState.ThumbSticks.Right.Y > 0.5f;
+					PlatformInstances.LogDown = newState.ThumbSticks.Right.Y < -0.5f;
+
+					// override the right stick 
+					newState.ThumbSticks = new GamePadThumbSticks(newState.ThumbSticks.Left, new Vector2());
+                }
+
+				prevState = newState;
+				return newState;
+			}
+			return PlatformInstances.GamePad.GetState(playerIndex);
 		}
 #else
 		public static GamePadState GetState(PlayerIndex playerIndex)
