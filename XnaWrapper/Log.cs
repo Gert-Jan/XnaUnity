@@ -7,6 +7,8 @@ namespace XnaWrapper
 	{	
 		private static List<string> buffer = new List<string>();
 
+		#region Log Destination
+
 		public static Action<string> ExternalLogFunction = null;
 		private static Action<string> InternalLogFunction = Variant_Chooser;
 		
@@ -57,21 +59,7 @@ namespace XnaWrapper
 			Console.WriteLine(message);
 		}
 
-		/// <summary>
-		/// Log, buffered
-		/// </summary>
-		public static void Buffer(object message)
-		{
-			buffer.Add(SafeToString(message));
-        }
-
-		/// <summary>
-		/// Log formatted, buffered
-		/// </summary>
-		public static void Buffer(string message, object arg0, params object[] args)
-		{
-			buffer.Add(string.Format(message, ConvertArgs(arg0, args)));
-		}
+		#endregion
 
 		/// <summary>
 		/// Flush any buffered logs
@@ -94,44 +82,50 @@ namespace XnaWrapper
 		}
 
 		/// <summary>
-		/// Log
+		/// Log (optionally formatted), Buffered
 		/// </summary>
-		public static void Write(object message)
+		public static void Buffer(params object[] args)
 		{
-			InternalLogFunction(SafeToString(message));
+			if (args.Length == 0)
+				buffer.Add("");
+			else if (args.Length == 1)
+				buffer.Add(SafeToString(args[0]));
+			else
+				buffer.Add(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 
 		/// <summary>
-		/// Log formatted
+		/// Log (optionally formatted)
 		/// </summary>
-		public static void Write(string message, object arg0, params object[] args)
+		public static void Write(params object[] args)
 		{
-			InternalLogFunction(string.Format(message, ConvertArgs(arg0, args)));
+			if (args.Length == 0)
+				InternalLogFunction("");
+			else if (args.Length == 1)
+				InternalLogFunction(SafeToString(args[0]));
+			else
+				InternalLogFunction(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 		
 		/// <summary>
-		/// Log, time prepended
+		/// Log (optionally formatted), time prepended
 		/// </summary>
-		public static void WriteT(object message)
+		public static void WriteT(params object[] args)
 		{
-			InternalLogFunction(Time() + SafeToString(message));
+			if (args.Length == 0)
+				InternalLogFunction(Time());
+			else if (args.Length == 1)
+				InternalLogFunction(Time() + SafeToString(args[0]));
+			else
+				InternalLogFunction(Time() + string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 
-		/// <summary>
-		/// Log formatted, time prepended
-		/// </summary>
-		public static void WriteT(string message, object arg0, params object[] args)
+		private static string[] ConvertExceptFirst(object[] objects)
 		{
-			InternalLogFunction(Time() + string.Format(message, ConvertArgs(arg0, args)));
-		}
-
-		private static string[] ConvertArgs(object arg0, params object[] args)
-		{
-			string[] _args = new string[args.Length + 1];
-			for (int i = 0; i < args.Length; ++i)
-				_args[i + 1] = SafeToString(args[i]);
-			_args[0] = SafeToString(arg0);
-			return _args;
+			string[] strings = new string[objects.Length - 1];
+			for (int i = 0; i < strings.Length; ++i)
+				strings[i] = SafeToString(objects[i + 1]);
+			return strings;
 		}
 		
 		private static string SafeToString(object obj)
