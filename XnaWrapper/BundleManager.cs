@@ -10,6 +10,7 @@ namespace XnaWrapper
 	public class BundleManager
 	{
 		public const string DirSeparator = "$";
+		public const string DotSeparator = "_";
 		internal static string validPathFormat = null;
 		public readonly bool oneAssetPerBundle;
 		private readonly int totalBundles;
@@ -171,6 +172,7 @@ namespace XnaWrapper
 
 			private void LoadWWW()
 			{
+				Log.Write("Loading: " + xnaBundle.bundleFilePath);
 				startLoadTime = Time.realtimeSinceStartup;
 				data = new WWW(xnaBundle.bundleFilePath);
 				//#if U_FUZE
@@ -186,44 +188,53 @@ namespace XnaWrapper
 			// Returns true once all requests are done
 			public bool TryFinishLoading()
 			{
-				if (PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
-					return LoadFromProvider();
-
-
-				if (busyRequests == null)
+				try
 				{
-					if (data == null)
-						LoadWWW();
 
-					if (!string.IsNullOrEmpty(data.error))
-						throw new Exception(data.error);
 
-					if (!data.isDone)
-						return false;
+					if (PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
+						return LoadFromProvider();
 
-					finishDecompressTime = Time.realtimeSinceStartup;
-					InitRequests();
+
+					if (busyRequests == null)
+					{
+						if (data == null)
+							LoadWWW();
+
+						if (!string.IsNullOrEmpty(data.error))
+							throw new Exception(data.error);
+
+						if (!data.isDone)
+							return false;
+
+						finishDecompressTime = Time.realtimeSinceStartup;
+						InitRequests();
+					}
+
+					while (busyRequests.Count > 0)
+					{
+						if (busyRequests.Peek().isDone)
+							busyRequests.Pop();
+						else
+							return false;
+					}
+
+					data.assetBundle.Unload(false);
+					data.Dispose();
+
+					float totalTime = Time.realtimeSinceStartup - startLoadTime;
+					if (totalTime > 0.5f)
+					{
+						float decompressTime = finishDecompressTime - startLoadTime;
+						float loadTime = Time.realtimeSinceStartup - finishDecompressTime;
+						Log.WriteT("Bundle {0} took long to load (decompressing: {1}, integration: {2})", xnaBundle.bundleName, decompressTime, loadTime);
+					}
 				}
-
-				while (busyRequests.Count > 0)
+				catch (Exception e)
 				{
-					if (busyRequests.Peek().isDone)
-						busyRequests.Pop();
-					else
-						return false;
+					Log.Write("Exception during TryFinishLoading ({0}): {1} , {2}", e.Message, xnaBundle.bundleFilePath, xnaBundle.bundleName);
+					throw;
 				}
-
-				data.assetBundle.Unload(false);
-				data.Dispose();
-
-				float totalTime = Time.realtimeSinceStartup - startLoadTime;
-				if (totalTime > 0.5f)
-				{
-					float decompressTime = finishDecompressTime - startLoadTime;
-					float loadTime = Time.realtimeSinceStartup - finishDecompressTime;
-					Log.WriteT("Bundle {0} took long to load (decompressing: {1}, integration: {2})", xnaBundle.bundleName, decompressTime, loadTime);
-				}
-
 				return true;
 			}
 
@@ -330,7 +341,7 @@ namespace XnaWrapper
 			if (oneAssetPerBundle)
 			{
 				bundleName = name;
-				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator);
+				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator).Replace(".", BundleManager.DotSeparator);
 			}
 			bundleFilePath = bundleFilePath.ToLower();
 		}
