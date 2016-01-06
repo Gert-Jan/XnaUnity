@@ -368,20 +368,24 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			item.Depth = depth;
 			item.Texture = texture;
+			int iTexWidth = texture.width;
+			int iTexHeight = texture.height;
+			float fTexWidth = iTexWidth;
+			float fTexHeight = iTexHeight;
 
 			if (sourceRectangle.HasValue) {
 				_tempRect = sourceRectangle.Value;
 			} else {
 				_tempRect.X = 0;
 				_tempRect.Y = 0;
-				_tempRect.Width = texture.Width;
-				_tempRect.Height = texture.Height;				
+				_tempRect.Width = iTexWidth;
+				_tempRect.Height = iTexHeight;				
 			}
 			
-			_texCoordTL.X = _tempRect.X / (float)texture.Width;
-			_texCoordTL.Y = _tempRect.Y / (float)texture.Height;
-			_texCoordBR.X = (_tempRect.X + _tempRect.Width) / (float)texture.Width;
-			_texCoordBR.Y = (_tempRect.Y + _tempRect.Height) / (float)texture.Height;
+			_texCoordTL.X = _tempRect.X / fTexWidth;
+			_texCoordTL.Y = _tempRect.Y / fTexHeight;
+			_texCoordBR.X = (_tempRect.X + _tempRect.Width) / fTexWidth;
+			_texCoordBR.Y = (_tempRect.Y + _tempRect.Height) / fTexHeight;
 
             if ((effect & SpriteEffects.FlipVertically) != 0)
             {
@@ -545,12 +549,12 @@ namespace Microsoft.Xna.Framework.Graphics
 				// use the vertex color R channel as index for the texture array (avoids an extra parameter)
 				item.Texture = fontTextures[characterVertices[i].Color.R];
 				item.Depth = 0;
-
+			
 				item.vertexTL = characterVertices[i++];
 				item.vertexTR = characterVertices[i++];
 				item.vertexBL = characterVertices[i++];
 				item.vertexBR = characterVertices[i++];
-
+			
 				item.vertexTL.Color = color;
 				item.vertexTR.Color = color;
 				item.vertexBL.Color = color;

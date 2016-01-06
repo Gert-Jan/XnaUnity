@@ -41,10 +41,42 @@
 
 using System.Collections.Generic;
 using System;
-using UnityEngine;
+using UColor = UnityEngine.Color32;
+using UVec2 = UnityEngine.Vector2;
+using UVec3 = UnityEngine.Vector3;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
+	// using this class avoids one list copy during drawing primitives
+	internal class GroupedElementVertexArray
+	{
+		public UVec3[] positions;
+		public UVec2[] texcoords;
+		public UColor[] colors;
+
+		public GroupedElementVertexArray(int size)
+		{
+			positions = new UVec3[size];
+			texcoords = new UVec2[size];
+			colors = new UColor[size];
+		}
+
+		public VertexPositionColorTexture this[int i]
+		{
+			set
+			{
+				positions[i].Set(value.Position.X, value.Position.Y, 0);
+				texcoords[i].Set(value.TextureCoordinate.X, 1 - value.TextureCoordinate.Y);
+				uint color = value.Color.PackedValue;
+				colors[i] = new UColor(
+					(byte)(color),
+					(byte)(color >> 8),
+					(byte)(color >> 16),
+					(byte)(color >> 24));
+			}
+		}
+	}
+
 	/// <summary>
 	/// This class handles the queueing of batch items into the GPU by creating the triangle tesselations
 	/// that are used to draw the sprite textures. This class supports int.MaxValue number of sprites to be
@@ -103,9 +135,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Vertex index array. The values in this array never change.
 		/// </summary>
-		private short[] _index;
+		//private short[] _index;
 
-		private VertexPositionColorTexture[] _vertexArray;
+		//private VertexPositionColorTexture[] _vertexArray;
+		private GroupedElementVertexArray _vertexArray;
 
         //private int logCount;
 		
@@ -145,44 +178,45 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <param name="numBatchItems"></param>
 		private void EnsureArrayCapacity(int numBatchItems)
 		{
-			int neededCapacity = 6 * numBatchItems;
-			if (_index != null && neededCapacity <= _index.Length)
-			{
-				// Short circuit out of here because we have enough capacity.
-				return;
-			}
-			short[] newIndex = new short[6 * numBatchItems];
-			int start = 0;
-			if (_index != null)
-			{
-				_index.CopyTo(newIndex, 0);
-				start = _index.Length / 6;
-			}
-			for (var i = start; i < numBatchItems; i++)
-			{
-				/*
-				 *  TL    TR
-				 *   0----1 0,1,2,3 = index offsets for vertex indices
-				 *   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
-				 *   |  / |
-				 *   | /  |
-				 *   |/   |
-				 *   2----3
-				 *  BL    BR
-				 */
-				// Triangle 1
-				newIndex[i * 6 + 0] = (short)(i * 4);
-				newIndex[i * 6 + 1] = (short)(i * 4 + 1);
-				newIndex[i * 6 + 2] = (short)(i * 4 + 2);
-				// Triangle 2
-				newIndex[i * 6 + 3] = (short)(i * 4 + 1);
-				newIndex[i * 6 + 4] = (short)(i * 4 + 3);
-				newIndex[i * 6 + 5] = (short)(i * 4 + 2);
-			}
-			_index = newIndex;
+			//int neededCapacity = 6 * numBatchItems;
+			//if (_index != null && neededCapacity <= _index.Length)
+			//{
+			//	// Short circuit out of here because we have enough capacity.
+			//	return;
+			//}
+			//short[] newIndex = new short[6 * numBatchItems];
+			//int start = 0;
+			//if (_index != null)
+			//{
+			//	_index.CopyTo(newIndex, 0);
+			//	start = _index.Length / 6;
+			//}
+			//for (var i = start; i < numBatchItems; i++)
+			//{
+			//	/*
+			//	 *  TL    TR
+			//	 *   0----1 0,1,2,3 = index offsets for vertex indices
+			//	 *   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
+			//	 *   |  / |
+			//	 *   | /  |
+			//	 *   |/   |
+			//	 *   2----3
+			//	 *  BL    BR
+			//	 */
+			//	// Triangle 1
+			//	newIndex[i * 6 + 0] = (short)(i * 4);
+			//	newIndex[i * 6 + 1] = (short)(i * 4 + 1);
+			//	newIndex[i * 6 + 2] = (short)(i * 4 + 2);
+			//	// Triangle 2
+			//	newIndex[i * 6 + 3] = (short)(i * 4 + 1);
+			//	newIndex[i * 6 + 4] = (short)(i * 4 + 3);
+			//	newIndex[i * 6 + 5] = (short)(i * 4 + 2);
+			//}
+			//_index = newIndex;
 
-			_vertexArray = new VertexPositionColorTexture[4 * numBatchItems];
-		}
+			//_vertexArray = new VertexPositionColorTexture[4 * numBatchItems];
+			_vertexArray = new GroupedElementVertexArray(4 * numBatchItems);
+        }
 
 		/// <summary>
 		/// Reference comparison of the underlying Texture objects for each given SpriteBatchitem.
@@ -348,15 +382,20 @@ namespace Microsoft.Xna.Framework.Graphics
 			//{
 			//    pass.Apply();
 			//effect.OnApply();
-			_device.DrawUserIndexedPrimitives(
-				PrimitiveType.TriangleList,
+			//_device.DrawUserIndexedPrimitives(
+			//	PrimitiveType.TriangleList,
+			//	_vertexArray,
+			//	0,
+			//	vertexCount,
+			//	_index,
+			//	0,
+			//	(vertexCount / 4) * 2,
+			//	VertexPositionColorTexture.VertexDeclaration);
+
+			//_vertexArray.Trim(vertexCount);
+			_device.DrawGroupedPrimitives(
 				_vertexArray,
-				0,
-				vertexCount,
-				_index,
-				0,
-				(vertexCount / 4) * 2,
-				VertexPositionColorTexture.VertexDeclaration);
+				vertexCount);
 			//}
 		}
 

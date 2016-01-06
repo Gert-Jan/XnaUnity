@@ -72,12 +72,24 @@ namespace Microsoft.Xna.Framework.Graphics
 			Debug.Assert(vertexData != null && vertexData.Length > 0, "The vertexData must not be null or zero length!");
 			Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
-			UnityEngine.Material mat = activeEffect.Material;
+			Material mat = activeEffect.Material;
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
 
 			var mesh = _meshPool.Get(primitiveCount / 2);
+			mesh.Populate(vertexData, numVertices);
+			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+		}
+
+		internal void DrawGroupedPrimitives(GroupedElementVertexArray vertexData, int numVertices)
+		{
+			Material mat = activeEffect.Material;
+			mat.mainTexture = Textures[0].UnityTexture;
+			activeEffect.OnApplyPostTexture();
+			mat.SetPass(0);
+
+			var mesh = _meshPool.Get(numVertices / 4);
 			mesh.Populate(vertexData, numVertices);
 			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
 		}
@@ -229,7 +241,46 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh.triangles = triangles;
 			}
 			
+			public void Populate(GroupedElementVertexArray vertexData, int numVertices)
+			{
+				Array.Copy(vertexData.positions, Vertices, numVertices);
+				Array.Copy(vertexData.texcoords, UVs, numVertices);
+				Array.Copy(vertexData.colors, Colors, numVertices);
+				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
+
+				Mesh.vertices = Vertices;
+				Mesh.uv = UVs;
+				Mesh.colors32 = Colors;
+			}
+
+			//inlined variant
 			public void Populate(VertexPositionColorTexture[] vertexData, int numVertices)
+			{
+				VertexPositionColorTexture vertex;
+				for (int i = 0; i < numVertices; i++)
+				{
+					vertex = vertexData[i];
+					Vertices[i].Set(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
+					UVs[i].Set(vertex.TextureCoordinate.X, 1 - vertex.TextureCoordinate.Y);
+					uint color = vertex.Color.PackedValue;
+					Colors[i].r = (byte)(color);
+					Colors[i].g = (byte)(color >> 8);
+					Colors[i].b = (byte)(color >> 16);
+					Colors[i].a = (byte)(color >> 24);
+				}
+
+				//we could clearly less if we remembered how many we used last time
+				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
+
+				Mesh.vertices = Vertices;
+				Mesh.uv = UVs;
+				Mesh.colors32 = Colors;
+				// possibly optional
+				//Mesh.RecalculateBounds();
+			}
+
+			// non inlined variant
+			public void Populate_Conversion(VertexPositionColorTexture[] vertexData, int numVertices)
 			{
 				for (int i = 0; i < numVertices; i++)
 				{
@@ -238,7 +289,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					UVs[i].y = 1 - UVs[i].y;
 					XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
 				}
-				
+
 				//we could clearly less if we remembered how many we used last time
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
 
@@ -275,13 +326,17 @@ namespace Microsoft.Xna.Framework.Graphics
 			public MeshHolder Get(int spriteCount)
 			{
 				MeshHolder best = null;
+				int bestSpriteCount = 0;
 				int bestIndex = -1;
-				for (int i = 0; i < _unusedMeshes.Count; i++)
+                int unusedMeshesCount = _unusedMeshes.Count;
+				for (int i = 0; i < unusedMeshesCount; i++)
 				{
 					var unusedMesh = _unusedMeshes[i];
-					if ((best == null || best.SpriteCount > unusedMesh.SpriteCount) && unusedMesh.SpriteCount >= spriteCount)
+					int unusedMeshSpriteCount = unusedMesh.SpriteCount;
+                    if ((best == null || bestSpriteCount > unusedMeshSpriteCount) && unusedMeshSpriteCount >= spriteCount)
 					{
 						best = unusedMesh;
+						bestSpriteCount = best.SpriteCount;
 						bestIndex = i;
 					}
 				}
