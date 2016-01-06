@@ -40,13 +40,11 @@ namespace XnaWrapper
 		private static void Variant_WriteLine(string message)
 		{
 			ExternalLogFunction.Invoke(message);
-            Console.WriteLine(message);
 		}
 
 		private static void Variant_Write(string message)
 		{
 			ExternalLogFunction.Invoke(message);
-			Console.Write(message);
 		}
 
 		private static void Variant_ReleaseWrite(string message)
