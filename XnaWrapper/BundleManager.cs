@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
 using UnityEngine;
-using UObject = UnityEngine.Object;
 
 namespace XnaWrapper
 {
@@ -37,7 +36,7 @@ namespace XnaWrapper
 
 			totalBundles = int.Parse(bundleMappingsReader.ReadLine());
 			if (PlatformInstances.AssetLoadingInfo != null)
-				maxParallel = PlatformInstances.AssetLoadingInfo.MaxAssetsLoadingParallel();
+				maxParallel = PlatformInstances.AssetLoadingInfo.MaxAssetsLoadingParallel;
 
 			string mode = bundleMappingsReader.ReadLine().ToLower();
 			switch (mode)
@@ -110,9 +109,11 @@ namespace XnaWrapper
 				bundlesLoading.AddLast(bundlesQueuedLoading.First.Value);
 				bundlesQueuedLoading.RemoveFirst();
 			}
-
+			
 			if (bundlesLoading.Count > 0)
 			{
+				float startTime = Time.realtimeSinceStartup;
+
 				LinkedListNode<Bundle> node = bundlesLoading.First;
 				while (node != null)
 				{
@@ -121,7 +122,10 @@ namespace XnaWrapper
 					if (node.Value.Update() == XnaBundleStatus.Ready)
 						bundlesLoading.Remove(node);
 
-					node = nextNode;
+					if (Time.realtimeSinceStartup - startTime > PlatformInstances.AssetLoadingInfo.MaxSecondsSpentLoadingPerUpdate)
+						node = null;
+					else
+						node = nextNode;
 				}
 			}
 		}
@@ -169,6 +173,7 @@ namespace XnaWrapper
 
 			private float startLoadTime;
 			private float finishDecompressTime;
+			private int loadedItems = 0;
 
 			private void LoadWWW()
 			{
@@ -190,25 +195,27 @@ namespace XnaWrapper
 			{
 				try
 				{
-
-
-					if (PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
+					if (PlatformInstances.AssetLoadingInfo.CanLoadFromAssetDatabase)
 						return LoadFromProvider();
-
-
+					
 					if (busyRequests == null)
 					{
 						if (data == null)
+						{
 							LoadWWW();
 
-						if (!string.IsNullOrEmpty(data.error))
-							throw new Exception(data.error);
+							if (!string.IsNullOrEmpty(data.error))
+								throw new Exception(data.error);
+
+							return false;
+						}
 
 						if (!data.isDone)
 							return false;
 
 						finishDecompressTime = Time.realtimeSinceStartup;
 						InitRequests();
+						return false;
 					}
 
 					while (busyRequests.Count > 0)
@@ -240,11 +247,13 @@ namespace XnaWrapper
 
 			private bool LoadFromProvider()
 			{
-				for (int i = 0; i < xnaBundle.items.Length; ++i)
+				for (int i = loadedItems; i < xnaBundle.items.Length; ++i)
 				{
 					ContentRequest request = xnaBundle.items[i].Request;
 					request.Asset = PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase(xnaBundle.itemUnityPaths[i]);
-				}
+					++loadedItems;
+					return false;
+                }
 
 				return true;
 			}

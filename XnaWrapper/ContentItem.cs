@@ -37,7 +37,7 @@ namespace XnaWrapper
 			if (objectReferences == 0)
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
-				if (!PlatformInstances.AssetLoadingInfo.LoadFromAssetDatabase())
+				if (!PlatformInstances.AssetLoadingInfo.CanLoadFromAssetDatabase)
 					UObject.DestroyImmediate(Request.Asset, true);
 
 				request = null;

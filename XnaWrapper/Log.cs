@@ -34,7 +34,7 @@ namespace XnaWrapper
 
 		private static void Variant_Editor(string message)
 		{
-			UnityEngine.Debug.Log(message + '\n');
+			//UnityEngine.Debug.Log(message + '\n');
 		}
 
 		private static void Variant_WriteLine(string message)

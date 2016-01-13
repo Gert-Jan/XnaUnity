@@ -2,8 +2,9 @@
 {
 	public interface IAssetLoadingInfo
 	{
-		int MaxAssetsLoadingParallel();
-		bool LoadFromAssetDatabase();
+		int MaxAssetsLoadingParallel { get; }
+		float MaxSecondsSpentLoadingPerUpdate { get; }
+		bool CanLoadFromAssetDatabase { get; }
 
 		UnityEngine.Object LoadFromAssetDatabase(string path);
 	}
