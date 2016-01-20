@@ -5,7 +5,7 @@ using System.Text;
 
 namespace XnaWrapper
 {
-	public abstract class Pool<T>
+	public abstract class Pool<T> where T : class
 	{
 		public abstract class InstanceResetter<U>
 		{
