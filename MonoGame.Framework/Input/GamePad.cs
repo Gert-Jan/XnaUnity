@@ -7,45 +7,37 @@ namespace Microsoft.Xna.Framework.Input
 	public static class GamePad
 	{
 #if !GAMEPAD_TESTING
-		private static GamePadState[] prevState = new GamePadState[8];
+		private static GamePadState[] prevStates;
 
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
 			// code for controlling overlays
-			if (UnityEngine.Debug.isDebugBuild /*&& playerIndex == PlayerIndex.One*/)
+			if (UnityEngine.Debug.isDebugBuild)
 			{
-				int index = (int)playerIndex;
-
+				if (prevStates == null)
+					prevStates = new GamePadState[4];
 
 				int index = (int)playerIndex;
 				GamePadState prevState = prevStates[index];
-                GamePadState newState = PlatformInstances.GamePad.GetState(playerIndex);
-				if (newState.Triggers.Left > 0.5f && prevState[index].Triggers.Left <= 0.5f)
+				GamePadState newState = PlatformInstances.GamePad.GetState(playerIndex);
+				if (newState.Triggers.Left > 0.5f && prevState.Triggers.Left <= 0.5f)
 					PlatformInstances.LogOverlay = !PlatformInstances.LogOverlay;
-				if (newState.Buttons.LeftShoulder == ButtonState.Pressed && prevState[index].Buttons.LeftShoulder == ButtonState.Released)
+				if (newState.Buttons.LeftShoulder == ButtonState.Pressed && prevState.Buttons.LeftShoulder == ButtonState.Released)
 					PlatformInstances.InfoOverlay = !PlatformInstances.InfoOverlay;
 
 				if (PlatformInstances.LogOverlay)
 				{
-
-					if (playerIndex == PlayerIndex.One)
-					{
-						PlatformInstances.LogToBottom = false;
-						PlatformInstances.LogUp = false;
-						PlatformInstances.LogDown = false;
-					}
-
-					PlatformInstances.LogToBottom = newState.Buttons.RightStick == ButtonState.Pressed | PlatformInstances.LogToBottom;
-					PlatformInstances.LogUp = newState.ThumbSticks.Right.Y > 0.5f | PlatformInstances.LogUp;
-					PlatformInstances.LogDown = newState.ThumbSticks.Right.Y < -0.5f | PlatformInstances.LogDown;
+					PlatformInstances.LogToBottom = newState.Buttons.RightStick == ButtonState.Pressed;
+					PlatformInstances.LogUp = newState.ThumbSticks.Right.Y > 0.5f;
+					PlatformInstances.LogDown = newState.ThumbSticks.Right.Y < -0.5f;
 
 					// override the right stick 
 					newState.ThumbSticks = new GamePadThumbSticks(newState.ThumbSticks.Left, new Vector2());
 				}
 
-				prevState[index] = newState;
+				prevStates[index] = newState;
 				return newState;
-			} 
+			}
 			return PlatformInstances.GamePad.GetState(playerIndex);
 		}
 #else
