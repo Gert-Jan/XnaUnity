@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
 
@@ -34,12 +31,11 @@ namespace TextureAtlasContent
 	{
         protected internal override TextureRegion Read(ContentReader input, TextureRegion existingInstance)
 		{
-			TextureRegion region = new TextureRegion();
-			region.Key = input.ReadString();
-			region.Bounds = input.ReadObject<Rectangle>();
-			region.Origin = input.ReadVector2();
-			region.OriginalSize = input.ReadVector2();
-			return region;
+			string Key = input.ReadString();
+			Rectangle Bounds = input.ReadObject<Rectangle>();
+			Vector2 Origin = input.ReadVector2();
+			Vector2 OriginalSize = input.ReadVector2();
+			return new TextureRegion(ref Key, Bounds, Origin, OriginalSize);
 		}
 	}
 }

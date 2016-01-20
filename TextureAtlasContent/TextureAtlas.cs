@@ -1,15 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-#if !UNITY
-using Microsoft.Xna.Framework.GamerServices;
-#endif
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 namespace TextureAtlasContent
 {
@@ -33,15 +22,7 @@ namespace TextureAtlasContent
 		{
 			return regions[index];
 		}
-
-		public TextureRegion GetRegion(string key)
-		{
-			if (regionsDict.ContainsKey(key))
-				return regions[regionsDict[key]];
-			else
-				return null;
-		}
-
+		
 		public int GetRegionIndex(string key)
 		{
 			if (regionsDict.ContainsKey(key))

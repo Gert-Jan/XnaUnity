@@ -6,16 +6,35 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	public partial class SoundEffectInstance
 	{
-		public static List<AudioSource> disposed = new List<AudioSource>();
-
 		private AudioSource _source;
 		private bool isPaused;
+
+		private class AudioSourcePool : XnaWrapper.Pool<AudioSource>
+		{
+			private struct Resetter : InstanceResetter
+			{
+				public AudioSource Create()
+				{
+					return SoundEffect.GameObject.AddComponent<AudioSource>();
+				}
+				public void Reset(AudioSource poolable)
+				{
+					poolable.Stop();
+					poolable.loop = false;
+                }
+			}
+
+			public AudioSourcePool() : base(16, new Resetter()) { }
+		}
+		private static AudioSourcePool pool = new AudioSourcePool();
 
 		public void UnitySetup(SoundEffect soundEffect)
 		{
 			if (_source == null)
-				_source = SoundEffect.GameObject.AddComponent<AudioSource>();
-			_source.clip = soundEffect.UnityAudioClip;
+			{
+				_source = pool.Obtain();
+			}
+            _source.clip = soundEffect.UnityAudioClip;
 			_source.volume = _volume;
 			_source.panStereo= _pan;
 			//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
@@ -29,7 +48,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void PlatformDispose(bool disposing)
 		{
-			disposed.Add(_source);
+			pool.Restore(_source);
 		}
 
 		private void PlatformPlay()

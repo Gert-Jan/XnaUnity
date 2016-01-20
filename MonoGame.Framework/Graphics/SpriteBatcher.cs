@@ -118,10 +118,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		private class BatchItemPool : XnaWrapper.Pool<SpriteBatchItem>
 		{
-			private class Resetter : InstanceResetter<SpriteBatchItem>
+			private struct Resetter : InstanceResetter
 			{
-				public override SpriteBatchItem Create() { return new SpriteBatchItem(); }
-				public override void Reset(SpriteBatchItem poolable) { } // don't care about resetting
+				public SpriteBatchItem Create() { return new SpriteBatchItem(); }
+				public void Reset(SpriteBatchItem poolable) { } // don't care about resetting
 			}
 
 			public BatchItemPool(int initialCapacity) : base(initialCapacity, new Resetter()) { }

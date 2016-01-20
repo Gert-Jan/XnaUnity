@@ -51,9 +51,9 @@ namespace Microsoft.Xna.Framework
 		/// </summary>
 		public void UnityUpdate()
 		{
-			foreach (AudioSource obj in SoundEffectInstance.disposed)
-				UnityEngine.Object.Destroy(obj);
-			SoundEffectInstance.disposed.Clear();
+			//foreach (AudioSource obj in SoundEffectInstance.disposed)
+			//	UnityEngine.Object.Destroy(obj);
+			//SoundEffectInstance.disposed.Clear();
 
 			PreUpdate();
 			RunUpdates();
