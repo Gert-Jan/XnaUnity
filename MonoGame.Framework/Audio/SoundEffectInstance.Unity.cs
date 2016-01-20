@@ -17,11 +17,7 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					return SoundEffect.GameObject.AddComponent<AudioSource>();
 				}
-				public void Reset(AudioSource poolable)
-				{
-					poolable.Stop();
-					poolable.loop = false;
-                }
+				public void Reset(AudioSource poolable) { }
 			}
 
 			public AudioSourcePool() : base(16, new Resetter()) { }
@@ -37,6 +33,7 @@ namespace Microsoft.Xna.Framework.Audio
             _source.clip = soundEffect.UnityAudioClip;
 			_source.volume = _volume;
 			_source.panStereo= _pan;
+			_source.loop = false;
 			//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
 			_source.pitch = Mathf.Pow(2, _pitch);
 		}

@@ -9,19 +9,27 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class GraphicsDevice : IDisposable
 	{
+		public class PParams
+		{
+			public int BackBufferWidth { get { return Screen.width; } }
+			public int BackBufferHeight { get { return Screen.height; } }
+		}
+		private PParams pparams = new PParams();
+		public PParams PresentationParameters { get { return pparams; } }
+
 		//public int drawcount;
 		//public UnityEngine.Material Material;
 		public Texture2D[] Textures = new Texture2D[1];
 		public Effect activeEffect;
 		//private Matrix4x4 _baseMatrix;
 		private Matrix defaultProjection;
-
+		
 		internal GraphicsDevice(Viewport viewport)
 		{
 			Adapter = new GraphicsAdapter();
 			Viewport = viewport;
 		}
-
+		
 		public GraphicsAdapter Adapter
 		{
 			get;

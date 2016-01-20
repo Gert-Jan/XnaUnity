@@ -64,12 +64,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				if (_supportedDisplayModes == null)
 				{
-					UnityEngine.Resolution[] resolutions = UnityEngine.Screen.resolutions;
+					//UnityEngine.Resolution[] resolutions = UnityEngine.Screen.resolutions;
 					List<DisplayMode> modes = new List<DisplayMode>();
-					foreach (UnityEngine.Resolution r in resolutions)
-					{
-						modes.Add(new DisplayMode(r.width, r.height, r.refreshRate, SurfaceFormat.Color));
-					}
+					//foreach (UnityEngine.Resolution r in resolutions)
+					//{
+					//	modes.Add(new DisplayMode(r.width, r.height, r.refreshRate, SurfaceFormat.Color));
+					//}
+					modes.Add(new DisplayMode(1920, 1080, 60, SurfaceFormat.Color));
 					_supportedDisplayModes = new DisplayModeCollection(modes);
 				}
 

@@ -7,14 +7,19 @@ namespace Microsoft.Xna.Framework.Input
 	public static class GamePad
 	{
 #if !GAMEPAD_TESTING
-		private static GamePadState prevState;
+		private static GamePadState[] prevStates;
 
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
 			// code for controlling overlays
 			if (UnityEngine.Debug.isDebugBuild && playerIndex == PlayerIndex.One)
 			{
-				GamePadState newState = PlatformInstances.GamePad.GetState(playerIndex);
+				if (prevStates == null)
+					prevStates = new GamePadState[4];
+
+				int index = (int)playerIndex;
+				GamePadState prevState = prevStates[index];
+                GamePadState newState = PlatformInstances.GamePad.GetState(playerIndex);
 				if (newState.Triggers.Left > 0.5f && prevState.Triggers.Left <= 0.5f)
 					PlatformInstances.LogOverlay = !PlatformInstances.LogOverlay;
 				if (newState.Buttons.LeftShoulder == ButtonState.Pressed && prevState.Buttons.LeftShoulder == ButtonState.Released)
@@ -30,9 +35,9 @@ namespace Microsoft.Xna.Framework.Input
 					newState.ThumbSticks = new GamePadThumbSticks(newState.ThumbSticks.Left, new Vector2());
                 }
 
-				prevState = newState;
+				prevStates[index] = newState;
 				return newState;
-			}
+			} 
 			return PlatformInstances.GamePad.GetState(playerIndex);
 		}
 #else
