@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -396,10 +396,11 @@
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
     <Compile Include="XnaWrapper\ContentItem.cs" />
+    <Compile Include="XnaWrapper\Collections\BulkPool.cs" />
+    <Compile Include="XnaWrapper\Collections\TrackedPool.cs" />
     <Compile Include="XnaWrapper\Stats.cs" />
     <Compile Include="XnaWrapper\PlatformInterfaces\IGamePad.cs" />
     <Compile Include="XnaWrapper\PlatformInterfaces\IAssetLoadingInfo.cs" />
-    <Compile Include="XnaWrapper\Pool.cs" />
     <Compile Include="XnaWrapper\PlatformInstances.cs" />
     <Compile Include="XnaWrapper\StreamedContentManager.cs" />
     <Compile Include="XnaWrapper\SystemUtils.cs" />

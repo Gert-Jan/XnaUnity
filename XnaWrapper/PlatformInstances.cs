@@ -1,4 +1,5 @@
-﻿using XnaWrapper.PlatformInterfaces;
+﻿using System.Threading;
+using XnaWrapper.PlatformInterfaces;
 
 namespace XnaWrapper
 {
@@ -16,6 +17,8 @@ namespace XnaWrapper
 
 		public static IGamePad GamePad;
 		public static IAssetLoadingInfo AssetLoadingInfo;
+
+		public static Thread unityMainThread;
 	}
 
 }

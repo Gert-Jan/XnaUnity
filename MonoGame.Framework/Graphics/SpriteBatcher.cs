@@ -40,7 +40,7 @@
 // 
 
 using System.Collections.Generic;
-using System;
+using XnaWrapper.Collections;
 using UColor = UnityEngine.Color32;
 using UVec2 = UnityEngine.Vector2;
 using UVec3 = UnityEngine.Vector3;
@@ -111,22 +111,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// We can do better. Use pooling.
 		/// </summary>
-		private readonly BatchItemPool _freeBatchItemPool;
-
-		/// <summary>
-		/// Optimizations come from not setting unnecessary values, and explicit reallocation of backing array.
-		/// </summary>
-		private class BatchItemPool : XnaWrapper.Pool<SpriteBatchItem>
-		{
-			private struct Resetter : InstanceResetter
-			{
-				public SpriteBatchItem Create() { return new SpriteBatchItem(); }
-				public void Reset(SpriteBatchItem poolable) { } // don't care about resetting
-			}
-
-			public BatchItemPool(int initialCapacity) : base(initialCapacity, new Resetter()) { }
-		}
-
+		private readonly BulkPool<SpriteBatchItem> _freeBatchItemPool;
+		private static SpriteBatchItem CreateNewItem() { return new SpriteBatchItem(); }
+		
 		/// <summary>
 		/// The target graphics device.
 		/// </summary>
@@ -148,7 +135,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			_batchItemList = new List<SpriteBatchItem>(InitialBatchSize);
 			//_freeBatchItemQueue = new Queue<SpriteBatchItem>(InitialBatchSize);
-			_freeBatchItemPool = new BatchItemPool(InitialBatchSize);
+			_freeBatchItemPool = new BulkPool<SpriteBatchItem>(InitialBatchSize, CreateNewItem);
 
 			EnsureArrayCapacity(InitialBatchSize);
 		}
@@ -296,6 +283,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			DrawList(_batchItemList);
+			_freeBatchItemPool.RestoreAll();
 		}
 
 		private void DrawList(List<SpriteBatchItem> list)
@@ -349,10 +337,8 @@ namespace Microsoft.Xna.Framework.Graphics
 							"vertex BR(x:" + item.vertexBR.Position.X + " y: " + item.vertexBR.Position.Y + ")");
 					}*/
 
-					// Release the texture and return the item to the queue.
+					// Release the texture ( return the item to the queue later)
 					item.Texture = null;
-					//_freeBatchItemQueue.Enqueue(item);
-					_freeBatchItemPool.Restore(item);
 				}
 				// flush the remaining vertexArray data
 				FlushVertexArray(startIndex, index);

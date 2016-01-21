@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using XnaWrapper.Collections;
 using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Audio
@@ -9,20 +9,8 @@ namespace Microsoft.Xna.Framework.Audio
 		private AudioSource _source;
 		private bool isPaused;
 
-		private class AudioSourcePool : XnaWrapper.Pool<AudioSource>
-		{
-			private struct Resetter : InstanceResetter
-			{
-				public AudioSource Create()
-				{
-					return SoundEffect.GameObject.AddComponent<AudioSource>();
-				}
-				public void Reset(AudioSource poolable) { }
-			}
-
-			public AudioSourcePool() : base(16, new Resetter()) { }
-		}
-		private static AudioSourcePool pool = new AudioSourcePool();
+		private static AudioSource CreateNewSource() { return SoundEffect.GameObject.AddComponent<AudioSource>(); }
+		private static TrackedPool<AudioSource> pool = new TrackedPool<AudioSource>(16, CreateNewSource);
 
 		public void UnitySetup(SoundEffect soundEffect)
 		{
@@ -44,8 +32,10 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 
 		private void PlatformDispose(bool disposing)
-		{
-			pool.Restore(_source);
+		{	
+			if (System.Threading.Thread.CurrentThread == XnaWrapper.PlatformInstances.unityMainThread)
+				PlatformStop(true);
+            pool.Restore(_source);
 		}
 
 		private void PlatformPlay()
