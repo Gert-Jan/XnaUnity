@@ -40,6 +40,7 @@
 // 
 
 using System.Collections.Generic;
+using XnaWrapper;
 using XnaWrapper.Collections;
 using UColor = UnityEngine.Color32;
 using UVec2 = UnityEngine.Vector2;
@@ -53,6 +54,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		public UVec3[] positions;
 		public UVec2[] texcoords;
 		public UColor[] colors;
+
+		public int Size { get{ return positions.Length; } }
 
 		public GroupedElementVertexArray(int size)
 		{
@@ -125,7 +128,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		//private short[] _index;
 
 		//private VertexPositionColorTexture[] _vertexArray;
-		private GroupedElementVertexArray _vertexArray;
+		private GroupedElementVertexArray _vertexArray = new GroupedElementVertexArray(1024);
 
         //private int logCount;
 		
@@ -202,7 +205,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_index = newIndex;
 
 			//_vertexArray = new VertexPositionColorTexture[4 * numBatchItems];
-			_vertexArray = new GroupedElementVertexArray(4 * numBatchItems);
+
+			int requiredSize = 4 * numBatchItems;
+            if (_vertexArray.Size < requiredSize)
+				_vertexArray = new GroupedElementVertexArray(requiredSize);
         }
 
 		/// <summary>

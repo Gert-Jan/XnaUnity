@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using UnityEngine;
 using Microsoft.Xna.Framework.Audio;
+using XnaWrapper;
 
 namespace Microsoft.Xna.Framework
 {
@@ -99,7 +100,9 @@ namespace Microsoft.Xna.Framework
 			//	++stepCount;
 
 			//MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
+			Stats.Begin(Stats.TRACKER_MONO, "SpeedRunners Update");
 			Update(_gameTime);
+			Stats.End(Stats.TRACKER_MONO, "SpeedRunners Update");
 
 			//}
 

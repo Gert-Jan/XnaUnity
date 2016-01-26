@@ -92,14 +92,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		internal void DrawGroupedPrimitives(GroupedElementVertexArray vertexData, int numVertices)
 		{
+			Stats.Begin(Stats.TRACKER_MONO, "DrawGroupedPrimitives");
+			Stats.Begin(Stats.TRACKER_MONO, "Material");
 			Material mat = activeEffect.Material;
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
-
+			Stats.End(Stats.TRACKER_MONO, "Material");
+			
 			var mesh = _meshPool.Get(numVertices / 4);
 			mesh.Populate(vertexData, numVertices);
-			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
+			Stats.End(Stats.TRACKER_MONO, "DrawGroupedPrimitives");
 		}
 
 		public void ResetPools()
@@ -204,7 +208,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh = new Mesh();
 				//Mesh.MarkDynamic(); //Seems to be a win on wp8
 
-				SpriteCount = NextPowerOf2(spriteCount);
+				SpriteCount = MathUtils.NextPowerOf2(spriteCount);
 				int vCount = SpriteCount * 4;
 
 				Vertices = new UnityEngine.Vector3[vCount];
@@ -308,15 +312,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				//Mesh.RecalculateBounds();
 			}
 
-			public int NextPowerOf2(int minimum)
-			{
-				int result = 1;
-
-				while (result < minimum)
-					result *= 2;
-
-				return result;
-			}
 		}
 
 

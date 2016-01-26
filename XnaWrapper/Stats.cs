@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace XnaWrapper
 {
 	public static class Stats
 	{
-		const string Global = "_G";
+		const float TimeScalar = 1000000.0f;
+		const float TimeScalarInv = 1.0f / TimeScalar;
+		const float kBScalar = 1.0f / 1000.0f;
 
 		public struct Info
 		{
@@ -19,17 +22,17 @@ namespace XnaWrapper
 
 			internal Info(CircularArray array)
 			{
-				average = array.AverageSeconds;
-				highest = array.HighestSeconds;
-				lowest = array.LowestSeconds;
+				average = array.Average;
+				highest = array.Highest;
+				lowest = array.Lowest;
 				p_average = p_highest = p_lowest = 1;
 			}
 
 			internal Info(CircularArray array, Info globalInfo)
 			{
-				average = array.AverageSeconds;
-				highest = array.HighestSeconds;
-				lowest = array.LowestSeconds;
+				average = array.Average;
+				highest = array.Highest;
+				lowest = array.Lowest;
 				p_average = average / globalInfo.average;
 				p_highest = highest / globalInfo.highest;
 				p_lowest = lowest / globalInfo.lowest;
@@ -40,19 +43,24 @@ namespace XnaWrapper
 				return (p_average * 100).ToString("F1") + '%';
             }
 
-			public string ToFPS()
+			public override string ToString()
 			{
-				return string.Format("FPS: {0} ( best:{1} / worst:{2} )", 1 / average, 1 / lowest, 1 / highest);
+				return average + " ( best:" + lowest + " / worst:" + highest + " )";
+            }
+
+			public string ToMs()
+			{
+				return (average * TimeScalarInv) + "ms ( best:" + (lowest * TimeScalarInv) + " / worst:" + (highest * TimeScalarInv) + " )";
+			}
+
+			public string ToKB()
+			{
+				return (average * kBScalar) + "kB ( best:" + (lowest * kBScalar) + " / worst:" + (highest * kBScalar) + " )";
 			}
 
 			public string ToPercent()
 			{
 				return string.Format("%: {0} ( best:{1} / worst:{2} )", ToPercent(p_average), ToPercent(p_lowest), ToPercent(p_highest));
-			}
-
-			public string ToMS()
-			{
-				return string.Format("MS: {0} ( best:{1} / worst:{2} )", average * 1000, lowest * 1000, highest * 1000);
 			}
 		}
 		
@@ -62,26 +70,24 @@ namespace XnaWrapper
 
 			int currentTracked;
 			int mostRecent;
-			Event[] array;
-			int calls;
+			uint[] valueArray;
 			int ignored;
 
-			public CircularArray(Event firstValue)
+			public CircularArray(uint firstValue)
 			{
 				ignored = 0;
 				mostRecent = 0;
-				calls = 0;
 				currentTracked = 0;
-				array = new Event[amountTracked];
-				array[mostRecent] = firstValue;
+				valueArray = new uint[amountTracked];
+				valueArray[mostRecent] = firstValue;
 			}
 
-			public void Add(Event newValue)
+			public void Add(uint newValue)
 			{
 				++mostRecent;
 				if (mostRecent >= amountTracked)
 					mostRecent = 0;
-				array[mostRecent] = newValue;
+				valueArray[mostRecent] = newValue;
 				ignored = 0;
 
 				if (currentTracked >= amountTracked)
@@ -96,28 +102,26 @@ namespace XnaWrapper
             }
 			
 			public bool IsIgnored { get{ return ignored > amountTracked; } }
-
-			public int Calls { get { return calls; } }
-
-			public float AverageSeconds
+			
+			public uint Average
 			{
 				get
 				{
-					float total = 0;
+					double total = 0;
 					for (int i = 0; i < currentTracked; ++i)
-						total += array[i].deltaS;
-					return total / currentTracked;
+						total += valueArray[i];
+					return (uint)(total / currentTracked);
 				}
 			}
 
-			public float HighestSeconds
+			public uint Highest
 			{
 				get
 				{
-					float highest = array[0].deltaS;
+					uint highest = valueArray[0];
 					for (int i = 1; i < currentTracked; ++i)
 					{
-						float element = array[i].deltaS;
+						uint element = valueArray[i];
 						if (element > highest)
 							highest = element;
                     }
@@ -125,14 +129,14 @@ namespace XnaWrapper
 				}
 			}
 
-			public float LowestSeconds
+			public uint Lowest
 			{
 				get
 				{
-					float lowest = array[0].deltaS;
+					uint lowest = valueArray[0];
 					for (int i = 1; i < currentTracked; ++i)
 					{
-						float element = array[i].deltaS;
+						uint element = valueArray[i];
 						if (element < lowest)
 							lowest = element;
 					}
@@ -140,98 +144,182 @@ namespace XnaWrapper
 				}
 			}
 		}
-
-		internal struct Event
-		{
-			public int calls;
-			public float deltaS;
-		}
-
-		static Dictionary<string, CircularArray> previousEvents = new Dictionary<string, CircularArray>();
-		static Dictionary<string, Event> completedEvents = new Dictionary<string, Event>();
-		static Dictionary<string, float> activeEvents = new Dictionary<string, float>();
 		
-		public static void BeginGlobal()
-		{
-			Begin(Global);
-        }
+		static Dictionary<string, CircularArray> previousTimeEvents = new Dictionary<string, CircularArray>();
+		static Dictionary<string, uint> completedTimeEvents = new Dictionary<string, uint>();
+		static Dictionary<string, uint> activeTimeEvents = new Dictionary<string, uint>();
 
-		public static void EndGlobal()
+		static Dictionary<string, CircularArray> previousMonoEvents = new Dictionary<string, CircularArray>();
+		static Dictionary<string, uint> completedMonoEvents = new Dictionary<string, uint>();
+		static Dictionary<string, uint> activeMonoEvents = new Dictionary<string, uint>();
+		
+		// tracks microseconds
+		public const uint TRACKER_TIME = 0;
+		// tracks mono heap
+		public const uint TRACKER_MONO = 1;
+
+		public static readonly uint TRACKER_COUNT;
+		public static readonly Dictionary<uint, string> TRACKER_NAMES = new Dictionary<uint, string>();
+		private static readonly Dictionary<uint, Tracker> trackers = new Dictionary<uint, Tracker>();
+
+		static Stats()
 		{
-			End(Global);
+			AddTracker(TRACKER_TIME, "Time", GetTime);
+			AddTracker(TRACKER_MONO, "Mono memory", GetMono);
+			
+			TRACKER_COUNT = (uint)trackers.Count;
 		}
 
-		public static void Begin(string eventName)
+		private static uint GetTime()
+		{
+			return (uint)(Time.realtimeSinceStartup * TimeScalar);
+		}
+
+		private static uint GetMono()
+		{
+			return Profiler.GetMonoUsedSize();
+		}
+
+		private static void AddTracker(uint id, string trackerName, Func<uint> valueGetterFunction)
+		{
+			trackers[id] = new Tracker(id, valueGetterFunction);
+			TRACKER_NAMES[id] = trackerName;
+		}
+
+		private class Tracker
+		{
+			readonly Func<uint> valueGetterFunction;
+			readonly uint trackedValue;
+
+			Dictionary<string, CircularArray> previousEvents = new Dictionary<string, CircularArray>();
+			Dictionary<string, uint> completedEvents = new Dictionary<string, uint>();
+			Dictionary<string, uint> activeEvents = new Dictionary<string, uint>();
+			List<string> ignoredKeys = new List<string>();
+
+			CircularArray previousGlobals = new CircularArray(0);
+			uint globalValue;
+
+			public Tracker(uint trackedValue, Func<uint> valueGetterFunction)
+			{
+				this.trackedValue = trackedValue;
+                this.valueGetterFunction = valueGetterFunction;
+			}
+
+			public void Begin(ref string eventName)
+			{
+				activeEvents[eventName] = valueGetterFunction();
+			}
+			
+			public void End(ref string eventName)
+			{
+				uint start;
+				if (activeEvents.TryGetValue(eventName, out start))
+				{
+					uint newValue = valueGetterFunction();
+					if (newValue < start)
+					{
+						// must have reset somewhere, so don't record
+					}
+					else
+					{
+
+						uint value;
+						if (!completedEvents.TryGetValue(eventName, out value))
+							value = 0;
+						value += newValue - start;
+						completedEvents[eventName] = value;
+					}
+					activeEvents.Remove(eventName);
+				}
+			}
+			
+			public void Update()
+			{
+				uint newGlobal = valueGetterFunction();
+				if (newGlobal >= globalValue)
+					previousGlobals.Add(newGlobal - globalValue);
+
+				foreach (KeyValuePair<string, CircularArray> pair in previousEvents)
+				{
+					if (pair.Value.IsIgnored)
+						ignoredKeys.Add(pair.Key);
+					else
+						pair.Value.Ignore();
+				}
+				foreach (string key in ignoredKeys)
+					previousEvents.Remove(key);
+				foreach (KeyValuePair<string, uint> pair in completedEvents)
+				{
+					CircularArray array;
+					if (previousEvents.TryGetValue(pair.Key, out array))
+					{
+						array.Add(pair.Value);
+						previousEvents[pair.Key] = array;
+					}
+					else
+						previousEvents[pair.Key] = new CircularArray(pair.Value);
+				}
+				completedEvents.Clear();
+				ignoredKeys.Clear();
+
+				// check mismanagement
+				if (activeEvents.Count != 0)
+				{
+					string events = "";
+					foreach (string key in activeEvents.Keys)
+						events += key + '|';
+					events = events.Substring(0, events.Length - 1);
+					throw new Exception("Mismanaged \"" + TRACKER_NAMES[trackedValue] + "\" statistics: " + events);// happens when begin() and end() don't correspond
+				}
+				globalValue = newGlobal;
+			}
+
+			public void GetInfoAsText(StringBuilder builder, Func<Info, string> toStringFunc)
+			{
+				Info globalInfo = new Info(previousGlobals);
+				builder.Append(TRACKER_NAMES[trackedValue]);
+				builder.Append(": ");
+				builder.Append(toStringFunc(globalInfo));
+				builder.AppendLine(); 
+				foreach (KeyValuePair<string, CircularArray> pair in previousEvents)
+				{
+					Info info = new Info(pair.Value, globalInfo);
+					builder.Append("   ");
+					builder.Append(pair.Key);
+					builder.Append(": ");
+					builder.Append(toStringFunc(info));
+					builder.AppendLine();
+				}
+				previousEvents.Clear();
+			}
+
+		}
+
+		public static void Begin(uint trackerId, string eventName)
 		{
 			if (string.IsNullOrEmpty(eventName))
-				eventName = completedEvents.Count.ToString();
-			
-			activeEvents[eventName] = Time.realtimeSinceStartup;
+				throw new ArgumentNullException("Measured block must be named");
+
+			trackers[trackerId].Begin(ref eventName);
 		}
 
-		public static void End(string eventName)
+		public static void End(uint trackerId, string eventName)
 		{
-			float startTime;
-			if (activeEvents.TryGetValue(eventName, out startTime))
-			{
-				float deltaS = (Time.realtimeSinceStartup - startTime);
+			if (string.IsNullOrEmpty(eventName))
+				throw new ArgumentNullException("Measured block must be named");
 
-				Event e;
-				if (completedEvents.TryGetValue(eventName, out e))
-					e.calls++;
-				else
-					e.calls = 1;
-				e.deltaS += deltaS;
-				completedEvents[eventName] = e;
-
-				activeEvents.Remove(eventName);
-            }
+			trackers[trackerId].End(ref eventName);
 		}
 
 		public static void Update()
 		{
-			List<string> ignoredKeys = new List<string>();
-			foreach (KeyValuePair<string, CircularArray> pair in previousEvents)
-			{
-				if (pair.Value.IsIgnored)
-					ignoredKeys.Add(pair.Key);
-				else
-					pair.Value.Ignore();
-            }
-			foreach (string key in ignoredKeys)
-				previousEvents.Remove(key);
-			foreach (KeyValuePair<string, Event> pair in completedEvents)
-			{
-				CircularArray array;
-				if (previousEvents.TryGetValue(pair.Key, out array))
-				{
-					array.Add(pair.Value);
-					previousEvents[pair.Key] = array;
-				}
-				else
-					previousEvents[pair.Key] = new CircularArray(pair.Value);
-			}
-			completedEvents.Clear();
-
-			if (activeEvents.Count != 0)
-			{
-				string events = "";
-				foreach (string key in activeEvents.Keys)
-					events += key + '|';
-				events = events.Substring(0, events.Length - 1);
-				throw new Exception("Mismanaged statistics: " + events); // happens when begin() and end() don't correspond
-			}
+			foreach (Tracker tracker in trackers.Values)
+				tracker.Update();
 		}
-		
-		public static void GetInfo(Dictionary<string, Info> outTable)
+
+		public static void GetInfoAsText(uint trackedValue, StringBuilder builder, Func<Info, string> toStringFunc)
 		{
-			Info globalInfo = new Info(previousEvents[Global]);
-
-			foreach (KeyValuePair<string, CircularArray> pair in previousEvents) {
-				outTable.Add(pair.Key, new Info(pair.Value, globalInfo));
-			}
-
-			previousEvents.Clear();
+			trackers[trackedValue].GetInfoAsText(builder, toStringFunc);
 		}
 	}
 }

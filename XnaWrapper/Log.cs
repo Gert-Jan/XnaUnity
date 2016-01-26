@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace XnaWrapper
 {
@@ -59,6 +60,7 @@ namespace XnaWrapper
 
 		#endregion
 
+		[Conditional("NOLOG")]
 		/// <summary>
 		/// Flush any buffered logs
 		/// </summary>
@@ -69,6 +71,7 @@ namespace XnaWrapper
 			buffer.Clear();
         }
 
+		[Conditional("NOLOG")]
 		/// <summary>
 		/// Flush any buffered logs
 		/// </summary>
@@ -79,6 +82,7 @@ namespace XnaWrapper
 			buffer.Clear();
 		}
 
+		[Conditional("NOLOG")]
 		/// <summary>
 		/// Log (optionally formatted), Buffered
 		/// </summary>
@@ -92,6 +96,7 @@ namespace XnaWrapper
 				buffer.Add(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 
+		[Conditional("NOLOG")]
 		/// <summary>
 		/// Log (optionally formatted)
 		/// </summary>
@@ -104,7 +109,8 @@ namespace XnaWrapper
 			else
 				InternalLogFunction(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
-		
+
+		[Conditional("NOLOG")]
 		/// <summary>
 		/// Log (optionally formatted), time prepended
 		/// </summary>
