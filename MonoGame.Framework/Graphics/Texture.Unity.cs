@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public partial class Texture
 	{
-        protected UnityEngine.Texture texture;
+		protected UnityEngine.Texture texture;
+		protected bool isFontTexture;
 
-		public UnityEngine.Texture UnityTexture
-		{
-			get { return (UnityEngine.Texture)texture; }
-			private set { texture = value; }
-		}
+		public UnityEngine.Texture UnityTexture { get { return texture; } }
+		public bool IsFontTexture { get { return isFontTexture; } }
 
 		public Texture()
 		{ }
@@ -22,8 +17,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			if (texture == null)
 				throw new ArgumentNullException("texture");
-			this.UnityTexture = texture;
-			this._format = SurfaceFormat.Color;
+			this.texture = texture;
+			isFontTexture = texture.name == "Font Texture";
+			_format = SurfaceFormat.Color;
 		}
 
 		private void PlatformGraphicsDeviceResetting()

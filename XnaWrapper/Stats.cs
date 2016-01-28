@@ -8,7 +8,7 @@ namespace XnaWrapper
 	public static class Stats
 	{
 		const float TimeScalar = 1000000.0f;
-		const float TimeScalarInv = 1.0f / TimeScalar;
+		const float MilliSecondsScalarInv = 1000.0f / TimeScalar;
 		const float kBScalar = 1.0f / 1000.0f;
 
 		public struct Info
@@ -50,7 +50,7 @@ namespace XnaWrapper
 
 			public string ToMs()
 			{
-				return (average * TimeScalarInv) + "ms ( best:" + (lowest * TimeScalarInv) + " / worst:" + (highest * TimeScalarInv) + " )";
+				return (average * MilliSecondsScalarInv) + "ms ( best:" + (lowest * MilliSecondsScalarInv) + " / worst:" + (highest * MilliSecondsScalarInv) + " )";
 			}
 
 			public string ToKB()

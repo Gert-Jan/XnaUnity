@@ -67,12 +67,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		//TODO: This is just a test
+		private DisplayMode theOnlyMode = new DisplayMode(1920, 1080, 60, SurfaceFormat.Color);
 		public DisplayMode DisplayMode
 		{
-			get { return new DisplayMode(1920, 1080, 60, SurfaceFormat.Color); }
+			get { return theOnlyMode; }
 		}
 
-		private readonly MaterialPool _materialPool = new MaterialPool();
 		private readonly MeshPool _meshPool = new MeshPool();
 
 		public void DrawUserIndexedPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration)
@@ -92,23 +92,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		internal void DrawGroupedPrimitives(GroupedElementVertexArray vertexData, int numVertices)
 		{
-			Stats.Begin(Stats.TRACKER_MONO, "DrawGroupedPrimitives");
-			Stats.Begin(Stats.TRACKER_MONO, "Material");
 			Material mat = activeEffect.Material;
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
-			Stats.End(Stats.TRACKER_MONO, "Material");
 			
 			var mesh = _meshPool.Get(numVertices / 4);
 			mesh.Populate(vertexData, numVertices);
 			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
-			Stats.End(Stats.TRACKER_MONO, "DrawGroupedPrimitives");
 		}
 
 		public void ResetPools()
 		{
-			_materialPool.Reset();
 			_meshPool.Reset();
 		}
 
@@ -136,64 +131,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 		}
-
-		private class MaterialPool
-		{
-			private class MaterialHolder
-			{
-				public readonly Material Material;
-				public readonly Texture2D Texture2D;
-
-				public MaterialHolder(Material material, Texture2D texture2D)
-				{
-					Material = material;
-					Texture2D = texture2D;
-				}
-			}
-
-			private readonly List<MaterialHolder> _materials = new List<MaterialHolder>();
-			private int _index;
-			private readonly Shader _shader = Shader.Find("Custom/SpriteShader");
-			private Material _defaultmaterial;
-
-			public MaterialPool()
-			{
-				_defaultmaterial = new Material(_shader);
-			}
-
-			private MaterialHolder Create(Texture2D texture)
-			{
-				var mat = _defaultmaterial;
-				mat.mainTexture = texture.UnityTexture;
-				mat.renderQueue += _materials.Count;
-				return new MaterialHolder(mat, texture);
-			}
-
-			public Material Get(Texture2D texture)
-			{
-				while (_index < _materials.Count)
-				{
-					if (_materials[_index].Texture2D == texture)
-					{
-						_index++;
-						return _materials[_index - 1].Material;
-					}
-
-					_index++;
-				}
-
-				var material = Create(texture);
-				_materials.Add(material);
-				_index++;
-				return _materials[_index - 1].Material;
-			}
-
-			public void Reset()
-			{
-				_index = 0;
-			}
-		}
-
+		
 		private class MeshHolder
 		{
 			public readonly int SpriteCount;
