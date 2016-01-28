@@ -100,9 +100,7 @@ namespace Microsoft.Xna.Framework
 			//	++stepCount;
 
 			//MediaPlayer.Update((float)_targetElapsedTime.TotalSeconds);
-			Stats.Begin(Stats.TRACKER_MONO, "SpeedRunners Update");
 			Update(_gameTime);
-			Stats.End(Stats.TRACKER_MONO, "SpeedRunners Update");
 
 			//}
 

@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#define MESH_USE_MEASURING
+
+using System;
 using UnityEngine;
 using XnaWrapper;
 using Debug = System.Diagnostics.Debug;
@@ -96,8 +97,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
-			
+
+			Stats.Begin(Stats.TRACKER_MONO, "Mesh Get");
 			var mesh = _meshPool.Get(numVertices / 4);
+			Stats.End(Stats.TRACKER_MONO, "Mesh Get");
 			mesh.Populate(vertexData, numVertices);
 			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
 		}
@@ -131,10 +134,19 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 		}
-		
+
+		#region Mesh Helpers
+
+		/// <summary>
+		/// This function can be used to prepare a number of meshes so they don't need to be generated later in the game. Make sure not to init the same index twice.
+		/// </summary>
+		public void InitMeshPoolInstance(int index, int initialInstances)
+		{
+			_meshPool.InitBufferPair(index, initialInstances);
+		}
+
 		private class MeshHolder
 		{
-			public readonly int SpriteCount;
 			public readonly Mesh Mesh;
 
 			public readonly UnityEngine.Vector3[] Vertices;
@@ -145,9 +157,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				Mesh = new Mesh();
 				//Mesh.MarkDynamic(); //Seems to be a win on wp8
-
-				SpriteCount = MathUtils.NextPowerOf2(spriteCount);
-				int vCount = SpriteCount * 4;
+				
+				int vCount = spriteCount * 4;
 
 				Vertices = new UnityEngine.Vector3[vCount];
 				UVs = new UnityEngine.Vector2[vCount];
@@ -162,8 +173,8 @@ namespace Microsoft.Xna.Framework.Graphics
 					Colors[i] = new Color32(255, 255, 255, 255);
 				}
 
-				var triangles = new int[SpriteCount * 6];
-				for (var i = 0; i < SpriteCount; i++)
+				var triangles = new int[spriteCount * 6];
+				for (var i = 0; i < spriteCount; i++)
 				{
 					/*
 					 *  TL    TR
@@ -251,63 +262,134 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 		}
-
-
+		
 		private class MeshPool
 		{
-			private List<MeshHolder> _unusedMeshes = new List<MeshHolder>();
-			private List<MeshHolder> _usedMeshes = new List<MeshHolder>();
-
-			private List<MeshHolder> _otherMeshes = new List<MeshHolder>();
-			//private int _index;
-
-			/// <summary>
-			/// get a mesh with at least this many triangles
-			/// </summary>
-			public MeshHolder Get(int spriteCount)
+			private class MeshBufferPair
 			{
-				MeshHolder best = null;
-				int bestSpriteCount = 0;
-				int bestIndex = -1;
-                int unusedMeshesCount = _unusedMeshes.Count;
-				for (int i = 0; i < unusedMeshesCount; i++)
+				readonly int spriteCount;
+
+				// meshes for the next frame
+				MeshHolder[] frontMeshes;
+				// meshes in use from the previous frame
+				MeshHolder[] backMeshes;
+
+				// counter in the current frontMeshes list, elements at a lower index are in use, those at an equal or higher index are free to be used next
+				int nextFrontMesh = 0;
+
+				public MeshBufferPair(int spriteCount, int initialInstances)
 				{
-					var unusedMesh = _unusedMeshes[i];
-					int unusedMeshSpriteCount = unusedMesh.SpriteCount;
-                    if ((best == null || bestSpriteCount > unusedMeshSpriteCount) && unusedMeshSpriteCount >= spriteCount)
+                    this.spriteCount = spriteCount;
+
+					if (initialInstances < 1)
+						initialInstances = 1;
+
+					int powerOfTwo = MathUtils.NextPowerOf2(Math.Max(16, initialInstances));
+					frontMeshes = new MeshHolder[powerOfTwo];
+					backMeshes = new MeshHolder[powerOfTwo];
+
+					for (int i = 0; i < initialInstances; ++i)
 					{
-						best = unusedMesh;
-						bestSpriteCount = best.SpriteCount;
-						bestIndex = i;
+						frontMeshes[i] = new MeshHolder(spriteCount);
+						backMeshes[i] = new MeshHolder(spriteCount);
 					}
 				}
-				if (best == null)
+				
+				void GrowArray()
 				{
-					best = new MeshHolder(spriteCount);
-				}
-				else
-				{
-					_unusedMeshes.RemoveAt(bestIndex);
-				}
-				_usedMeshes.Add(best);
+					int oldCapacity = frontMeshes.Length;
+                    int newCapacity = oldCapacity * 2;
 
-				return best;
+					MeshHolder[] tmpFront = frontMeshes;
+					MeshHolder[] tmpBack = backMeshes;
+
+                    frontMeshes = new MeshHolder[newCapacity];
+					backMeshes = new MeshHolder[newCapacity];
+					for (int i = 0; i < oldCapacity; ++i)
+					{
+						frontMeshes[i] = tmpFront[i];
+						backMeshes[i] = tmpBack[i];
+					}
+				}
+				
+				public MeshHolder GetNextFree()
+				{
+					if (nextFrontMesh >= frontMeshes.Length)
+						GrowArray();
+
+					MeshHolder mesh = frontMeshes[nextFrontMesh];
+                    if (mesh == null)
+					{
+						mesh = new MeshHolder(spriteCount);
+						frontMeshes[nextFrontMesh] = mesh;
+                    }
+					++nextFrontMesh;
+
+                    return mesh;
+				}
+
+				public void Swap()
+				{
+					nextFrontMesh = 0;
+
+					MeshHolder[] tmp = frontMeshes;
+					frontMeshes = backMeshes;
+					backMeshes = tmp;
+				}
+			}
+
+			private const int maxBufferPairs = 16;
+
+			private int highestBufferPairIndex = 0;
+			private MeshBufferPair[] bufferPairs = new MeshBufferPair[maxBufferPairs];
+
+#if MESH_USE_MEASURING
+			private int[] histogram = new int[maxBufferPairs];
+			private int[] globalHistogram = new int[maxBufferPairs];
+#endif
+			
+			public void InitBufferPair(int index, int initialCapacity)
+			{
+				int powerOfTwo = 1 << index;
+				if (bufferPairs[index] != null)
+					throw new Exception("(Inverse NullReferenceException): This reference is not null, where it should be (" + index + ")");
+				bufferPairs[index] = new MeshBufferPair(powerOfTwo, initialCapacity);
+				for (int i = index; i >= 0; --i)
+					if (bufferPairs[i] == null)
+						throw new NullReferenceException("Manual init should happen in ascending index order. While adding " + index + ", " + i + " was missing");
+				highestBufferPairIndex = index;
+            }
+
+			public MeshHolder Get(int spriteCount)
+			{
+				int index = MathUtils.HighestBitIndex(MathUtils.NextPowerOf2(spriteCount));
+				if (index > highestBufferPairIndex)
+				{
+					// if we happen to need buffers with higher spriteCounts, make a new one
+					for (int i = highestBufferPairIndex + 1; i <= index; ++i)
+						InitBufferPair(i, 1);
+				}
+#if MESH_USE_MEASURING
+				histogram[index] = histogram[index] + 1;
+#endif
+				return bufferPairs[index].GetNextFree();
 			}
 
 			public void Reset()
 			{
-				//Double Buffer our Meshes (Doesnt seem to be a win on wp8)
-				//Ref http://forum.unity3d.com/threads/118723-Huge-performance-loss-in-Mesh-CreateVBO-for-dynamic-meshes-IOS
+#if MESH_USE_MEASURING
+				for (int i = 0; i < histogram.Length; ++i)
+				{
+					globalHistogram[i] = Math.Max(histogram[i], globalHistogram[i]);
+					histogram[i] = 0;
+				}
+#endif
 
-				//meshes from last frame are now unused
-				_unusedMeshes.AddRange(_otherMeshes);
-				_otherMeshes.Clear();
-
-				//swap our use meshes and the now empty other meshes
-				var temp = _otherMeshes;
-				_otherMeshes = _usedMeshes;
-				_usedMeshes = temp;
+				for (int i = 0; i < highestBufferPairIndex; ++i)
+					bufferPairs[i].Swap();
 			}
 		}
+
+		#endregion
 	}
 }
