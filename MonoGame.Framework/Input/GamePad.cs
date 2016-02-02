@@ -27,9 +27,16 @@ namespace Microsoft.Xna.Framework.Input
 
 				if (PlatformInstances.LogOverlay)
 				{
-					PlatformInstances.LogToBottom = newState.Buttons.RightStick == ButtonState.Pressed;
-					PlatformInstances.LogUp = newState.ThumbSticks.Right.Y > 0.5f;
-					PlatformInstances.LogDown = newState.ThumbSticks.Right.Y < -0.5f;
+					if (playerIndex == PlayerIndex.One)
+					{
+						PlatformInstances.LogToBottom = false;
+						PlatformInstances.LogUp = false;
+						PlatformInstances.LogDown = false;
+					}
+
+					PlatformInstances.LogToBottom = newState.Buttons.RightStick == ButtonState.Pressed | PlatformInstances.LogToBottom;
+					PlatformInstances.LogUp = newState.ThumbSticks.Right.Y > 0.5f | PlatformInstances.LogUp;
+					PlatformInstances.LogDown = newState.ThumbSticks.Right.Y < -0.5f | PlatformInstances.LogDown;
 
 					// override the right stick 
 					newState.ThumbSticks = new GamePadThumbSticks(newState.ThumbSticks.Left, new Vector2());
