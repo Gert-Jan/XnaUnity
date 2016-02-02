@@ -60,7 +60,9 @@ namespace XnaWrapper
 
 		#endregion
 
-		[Conditional("NOLOG")]
+#if !LOGGING //This construction was made to only apply the Conditional when it is false. Otherwise the LOGGING define wouldn't work correctly for the conditional when called from another assembly (specifically Unity assembly)
+		[Conditional("LOGGING")]
+#endif
 		/// <summary>
 		/// Flush any buffered logs
 		/// </summary>
@@ -71,7 +73,9 @@ namespace XnaWrapper
 			buffer.Clear();
         }
 
-		[Conditional("NOLOG")]
+#if !LOGGING //This construction was made to only apply the Conditional when it is false. Otherwise the LOGGING define wouldn't work correctly for the conditional when called from another assembly (specifically Unity assembly)
+		[Conditional("LOGGING")]
+#endif
 		/// <summary>
 		/// Flush any buffered logs
 		/// </summary>
@@ -82,7 +86,9 @@ namespace XnaWrapper
 			buffer.Clear();
 		}
 
-		[Conditional("NOLOG")]
+#if !LOGGING //This construction was made to only apply the Conditional when it is false. Otherwise the LOGGING define wouldn't work correctly for the conditional when called from another assembly (specifically Unity assembly)
+		[Conditional("LOGGING")]
+#endif
 		/// <summary>
 		/// Log (optionally formatted), Buffered
 		/// </summary>
@@ -96,7 +102,9 @@ namespace XnaWrapper
 				buffer.Add(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 
-		[Conditional("NOLOG")]
+#if !LOGGING //This construction was made to only apply the Conditional when it is false. Otherwise the LOGGING define wouldn't work correctly for the conditional when called from another assembly (specifically Unity assembly)
+		[Conditional("LOGGING")]
+#endif
 		/// <summary>
 		/// Log (optionally formatted)
 		/// </summary>
@@ -110,7 +118,9 @@ namespace XnaWrapper
 				InternalLogFunction(string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
 		}
 
-		[Conditional("NOLOG")]
+#if !LOGGING //This construction was made to only apply the Conditional when it is false. Otherwise the LOGGING define wouldn't work correctly for the conditional when called from another assembly (specifically Unity assembly)
+		[Conditional("LOGGING")]
+#endif
 		/// <summary>
 		/// Log (optionally formatted), time prepended
 		/// </summary>

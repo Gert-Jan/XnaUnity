@@ -1,4 +1,4 @@
-﻿#define MESH_USE_MEASURING
+﻿//#define MESH_USE_MEASURING
 
 using System;
 using UnityEngine;
@@ -340,7 +340,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			private const int maxBufferPairs = 16;
 
-			private int highestBufferPairIndex = 0;
+			private int highestBufferPairIndex = -1;
 			private MeshBufferPair[] bufferPairs = new MeshBufferPair[maxBufferPairs];
 
 #if MESH_USE_MEASURING
