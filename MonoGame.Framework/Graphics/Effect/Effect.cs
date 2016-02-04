@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Effect
 	{
-		protected readonly GraphicsDevice device;
+		internal protected readonly GraphicsDevice device;
 		public Effect(GraphicsDevice device)
 		{
 			this.device = device;
+			EffectPass onlyPass = new EffectPass(this);
+			CurrentTechnique = new EffectTechnique(onlyPass);
 		}
 
 		public EffectTechnique CurrentTechnique { get; set; }
 
-		public virtual Material Material { get; protected set; }
+		internal virtual Material Material { get; set; }
 
 		// called after this effect is set to be used, but before textures are known
 		internal virtual bool OnApply()

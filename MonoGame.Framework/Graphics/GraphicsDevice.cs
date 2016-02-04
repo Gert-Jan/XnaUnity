@@ -74,7 +74,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			get { return theOnlyMode; }
 		}
 
-		private readonly MeshPool _meshPool = new MeshPool();
+		private readonly SpriteMeshPool spriteMeshPool = new SpriteMeshPool();
+		//private readonly UserMeshPool triangleMeshPool;
 
 		public void DrawUserIndexedPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration)
 		{
@@ -86,9 +87,29 @@ namespace Microsoft.Xna.Framework.Graphics
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
 
-			var mesh = _meshPool.Get(primitiveCount / 2);
+			SpriteMeshHolder mesh = spriteMeshPool.Get(primitiveCount / 2);
 			mesh.Populate(vertexData, numVertices);
-			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
+		}
+
+		public void DrawUserPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices)
+		{
+			switch (primitiveType)
+			{
+				case PrimitiveType.TriangleStrip:
+					break;
+
+				default:
+					throw new Exception("Primitive type unsupported: " + primitiveType);
+			}
+			//Material mat = activeEffect.Material;
+			//mat.mainTexture = Textures[0].UnityTexture;
+			//activeEffect.OnApplyPostTexture();
+			//mat.SetPass(0);
+			//
+			//SpriteMeshHolder mesh = spriteMeshPool.Get(numVertices / 4);
+			//mesh.Populate(vertexData, numVertices);
+			//UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
 		}
 
 		internal void DrawGroupedPrimitives(GroupedElementVertexArray vertexData, int numVertices)
@@ -97,17 +118,15 @@ namespace Microsoft.Xna.Framework.Graphics
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
-
-			Stats.Begin(Stats.TRACKER_MONO, "Mesh Get");
-			var mesh = _meshPool.Get(numVertices / 4);
-			Stats.End(Stats.TRACKER_MONO, "Mesh Get");
+			
+			SpriteMeshHolder mesh = spriteMeshPool.Get(numVertices / 4);
 			mesh.Populate(vertexData, numVertices);
 			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
 		}
 
 		public void ResetPools()
 		{
-			_meshPool.Reset();
+			spriteMeshPool.Reset();
 		}
 
 		private UnityEngine.Color tmp_uColor = new UnityEngine.Color();
@@ -142,66 +161,52 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		public void InitMeshPoolInstance(int index, int initialInstances)
 		{
-			_meshPool.InitBufferPair(index, initialInstances);
+			spriteMeshPool.InitBufferPair(index, initialInstances);
 		}
 
-		private class MeshHolder
+		private class UserMeshHolder
+		{
+
+		}
+
+		private class UserMeshPool
+		{
+
+		}
+
+		private abstract class MeshHolder
 		{
 			public readonly Mesh Mesh;
+			public readonly int vertexCount;
 
 			public readonly UnityEngine.Vector3[] Vertices;
 			public readonly UnityEngine.Vector2[] UVs;
 			public readonly Color32[] Colors;
 
-			public MeshHolder(int spriteCount)
+			public MeshHolder(int vertexCount)
 			{
-				Mesh = new Mesh();
-				//Mesh.MarkDynamic(); //Seems to be a win on wp8
-				
-				int vCount = spriteCount * 4;
+				this.vertexCount = vertexCount;
 
-				Vertices = new UnityEngine.Vector3[vCount];
-				UVs = new UnityEngine.Vector2[vCount];
-				Colors = new Color32[vCount];
+				Mesh = new Mesh();
+
+				Vertices = new UnityEngine.Vector3[vertexCount];
+				UVs = new UnityEngine.Vector2[vertexCount];
+				Colors = new Color32[vertexCount];
 
 				//Put some random crap in this so we can just set the triangles once
 				//if these are not populated then unity totally fucks up our mesh and never draws it
-				for (var i = 0; i < vCount; i++)
+				for (int i = 0; i < vertexCount; ++i)
 				{
 					Vertices[i] = new UnityEngine.Vector3(1, i);
 					UVs[i] = new UnityEngine.Vector2(0, i);
 					Colors[i] = new Color32(255, 255, 255, 255);
 				}
 
-				var triangles = new int[spriteCount * 6];
-				for (var i = 0; i < spriteCount; i++)
-				{
-					/*
-					 *  TL    TR
-					 *   0----1 0,1,2,3 = index offsets for vertex indices
-					 *   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
-					 *   |  / |
-					 *   | /  |
-					 *   |/   |
-					 *   2----3
-					 *  BL    BR
-					 */
-					// Triangle 1
-					triangles[i * 6 + 0] = i * 4;
-					triangles[i * 6 + 1] = i * 4 + 1;
-					triangles[i * 6 + 2] = i * 4 + 2;
-					// Triangle 2
-					triangles[i * 6 + 3] = i * 4 + 1;
-					triangles[i * 6 + 4] = i * 4 + 3;
-					triangles[i * 6 + 5] = i * 4 + 2;
-				}
-
 				Mesh.vertices = Vertices;
 				Mesh.uv = UVs;
 				Mesh.colors32 = Colors;
-				Mesh.triangles = triangles;
 			}
-			
+
 			public void Populate(GroupedElementVertexArray vertexData, int numVertices)
 			{
 				Array.Copy(vertexData.positions, Vertices, numVertices);
@@ -214,7 +219,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				Mesh.colors32 = Colors;
 			}
 
-			//inlined variant
 			public void Populate(VertexPositionColorTexture[] vertexData, int numVertices)
 			{
 				VertexPositionColorTexture vertex;
@@ -230,49 +234,126 @@ namespace Microsoft.Xna.Framework.Graphics
 					Colors[i].a = (byte)(color >> 24);
 				}
 
-				//we could clearly less if we remembered how many we used last time
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
 
 				Mesh.vertices = Vertices;
 				Mesh.uv = UVs;
 				Mesh.colors32 = Colors;
-				// possibly optional
-				//Mesh.RecalculateBounds();
 			}
 
 			// non inlined variant
-			public void Populate_Conversion(VertexPositionColorTexture[] vertexData, int numVertices)
+			//public void Populate_Conversion(VertexPositionColorTexture[] vertexData, int numVertices)
+			//{
+			//	for (int i = 0; i < numVertices; i++)
+			//	{
+			//		XnaToUnity.Vector3(vertexData[i].Position, ref Vertices[i]);
+			//		XnaToUnity.Vector2(vertexData[i].TextureCoordinate, ref UVs[i]);
+			//		UVs[i].y = 1 - UVs[i].y;
+			//		XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
+			//	}
+			//
+			//	Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
+			//
+			//	Mesh.vertices = Vertices;
+			//	Mesh.uv = UVs;
+			//	Mesh.colors32 = Colors;
+			//}
+		}
+
+		/*
+		private class TriangleStripMeshHolder : MeshHolder
+		{
+			public TriangleStripMeshHolder(int stripVertices)
+				: base((stripVertices - 2) * 3)
 			{
-				for (int i = 0; i < numVertices; i++)
+
+				var triangleIndices = new int[vertexCount * 3 - 6];
+				int totalIndices = triangleIndices.Length;
+
+				//
+				//   0----2----4----6----8
+				//   |   /|   /|   /|   / 
+				//   |  / |  / |  / |  / |
+				//   | /  | /  | /  | /   
+				//   |/   |/   |/   |/   |
+				//   1----3----5----7 - -9
+				//
+
+				int index = 0;
+				int a = 0;
+				int b = 1;
+				int c = 2;
+				int d = 3;
+				triangleIndices[index++] = a;
+				triangleIndices[index++] = b;
+				triangleIndices[index++] = c;
+				for (; index < totalIndices;)
 				{
-					XnaToUnity.Vector3(vertexData[i].Position, ref Vertices[i]);
-					XnaToUnity.Vector2(vertexData[i].TextureCoordinate, ref UVs[i]);
-					UVs[i].y = 1 - UVs[i].y;
-					XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
+					triangleIndices[index++] = b;
+					triangleIndices[index++] = d;
+					triangleIndices[index++] = c;
+
+					if (index >= totalIndices)
+						break;
+					a += 2;
+					b += 2;
+					c += 2;
+					d += 2;
+
+					triangleIndices[index++] = a;
+					triangleIndices[index++] = b;
+					triangleIndices[index++] = c;
 				}
 
-				//we could clearly less if we remembered how many we used last time
-				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
-
-				Mesh.vertices = Vertices;
-				Mesh.uv = UVs;
-				Mesh.colors32 = Colors;
-				// possibly optional
-				//Mesh.RecalculateBounds();
+				Mesh.triangles = triangleIndices;
 			}
 
 		}
+		*/
+
+		private class SpriteMeshHolder : MeshHolder
+		{
+			public SpriteMeshHolder(int spriteCount) 
+				: base(spriteCount * 4)
+			{
+				var triangles = new int[spriteCount * 6];
+				for (var i = 0; i < spriteCount; i++)
+				{
+					//
+					//  TL    TR
+					//   0----1 0,1,2,3 = index offsets for vertex indices
+					//   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
+					//   |  / |
+					//   | /  |
+					//   |/   |
+					//   2----3
+					//  BL    BR
+					//
+					// Triangle 1
+					triangles[i * 6 + 0] = i * 4;
+					triangles[i * 6 + 1] = i * 4 + 1;
+					triangles[i * 6 + 2] = i * 4 + 2;
+					// Triangle 2
+					triangles[i * 6 + 3] = i * 4 + 1;
+					triangles[i * 6 + 4] = i * 4 + 3;
+					triangles[i * 6 + 5] = i * 4 + 2;
+				}
+
+				Mesh.triangles = triangles;
+			}
+			
+		}
 		
-		private class MeshPool
+		private class SpriteMeshPool
 		{
 			private class MeshBufferPair
 			{
 				readonly int spriteCount;
 
 				// meshes for the next frame
-				MeshHolder[] frontMeshes;
+				SpriteMeshHolder[] frontMeshes;
 				// meshes in use from the previous frame
-				MeshHolder[] backMeshes;
+				SpriteMeshHolder[] backMeshes;
 
 				// counter in the current frontMeshes list, elements at a lower index are in use, those at an equal or higher index are free to be used next
 				int nextFrontMesh = 0;
@@ -285,13 +366,13 @@ namespace Microsoft.Xna.Framework.Graphics
 						initialInstances = 1;
 
 					int powerOfTwo = MathUtils.NextPowerOf2(Math.Max(16, initialInstances));
-					frontMeshes = new MeshHolder[powerOfTwo];
-					backMeshes = new MeshHolder[powerOfTwo];
+					frontMeshes = new SpriteMeshHolder[powerOfTwo];
+					backMeshes = new SpriteMeshHolder[powerOfTwo];
 
 					for (int i = 0; i < initialInstances; ++i)
 					{
-						frontMeshes[i] = new MeshHolder(spriteCount);
-						backMeshes[i] = new MeshHolder(spriteCount);
+						frontMeshes[i] = new SpriteMeshHolder(spriteCount);
+						backMeshes[i] = new SpriteMeshHolder(spriteCount);
 					}
 				}
 				
@@ -300,11 +381,11 @@ namespace Microsoft.Xna.Framework.Graphics
 					int oldCapacity = frontMeshes.Length;
                     int newCapacity = oldCapacity * 2;
 
-					MeshHolder[] tmpFront = frontMeshes;
-					MeshHolder[] tmpBack = backMeshes;
+					SpriteMeshHolder[] tmpFront = frontMeshes;
+					SpriteMeshHolder[] tmpBack = backMeshes;
 
-                    frontMeshes = new MeshHolder[newCapacity];
-					backMeshes = new MeshHolder[newCapacity];
+                    frontMeshes = new SpriteMeshHolder[newCapacity];
+					backMeshes = new SpriteMeshHolder[newCapacity];
 					for (int i = 0; i < oldCapacity; ++i)
 					{
 						frontMeshes[i] = tmpFront[i];
@@ -312,15 +393,15 @@ namespace Microsoft.Xna.Framework.Graphics
 					}
 				}
 				
-				public MeshHolder GetNextFree()
+				public SpriteMeshHolder GetNextFree()
 				{
 					if (nextFrontMesh >= frontMeshes.Length)
 						GrowArray();
 
-					MeshHolder mesh = frontMeshes[nextFrontMesh];
+					SpriteMeshHolder mesh = frontMeshes[nextFrontMesh];
                     if (mesh == null)
 					{
-						mesh = new MeshHolder(spriteCount);
+						mesh = new SpriteMeshHolder(spriteCount);
 						frontMeshes[nextFrontMesh] = mesh;
                     }
 					++nextFrontMesh;
@@ -332,7 +413,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					nextFrontMesh = 0;
 
-					MeshHolder[] tmp = frontMeshes;
+					SpriteMeshHolder[] tmp = frontMeshes;
 					frontMeshes = backMeshes;
 					backMeshes = tmp;
 				}
@@ -360,7 +441,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				highestBufferPairIndex = index;
             }
 
-			public MeshHolder Get(int spriteCount)
+			public SpriteMeshHolder Get(int spriteCount)
 			{
 				int index = MathUtils.HighestBitIndex(MathUtils.NextPowerOf2(spriteCount));
 				if (index > highestBufferPairIndex)
