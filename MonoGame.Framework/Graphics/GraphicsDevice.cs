@@ -89,23 +89,22 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void DrawUserPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int primitiveCount)
 		{
-			//activeEffect.OnApply();
-			//Material mat = activeEffect.Material;
-			//mat.mainTexture = Textures[0].UnityTexture;
-			//activeEffect.OnApplyPostTexture();
-			//mat.SetPass(0);
-			//
-			//switch (primitiveType)
-			//{
-			//	case PrimitiveType.TriangleStrip:
-			//		// primitiveCount is the number of triangles in strip
-			//		TriangleStripMeshHolder stripMesh = triangleStripMeshPool.Get(primitiveCount);
-			//		stripMesh.DrawStrip(vertexData, vertexOffset, primitiveCount);
-            //        break;
-			//	default:
-			//		throw new Exception("Primitive type unsupported: " + primitiveType);
-			//}
-
+			activeEffect.OnApply();
+			Material mat = activeEffect.Material;
+			mat.mainTexture = Textures[0].UnityTexture;
+			activeEffect.OnApplyPostTexture();
+			mat.SetPass(0);
+			
+			switch (primitiveType)
+			{
+				case PrimitiveType.TriangleStrip:
+					// primitiveCount is the number of triangles in strip
+					TriangleStripMeshHolder stripMesh = triangleStripMeshPool.Get(primitiveCount);
+					stripMesh.DrawStrip(vertexData, vertexOffset, primitiveCount);
+                    break;
+				default:
+					throw new Exception("Primitive type unsupported: " + primitiveType);
+			}
 		}
 
 		internal void DrawSpritePrimitives(GroupedElementVertexArray vertexData, int numVertices)
