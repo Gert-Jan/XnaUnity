@@ -207,6 +207,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Recompute the world+view+projection matrix or fog vector?
 			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);
 
+			if (texture != null)
+				device.Textures[0] = texture;
+
 			if (dirtyFlags != 0)
 			{
 				XnaToUnity.Matrix(worldViewProj, out worldViewProj_Property.Value);

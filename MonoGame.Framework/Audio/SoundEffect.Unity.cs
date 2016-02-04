@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Audio;
 using System.IO;
 using UnityEngine;
 
@@ -11,7 +7,7 @@ namespace Microsoft.Xna.Framework.Audio
 	public sealed partial class SoundEffect
 	{
 		private readonly AudioClip _audioClip;
-		private AudioSource _audioSource;
+		//private AudioSource _audioSource;
 
 		internal static readonly GameObject GameObject = new GameObject();
 
@@ -21,8 +17,8 @@ namespace Microsoft.Xna.Framework.Audio
 				throw new Exception("AudioClip is null");
 
 			_audioClip = audioClip;
-			_audioSource = GameObject.AddComponent<AudioSource>();
-			_audioSource.clip = _audioClip;
+			//_audioSource = GameObject.AddComponent<AudioSource>();
+			//_audioSource.clip = _audioClip;
 		}
 
 		internal AudioClip UnityAudioClip
@@ -30,19 +26,19 @@ namespace Microsoft.Xna.Framework.Audio
 			get { return _audioClip; }
 		}
 
-		internal void UnityPlay()
-		{
-			UnityPlay(1, 0, 0);
-		}
-
-		internal void UnityPlay(float volume, float pitch, float pan)
-		{
-			//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
-			_audioSource.volume = volume;
-            _audioSource.panStereo = pan;
-			_audioSource.pitch = Mathf.Pow(2, pitch);
-			_audioSource.Play();
-		}
+		//internal void UnityPlay()
+		//{
+		//	UnityPlay(1, 0, 0);
+		//}
+		//
+		//internal void UnityPlay(float volume, float pitch, float pan)
+		//{
+		//	//ref http://answers.unity3d.com/questions/55023/how-does-audiosourcepitch-changes-pitch.html
+		//	_audioSource.volume = volume;
+        //    _audioSource.panStereo = pan;
+		//	_audioSource.pitch = Mathf.Pow(2, pitch);
+		//	_audioSource.Play();
+		//}
 
 		private void PlatformInitialize(byte[] buffer, int sampleRate, AudioChannels channels)
 		{
