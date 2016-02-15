@@ -62,7 +62,7 @@ namespace Microsoft.Xna.Framework
 
 		public void UnityDraw()
 		{
-			GraphicsDevice.ResetPools();
+			GraphicsDevice.SwapMeshes();
 			Draw(_gameTime);
 		}
 

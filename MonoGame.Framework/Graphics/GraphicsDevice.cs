@@ -1,10 +1,9 @@
-﻿//#define MESH_USE_MEASURING
-
-using System;
+﻿using System;
 using UnityEngine;
 using XnaWrapper;
-using Debug = System.Diagnostics.Debug;
 using UnityGraphics = UnityEngine.Graphics;
+using UVec2 = UnityEngine.Vector2;
+using UVec3 = UnityEngine.Vector3;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -24,12 +23,15 @@ namespace Microsoft.Xna.Framework.Graphics
 		public Effect activeEffect;
 		//private Matrix4x4 _baseMatrix;
 		private Matrix defaultProjection;
-		
+
+		private readonly MeshBufferPool<SpriteMeshHolder> spriteMeshPool = new MeshBufferPool<SpriteMeshHolder>();
+		private readonly MeshBufferPool<TriangleStripMeshHolder> triangleStripMeshPool = new MeshBufferPool<TriangleStripMeshHolder>();
+
 		internal GraphicsDevice(Viewport viewport)
 		{
 			Adapter = new GraphicsAdapter();
 			Viewport = viewport;
-		}
+        }
 		
 		public GraphicsAdapter Adapter
 		{
@@ -74,40 +76,56 @@ namespace Microsoft.Xna.Framework.Graphics
 			get { return theOnlyMode; }
 		}
 
-		private readonly MeshPool _meshPool = new MeshPool();
+		//public void DrawUserIndexedPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration)
+		//{
+		//	Material mat = activeEffect.Material;
+		//	mat.mainTexture = Textures[0].UnityTexture;
+		//	activeEffect.OnApplyPostTexture();
+		//	mat.SetPass(0);
+		//
+		//	MeshHolder mesh = spriteMeshPool.Get(primitiveCount / 2);
+		//	mesh.Draw(vertexData, numVertices);
+		//}
 
-		public void DrawUserIndexedPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices, short[] indexData, int indexOffset, int primitiveCount, VertexDeclaration vertexDeclaration)
+		public void DrawUserPrimitives(PrimitiveType primitiveType, VertexPositionColorTexture[] vertexData, int vertexOffset, int primitiveCount)
 		{
-			Debug.Assert(vertexData != null && vertexData.Length > 0, "The vertexData must not be null or zero length!");
-			Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
+			activeEffect.OnApply();
+			Material mat = activeEffect.Material;
+			mat.mainTexture = Textures[0].UnityTexture;
+			activeEffect.OnApplyPostTexture();
+			mat.SetPass(0);
+			
+			switch (primitiveType)
+			{
+				case PrimitiveType.TriangleStrip:
+					// primitiveCount is the number of triangles in strip
+					TriangleStripMeshHolder stripMesh = triangleStripMeshPool.Get(primitiveCount);
+					stripMesh.DrawStrip(vertexData, vertexOffset, primitiveCount);
+                    break;
+				default:
+					throw new Exception("Primitive type unsupported: " + primitiveType);
+			}
+		}
 
+		internal void DrawSpritePrimitives(GroupedElementVertexArray vertexData, int numVertices)
+		{
 			Material mat = activeEffect.Material;
 			mat.mainTexture = Textures[0].UnityTexture;
 			activeEffect.OnApplyPostTexture();
 			mat.SetPass(0);
 
-			var mesh = _meshPool.Get(primitiveCount / 2);
-			mesh.Populate(vertexData, numVertices);
-			UnityGraphics.DrawMeshNow(mesh.Mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+			SpriteMeshHolder mesh = spriteMeshPool.Get(numVertices / 4);
+			mesh.DrawSprites(vertexData, numVertices);
 		}
 
-		internal void DrawGroupedPrimitives(GroupedElementVertexArray vertexData, int numVertices)
+		public void SwapMeshes()
 		{
-			Material mat = activeEffect.Material;
-			mat.mainTexture = Textures[0].UnityTexture;
-			activeEffect.OnApplyPostTexture();
-			mat.SetPass(0);
-
-			Stats.Begin(Stats.TRACKER_MONO, "Mesh Get");
-			var mesh = _meshPool.Get(numVertices / 4);
-			Stats.End(Stats.TRACKER_MONO, "Mesh Get");
-			mesh.Populate(vertexData, numVertices);
-			UnityGraphics.DrawMeshNow(mesh.Mesh, Matrix4x4.identity);
-		}
-
-		public void ResetPools()
-		{
-			_meshPool.Reset();
+			spriteMeshPool.RestartBuffers();
+			triangleStripMeshPool.RestartBuffers();
+            if (Time.frameCount % 2 == 0)
+				MeshHolder.DrawFunction = MeshHolder.DrawA;
+			else
+				MeshHolder.DrawFunction = MeshHolder.DrawB;
 		}
 
 		private UnityEngine.Color tmp_uColor = new UnityEngine.Color();
@@ -142,85 +160,78 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		public void InitMeshPoolInstance(int index, int initialInstances)
 		{
-			_meshPool.InitBufferPair(index, initialInstances);
+			spriteMeshPool.InitBufferPair(index, initialInstances);
 		}
-
-		private class MeshHolder
+		
+		private abstract class MeshHolder
 		{
-			public readonly Mesh Mesh;
+			private Mesh meshA;
+			private Mesh meshB;
 
-			public readonly UnityEngine.Vector3[] Vertices;
-			public readonly UnityEngine.Vector2[] UVs;
-			public readonly Color32[] Colors;
-
-			public MeshHolder(int spriteCount)
+			protected UVec3[] Vertices { get; private set; }
+			protected UVec2[] UVs { get; private set; }
+			protected Color32[] Colors { get; private set; }
+			
+			public static Action<MeshHolder> DrawFunction = DrawA;
+			
+			public void InitMesh(int primitiveCount)
 			{
-				Mesh = new Mesh();
-				//Mesh.MarkDynamic(); //Seems to be a win on wp8
-				
-				int vCount = spriteCount * 4;
+				int vertexCount = VerticesNeeded(primitiveCount);
 
-				Vertices = new UnityEngine.Vector3[vCount];
-				UVs = new UnityEngine.Vector2[vCount];
-				Colors = new Color32[vCount];
+				Vertices = new UVec3[vertexCount];
+				UVs = new UVec2[vertexCount];
+				Colors = new Color32[vertexCount];
 
 				//Put some random crap in this so we can just set the triangles once
 				//if these are not populated then unity totally fucks up our mesh and never draws it
-				for (var i = 0; i < vCount; i++)
+				for (int i = 0; i < vertexCount; ++i)
 				{
-					Vertices[i] = new UnityEngine.Vector3(1, i);
-					UVs[i] = new UnityEngine.Vector2(0, i);
+					Vertices[i] = new UVec3(1, i);
+					UVs[i] = new UVec2(0, i);
 					Colors[i] = new Color32(255, 255, 255, 255);
 				}
 
-				var triangles = new int[spriteCount * 6];
-				for (var i = 0; i < spriteCount; i++)
-				{
-					/*
-					 *  TL    TR
-					 *   0----1 0,1,2,3 = index offsets for vertex indices
-					 *   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
-					 *   |  / |
-					 *   | /  |
-					 *   |/   |
-					 *   2----3
-					 *  BL    BR
-					 */
-					// Triangle 1
-					triangles[i * 6 + 0] = i * 4;
-					triangles[i * 6 + 1] = i * 4 + 1;
-					triangles[i * 6 + 2] = i * 4 + 2;
-					// Triangle 2
-					triangles[i * 6 + 3] = i * 4 + 1;
-					triangles[i * 6 + 4] = i * 4 + 3;
-					triangles[i * 6 + 5] = i * 4 + 2;
-				}
+				int[] triangles = MakeTriangles(primitiveCount);
 
-				Mesh.vertices = Vertices;
-				Mesh.uv = UVs;
-				Mesh.colors32 = Colors;
-				Mesh.triangles = triangles;
+				meshA = new Mesh();
+				meshA.vertices = Vertices;
+				meshA.uv = UVs;
+				meshA.colors32 = Colors;
+				meshA.triangles = triangles;
+
+				meshB = new Mesh();
+				meshB.vertices = Vertices;
+				meshB.uv = UVs;
+				meshB.colors32 = Colors;
+				meshB.triangles = triangles;
+			}
+
+			protected abstract int VerticesNeeded(int primitiveCount);
+			protected abstract int[] MakeTriangles(int primitiveCount);
+
+			public static void DrawA(MeshHolder holder)
+			{
+				holder.meshA.vertices = holder.Vertices;
+				holder.meshA.uv = holder.UVs;
+				holder.meshA.colors32 = holder.Colors;
+				UnityGraphics.DrawMeshNow(holder.meshA, Matrix4x4.identity);
+			}
+
+			public static void DrawB(MeshHolder holder)
+			{
+				holder.meshB.vertices = holder.Vertices;
+				holder.meshB.uv = holder.UVs;
+				holder.meshB.colors32 = holder.Colors;
+				UnityGraphics.DrawMeshNow(holder.meshB, Matrix4x4.identity);
 			}
 			
-			public void Populate(GroupedElementVertexArray vertexData, int numVertices)
-			{
-				Array.Copy(vertexData.positions, Vertices, numVertices);
-				Array.Copy(vertexData.texcoords, UVs, numVertices);
-				Array.Copy(vertexData.colors, Colors, numVertices);
-				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
-
-				Mesh.vertices = Vertices;
-				Mesh.uv = UVs;
-				Mesh.colors32 = Colors;
-			}
-
-			//inlined variant
-			public void Populate(VertexPositionColorTexture[] vertexData, int numVertices)
+			// unused
+			public void DrawOld_A(VertexPositionColorTexture[] vertexData, int vertexOffset, int numVertices)
 			{
 				VertexPositionColorTexture vertex;
-				for (int i = 0; i < numVertices; i++)
+				for (int i = 0, v = vertexOffset; i < numVertices; ++i, ++v)
 				{
-					vertex = vertexData[i];
+					vertex = vertexData[v];
 					Vertices[i].Set(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
 					UVs[i].Set(vertex.TextureCoordinate.X, 1 - vertex.TextureCoordinate.Y);
 					uint color = vertex.Color.PackedValue;
@@ -230,18 +241,13 @@ namespace Microsoft.Xna.Framework.Graphics
 					Colors[i].a = (byte)(color >> 24);
 				}
 
-				//we could clearly less if we remembered how many we used last time
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
 
-				Mesh.vertices = Vertices;
-				Mesh.uv = UVs;
-				Mesh.colors32 = Colors;
-				// possibly optional
-				//Mesh.RecalculateBounds();
+				DrawFunction(this);
 			}
 
-			// non inlined variant
-			public void Populate_Conversion(VertexPositionColorTexture[] vertexData, int numVertices)
+			// unused
+			public void DrawOld_B(VertexPositionColorTexture[] vertexData, int numVertices)
 			{
 				for (int i = 0; i < numVertices; i++)
 				{
@@ -250,152 +256,249 @@ namespace Microsoft.Xna.Framework.Graphics
 					UVs[i].y = 1 - UVs[i].y;
 					XnaToUnity.Color(vertexData[i].Color, ref Colors[i]);
 				}
-
-				//we could clearly less if we remembered how many we used last time
+			
 				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
 
-				Mesh.vertices = Vertices;
-				Mesh.uv = UVs;
-				Mesh.colors32 = Colors;
-				// possibly optional
-				//Mesh.RecalculateBounds();
+				DrawFunction(this);
+			}
+		}
+		
+		private class TriangleStripMeshHolder : MeshHolder
+		{
+			protected override int VerticesNeeded(int trianglesInStrip)
+			{
+				return trianglesInStrip * 3;
+			}
+
+			protected override int[] MakeTriangles(int trianglesInStrip)
+			{
+				int[] indices = new int[trianglesInStrip * 3];
+				int totalIndices = indices.Length;
+
+				//
+				//   0----2----4----6----8
+				//   |   /|   /|   /|   / 
+				//   |  / |  / |  / |  / |
+				//   | /  | /  | /  | /   
+				//   |/   |/   |/   |/   |
+				//   1----3----5----7 - -9
+				//
+
+				int index = 0;
+				int a = 0;
+				int b = 1;
+				int c = 2;
+				int d = 3;
+				indices[index++] = a;
+				indices[index++] = c;
+				indices[index++] = b;
+				for (; index < totalIndices;)
+				{
+					indices[index++] = b;
+					indices[index++] = c;
+					indices[index++] = d;
+
+					if (index >= totalIndices)
+						break;
+					a += 2;
+					b += 2;
+					c += 2;
+					d += 2;
+
+					indices[index++] = a;
+					indices[index++] = c;
+					indices[index++] = b;
+				}
+
+				return indices;
+			}
+
+			public void DrawStrip(VertexPositionColorTexture[] vertexData, int vertexOffset, int primitiveCount)
+			{
+				VertexPositionColorTexture vertex;
+				int numVertices = primitiveCount + 2;
+				int i, v;
+                for (i = 0, v = vertexOffset; i < numVertices; ++i, ++v)
+				{
+					vertex = vertexData[v];
+					Vertices[i].Set(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
+					UVs[i].Set(vertex.TextureCoordinate.X, 1 - vertex.TextureCoordinate.Y);
+					uint color = vertex.Color.PackedValue;
+					Colors[i].r = (byte)(color);
+					Colors[i].g = (byte)(color >> 8);
+					Colors[i].b = (byte)(color >> 16);
+					Colors[i].a = (byte)(color >> 24);
+				}
+
+				// set all next vertices to the last one, so their triangles are zero-surface (no pixels)
+				UVec3 lastVertex = Vertices[i - 1];
+                for (; i < Vertices.Length; ++i)
+				{
+					Vertices[i] = lastVertex;
+				}
+					
+				DrawFunction(this);
 			}
 
 		}
-		
-		private class MeshPool
+
+		private class SpriteMeshHolder : MeshHolder
 		{
-			private class MeshBufferPair
+			protected override int VerticesNeeded(int spritesInBatch)
 			{
-				readonly int spriteCount;
+				return spritesInBatch * 4;
+            }
 
-				// meshes for the next frame
-				MeshHolder[] frontMeshes;
-				// meshes in use from the previous frame
-				MeshHolder[] backMeshes;
-
-				// counter in the current frontMeshes list, elements at a lower index are in use, those at an equal or higher index are free to be used next
-				int nextFrontMesh = 0;
-
-				public MeshBufferPair(int spriteCount, int initialInstances)
+			protected override int[] MakeTriangles(int spritesInBatch)
+			{
+				int[] triangles = new int[spritesInBatch * 6];
+				for (var i = 0; i < spritesInBatch; i++)
 				{
-                    this.spriteCount = spriteCount;
-
-					if (initialInstances < 1)
-						initialInstances = 1;
-
-					int powerOfTwo = MathUtils.NextPowerOf2(Math.Max(16, initialInstances));
-					frontMeshes = new MeshHolder[powerOfTwo];
-					backMeshes = new MeshHolder[powerOfTwo];
-
-					for (int i = 0; i < initialInstances; ++i)
-					{
-						frontMeshes[i] = new MeshHolder(spriteCount);
-						backMeshes[i] = new MeshHolder(spriteCount);
-					}
+					//
+					//  TL    TR
+					//   0----1 0,1,2,3 = index offsets for vertex indices
+					//   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
+					//   |  / |
+					//   | /  |
+					//   |/   |
+					//   2----3
+					//  BL    BR
+					//
+					// Triangle 1
+					triangles[i * 6 + 0] = i * 4;
+					triangles[i * 6 + 1] = i * 4 + 1;
+					triangles[i * 6 + 2] = i * 4 + 2;
+					// Triangle 2
+					triangles[i * 6 + 3] = i * 4 + 1;
+					triangles[i * 6 + 4] = i * 4 + 3;
+					triangles[i * 6 + 5] = i * 4 + 2;
 				}
-				
-				void GrowArray()
+				return triangles;
+			}
+
+			public void DrawSprites(GroupedElementVertexArray vertexData, int numVertices)
+			{
+				Array.Copy(vertexData.positions, Vertices, numVertices);
+				Array.Copy(vertexData.texcoords, UVs, numVertices);
+				Array.Copy(vertexData.colors, Colors, numVertices);
+
+				Array.Clear(Vertices, numVertices, Vertices.Length - numVertices);
+
+				DrawFunction(this);
+			}
+		}
+
+		private class SizedMeshBuffer<T> where T : MeshHolder, new()
+		{
+			private readonly int primitiveCount;
+
+			private T[] meshes;
+
+			// counter in the current frontMeshes list, elements at a lower index are in use, those at an equal or higher index are free to be used next
+			private int nextFrontMesh = 0;
+
+			internal SizedMeshBuffer(int primitiveCount, int initialInstances)
+			{
+				this.primitiveCount = primitiveCount;
+
+				if (initialInstances < 1)
+					initialInstances = 1;
+
+				int powerOfTwo = MathUtils.NextPowerOf2(Math.Max(16, initialInstances));
+				meshes = new T[powerOfTwo];
+
+				for (int i = 0; i < initialInstances; ++i)
 				{
-					int oldCapacity = frontMeshes.Length;
-                    int newCapacity = oldCapacity * 2;
+					T mesh = new T();
+					mesh.InitMesh(primitiveCount);
+					meshes[i] = mesh;
+                }
+			}
 
-					MeshHolder[] tmpFront = frontMeshes;
-					MeshHolder[] tmpBack = backMeshes;
+			private void GrowArray(int newCapacity)
+			{
+				int oldCapacity = meshes.Length;
 
-                    frontMeshes = new MeshHolder[newCapacity];
-					backMeshes = new MeshHolder[newCapacity];
-					for (int i = 0; i < oldCapacity; ++i)
-					{
-						frontMeshes[i] = tmpFront[i];
-						backMeshes[i] = tmpBack[i];
-					}
-				}
+				T[] tmp = meshes;
 
-				//bool tracked = false;
-
-				public MeshHolder GetNextFree()
+				meshes = new T[newCapacity];
+				for (int i = 0; i < oldCapacity; ++i)
 				{
-					if (nextFrontMesh >= frontMeshes.Length)
-						GrowArray();
-
-					MeshHolder mesh = frontMeshes[nextFrontMesh];
-                    if (mesh == null)
-					{
-						//if (tracked && nextFrontMesh == 0)
-						//	Log.Write(spriteCount + "!!!" + nextFrontMesh);
-
-						//Log.Write(spriteCount + "!!!" + nextFrontMesh);
-						mesh = new MeshHolder(spriteCount);
-						//tracked = true;
-						frontMeshes[nextFrontMesh] = mesh;
-                    }
-					++nextFrontMesh;
-
-                    return mesh;
-				}
-
-				public void Swap()
-				{
-					nextFrontMesh = 0;
-					//tracked = false;
-
-					MeshHolder[] tmp = frontMeshes;
-					frontMeshes = backMeshes;
-					backMeshes = tmp;
+					meshes[i] = tmp[i];
 				}
 			}
 
-			private const int maxBufferPairs = 16;
+			internal T GetNextFree()
+			{
+				if (nextFrontMesh >= meshes.Length)
+					GrowArray(meshes.Length * 2);
 
-			private int highestBufferPairIndex = -1;
-			private MeshBufferPair[] bufferPairs = new MeshBufferPair[maxBufferPairs];
+				T mesh = meshes[nextFrontMesh];
+				if (mesh == null)
+				{
+					mesh = new T();
+					mesh.InitMesh(primitiveCount);
+					meshes[nextFrontMesh] = mesh;
+				}
+				++nextFrontMesh;
 
-#if MESH_USE_MEASURING
-			private int[] histogram = new int[maxBufferPairs];
-			private int[] globalHistogram = new int[maxBufferPairs];
-#endif
+				return mesh;
+			}
+
+			internal void Restart()
+			{
+				nextFrontMesh = 0;
+			}
+
+			internal void EnsureCapacity(int newCapacity)
+			{
+				newCapacity = MathUtils.NextPowerOf2(newCapacity);
+				if (newCapacity > meshes.Length)
+					GrowArray(newCapacity);
+			}
+		}
+
+		private class MeshBufferPool<T> where T : MeshHolder, new()
+		{
+			private const int maxBuffers = 16;
+			private SizedMeshBuffer<T>[] buffers = new SizedMeshBuffer<T>[maxBuffers];
+			private int numBuffers = 0;
 			
 			public void InitBufferPair(int index, int initialCapacity)
 			{
 				int powerOfTwo = 1 << index;
-				if (bufferPairs[index] != null)
-					throw new Exception("(Inverse NullReferenceException): This reference is not null, where it should be (" + index + ")");
-				bufferPairs[index] = new MeshBufferPair(powerOfTwo, initialCapacity);
-				for (int i = index; i >= 0; --i)
-					if (bufferPairs[i] == null)
-						throw new NullReferenceException("Manual init should happen in ascending index order. While adding " + index + ", " + i + " was missing");
-				highestBufferPairIndex = index;
+				if (buffers[index] != null)
+					buffers[index].EnsureCapacity(initialCapacity);
+				else
+					buffers[index] = new SizedMeshBuffer<T>(powerOfTwo, initialCapacity);
+				// make sure instances exist for all lower indices as well
+				for (int i = index - 1; i >= 0; --i)
+					if (buffers[i] == null)
+					{
+						powerOfTwo = 1 << i;
+						buffers[i] = new SizedMeshBuffer<T>(powerOfTwo, 1);
+					}
+				numBuffers = index - 1;
             }
 
-			public MeshHolder Get(int spriteCount)
+			public T Get(int primitiveCount)
 			{
-				int index = MathUtils.HighestBitIndex(MathUtils.NextPowerOf2(spriteCount));
-				if (index > highestBufferPairIndex)
+				int index = MathUtils.HighestBitIndex(MathUtils.NextPowerOf2(primitiveCount));
+				SizedMeshBuffer<T> buffer = buffers[index];
+                if (buffer == null)
 				{
-					// if we happen to need buffers with higher spriteCounts, make a new one
-					for (int i = highestBufferPairIndex + 1; i <= index; ++i)
-						InitBufferPair(i, 1);
+					// if we happen to need buffers with higher counts of primitives, make a new one
+					InitBufferPair(index, 1);
+					buffer = buffers[index];
 				}
-#if MESH_USE_MEASURING
-				histogram[index] = histogram[index] + 1;
-#endif
-				return bufferPairs[index].GetNextFree();
+				return buffer.GetNextFree();
 			}
 
-			public void Reset()
+			public void RestartBuffers()
 			{
-#if MESH_USE_MEASURING
-				for (int i = 0; i < histogram.Length; ++i)
-				{
-					globalHistogram[i] = Math.Max(histogram[i], globalHistogram[i]);
-					histogram[i] = 0;
-				}
-#endif
-
-				for (int i = 0; i <= highestBufferPairIndex; ++i)
-					bufferPairs[i].Swap();
-			}
+				for (int i = 0; i < numBuffers; ++i)
+					buffers[i].Restart();
+            }
 		}
 
 		#endregion

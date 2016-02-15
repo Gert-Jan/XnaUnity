@@ -19,6 +19,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		bool textureEnabled;
 		bool vertexColorEnabled;
 
+		Texture2D texture = null;
+
 		Matrix world = Matrix.Identity;
 		Matrix view = Matrix.Identity;
 		Matrix projection = Matrix.Identity;
@@ -36,10 +38,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		
 		#region Public Properties
 
-		public override UnityEngine.Material Material
+		internal override UnityEngine.Material Material
 		{
 			get { return material; }
-			protected set { this.material = value; }
+			set { this.material = value; }
 		}
 
 		/// <summary>
@@ -116,6 +118,14 @@ namespace Microsoft.Xna.Framework.Graphics
 					dirtyFlags |= EffectDirtyFlags.ShaderIndex;
 				}
 			}
+		}
+
+		public Texture2D Texture
+		{
+			set
+			{
+				texture = value;
+            }
 		}
 
 		/// <summary>
@@ -196,6 +206,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			// Recompute the world+view+projection matrix or fog vector?
 			dirtyFlags = EffectHelpers.SetWorldViewProjAndFog(dirtyFlags, ref world, ref view, ref projection, ref worldView, ref worldViewProj);
+
+			if (texture != null)
+				device.Textures[0] = texture;
 
 			if (dirtyFlags != 0)
 			{

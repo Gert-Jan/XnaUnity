@@ -385,7 +385,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			//	VertexPositionColorTexture.VertexDeclaration);
 
 			//_vertexArray.Trim(vertexCount);
-			_device.DrawGroupedPrimitives(
+			_device.DrawSpritePrimitives(
 				_vertexArray,
 				vertexCount);
 			//}
