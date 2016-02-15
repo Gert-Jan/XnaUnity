@@ -311,7 +311,9 @@ namespace Microsoft.Xna.Framework.Graphics
 						backMeshes[i] = tmpBack[i];
 					}
 				}
-				
+
+				//bool tracked = false;
+
 				public MeshHolder GetNextFree()
 				{
 					if (nextFrontMesh >= frontMeshes.Length)
@@ -320,7 +322,12 @@ namespace Microsoft.Xna.Framework.Graphics
 					MeshHolder mesh = frontMeshes[nextFrontMesh];
                     if (mesh == null)
 					{
+						//if (tracked && nextFrontMesh == 0)
+						//	Log.Write(spriteCount + "!!!" + nextFrontMesh);
+
+						//Log.Write(spriteCount + "!!!" + nextFrontMesh);
 						mesh = new MeshHolder(spriteCount);
+						//tracked = true;
 						frontMeshes[nextFrontMesh] = mesh;
                     }
 					++nextFrontMesh;
@@ -331,6 +338,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				public void Swap()
 				{
 					nextFrontMesh = 0;
+					//tracked = false;
 
 					MeshHolder[] tmp = frontMeshes;
 					frontMeshes = backMeshes;
@@ -385,7 +393,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 #endif
 
-				for (int i = 0; i < highestBufferPairIndex; ++i)
+				for (int i = 0; i <= highestBufferPairIndex; ++i)
 					bufferPairs[i].Swap();
 			}
 		}
