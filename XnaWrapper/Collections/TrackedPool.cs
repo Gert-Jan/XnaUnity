@@ -39,7 +39,10 @@ namespace XnaWrapper.Collections
 
 		public void Restore(T item)
 		{
-			freeItems[++freeIndex] = item;
+			if (item != null)
+			{
+				freeItems[++freeIndex] = item;
+			}
 		}
 	}
 }

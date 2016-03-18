@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>..\Assets\Dlls\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;UNITY;U_PS4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;UNITY;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>..\Assets\Dlls\</OutputPath>
-    <DefineConstants>TRACE;UNITY;LOGGING;METRICS;U_PS4</DefineConstants>
+    <DefineConstants>TRACE;UNITY;LOGGING;METRICS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
