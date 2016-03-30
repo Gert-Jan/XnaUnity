@@ -478,7 +478,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						powerOfTwo = 1 << i;
 						buffers[i] = new SizedMeshBuffer<T>(powerOfTwo, 1);
 					}
-				numBuffers = index;
+				numBuffers = index + 1;
 			}
 
 			public T Get(int primitiveCount)
