@@ -62,7 +62,15 @@ namespace XnaWrapper
 
 			foreach (Bundle bundle in bundles)
 			{
-				bundleMap.Add(bundle.bundleName, bundle);
+				if (bundleMap.ContainsKey(bundle.bundleName))
+				{ 
+					throw new ContentLoadException(string.Format("bundleMap already contains bundle named: {0}"
+						+ "\nThis problem might be caused by duplicate include entries in CSpeedRunnerContent.contentproj. To resolve this problem, remove any duplicates.", bundle.bundleName));
+				}
+				else
+				{
+					bundleMap.Add(bundle.bundleName, bundle);
+				}
 			}
 		}
 
