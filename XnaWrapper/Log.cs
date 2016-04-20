@@ -149,7 +149,10 @@ namespace XnaWrapper
 
 		private static string Time()
 		{
-			return UnityEngine.Time.time.ToString("F3") + ' ';
+			// Logging may not always be occur from the main unity thread. Calling UnityEngine.Time.time (or most other unity methods) is not allowed from outside the main thread.
+			// We should avoid using UnityEngine.Time.time and use an alternative method to get the application running time.
+			TimeSpan runningTime = DateTime.Now - Process.GetCurrentProcess().StartTime;
+			return runningTime.TotalSeconds.ToString("F3") + ' ';
 		}
 	}
 }
