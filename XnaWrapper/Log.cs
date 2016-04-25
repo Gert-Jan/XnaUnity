@@ -131,7 +131,7 @@ namespace XnaWrapper
 			else if (args.Length == 1)
 				InternalLogFunction(Time() + SafeToString(args[0]));
 			else
-				InternalLogFunction(Time() + string.Format(SafeToString(args[0]), ConvertExceptFirst(args)));
+				InternalLogFunction(Time() + string.Format(SafeToString(args[0]), ConvertExceptFirst(args))); 
 		}
 
 		private static string[] ConvertExceptFirst(object[] objects)
@@ -151,8 +151,15 @@ namespace XnaWrapper
 		{
 			// Logging may not always be occur from the main unity thread. Calling UnityEngine.Time.time (or most other unity methods) is not allowed from outside the main thread.
 			// We should avoid using UnityEngine.Time.time and use an alternative method to get the application running time.
+			
+			// This is broken and causing the xbox application to crash at the moment - investigate later, for now return an empty string when on XBOX build - WB
+#if U_XBOXONE
+			return String.Empty;
+#else
 			TimeSpan runningTime = DateTime.Now - Process.GetCurrentProcess().StartTime;
+
 			return runningTime.TotalSeconds.ToString("F3") + ' ';
+#endif
 		}
 	}
 }
