@@ -67,7 +67,7 @@ namespace XnaWrapper
 				this.item = item;
 
 				item.AddUsageReference();
-				url = "file://" + validPath + unityPath;
+				url = validPath + unityPath;
 
 				if (unityType == typeof(AudioClip))
 					TypeUpdate = UpdateAudioClip;

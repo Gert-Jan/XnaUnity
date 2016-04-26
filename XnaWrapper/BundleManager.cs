@@ -187,7 +187,7 @@ namespace XnaWrapper
 			{
 				Log.Write("Loading: " + xnaBundle.bundleFilePath);
 				startLoadTime = Time.realtimeSinceStartup;
-				data = new WWW("file://" + xnaBundle.bundleFilePath);
+				data = new WWW(xnaBundle.bundleFilePath);
 				//#if U_FUZE
 				//				if (PlatformInstances.IsEditor)
 				//					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);

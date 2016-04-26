@@ -104,7 +104,7 @@ namespace Microsoft.Xna.Framework.Content
 				if (PlatformInstances.IsEditor)
 					streamingAssetsPath = string.Format("file://{0}/", Application.streamingAssetsPath);
 				else
-#if U_WINDOWS
+#if U_WINDOWS || U_PS4
 					streamingAssetsPath = string.Format("file://{0}/", Application.streamingAssetsPath);
 #else
 					streamingAssetsPath = string.Format("{0}/", Application.streamingAssetsPath);
