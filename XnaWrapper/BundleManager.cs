@@ -213,7 +213,7 @@ namespace XnaWrapper
 							LoadWWW();
 
 							if (!string.IsNullOrEmpty(data.error))
-								throw new Exception(data.error);
+								throw new Exception(string.Format("Error while trying to load url '{0}':\n{1}", data.url, data.error));
 
 							return false;
 						}
@@ -277,6 +277,8 @@ namespace XnaWrapper
 					ContentRequest request = items[i].Request;
 					if (!request.isDone && request.Operation == null)
 					{
+						if (!string.IsNullOrEmpty(data.error))
+							throw new Exception(string.Format("Error while trying to load url '{0}':\n{1}",  data.url, data.error));
 						request.Operation = data.assetBundle.LoadAssetAsync(xnaBundle.itemUnityPaths[i]);
 						busyRequests.Push(request);
 					}
