@@ -15,7 +15,9 @@ namespace XnaWrapper
 		public static bool LogDown = false;
 		public static bool LogToBottom = false;
 
-		public static IGamePad GamePad;
+        public static bool FriendsXBOXTest = false;
+
+        public static IGamePad GamePad;
 		public static IAssetLoadingInfo AssetLoadingInfo;
 
 		public static Thread unityMainThread;

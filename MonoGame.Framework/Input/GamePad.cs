@@ -42,7 +42,12 @@ namespace Microsoft.Xna.Framework.Input
 					newState.ThumbSticks = new GamePadThumbSticks(newState.ThumbSticks.Left, new Vector2());
 				}
 
-				prevStates[index] = newState;
+                PlatformInstances.FriendsXBOXTest = false;
+
+                if (newState.Buttons.A == ButtonState.Pressed)
+                    PlatformInstances.FriendsXBOXTest = true;
+
+                prevStates[index] = newState;
 				return newState;
 			}
 			return PlatformInstances.GamePad.GetState(playerIndex);
