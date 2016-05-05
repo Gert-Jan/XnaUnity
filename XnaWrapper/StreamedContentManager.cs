@@ -26,8 +26,8 @@ namespace XnaWrapper
 				string[] parts = line.Split(';');
 				itemMap[parts[0]] = new ContentItem(parts[0]);
 				unityPaths[parts[0]] = parts[1];
-            }
-        }
+			}
+		}
 
 		public bool TryGetItem(string fileName, out ContentItem item)
 		{
@@ -51,7 +51,7 @@ namespace XnaWrapper
 					return;
 			}
 		}
-		
+
 		class Loader
 		{
 			readonly ContentItem item;
@@ -67,7 +67,7 @@ namespace XnaWrapper
 				this.item = item;
 
 				item.AddUsageReference();
-				url = "file://" + validPath + unityPath;
+				url = validPath + unityPath;
 
 				if (unityType == typeof(AudioClip))
 					TypeUpdate = UpdateAudioClip;
@@ -92,11 +92,15 @@ namespace XnaWrapper
 
 				return false;
 			}
-			
+
 			bool UpdateAudioClip()
 			{
 				if (asset == null)
+				{
+					if (!string.IsNullOrEmpty(www.error))
+						throw new FileNotFoundException("Could not load audio file from url: " + www.url);
 					asset = www.GetAudioClip(false, true);
+				}
 				AudioClip clip = asset as AudioClip;
 
 				if (clip.loadState == AudioDataLoadState.Failed)
@@ -110,7 +114,7 @@ namespace XnaWrapper
 
 				return false;
 			}
-			
+
 		}
 	}
 }
