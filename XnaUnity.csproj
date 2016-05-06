@@ -404,6 +404,7 @@
     <Compile Include="XnaWrapper\PlatformInterfaces\IAssetLoadingInfo.cs" />
     <Compile Include="XnaWrapper\PlatformInstances.cs" />
     <Compile Include="XnaWrapper\StreamedContentManager.cs" />
+    <Compile Include="XnaWrapper\UnityUtils\Texture2DExtensions.cs" />
     <Compile Include="XnaWrapper\Utils.cs" />
     <Compile Include="XnaWrapper\BundleManager.cs" />
     <Compile Include="XnaWrapper\DataConversion.cs" />
