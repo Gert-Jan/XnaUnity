@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\Library\UnityAssemblies\UnityEngine.dll</HintPath>
-      <Private>False</Private>^M
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
