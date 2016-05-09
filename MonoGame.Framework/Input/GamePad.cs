@@ -44,7 +44,7 @@ namespace Microsoft.Xna.Framework.Input
 
                 PlatformInstances.FriendsXBOXTest = false;
 
-                if (newState.Buttons.A == ButtonState.Pressed)
+                if (newState.Buttons.RightShoulder == ButtonState.Pressed)
                     PlatformInstances.FriendsXBOXTest = true;
 
                 prevStates[index] = newState;
