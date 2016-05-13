@@ -394,6 +394,7 @@
     <Compile Include="TextureAtlasContent\TextureAtlas.cs" />
     <Compile Include="TextureAtlasContent\TextureAtlasReaders.cs" />
     <Compile Include="TextureAtlasContent\TextureRegion.cs" />
+    <Compile Include="UnityPostProcessEffect.cs" />
     <Compile Include="XnaWrapper\ContentItem.cs" />
     <Compile Include="XnaWrapper\Collections\BulkPool.cs" />
     <Compile Include="XnaWrapper\Collections\TrackedPool.cs" />
