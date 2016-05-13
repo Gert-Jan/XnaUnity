@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\Library\UnityAssemblies\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -236,9 +237,6 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadDPad.cs">
       <Link>MonoGame.Framework\Input\GamePadDPad.cs</Link>
     </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadState.cs">
-      <Link>MonoGame.Framework\Input\GamePadState.cs</Link>
-    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Input\GamePadThumbSticks.cs">
       <Link>MonoGame.Framework\Input\GamePadThumbSticks.cs</Link>
     </Compile>
@@ -383,6 +381,7 @@
     <Compile Include="MonoGame.Framework\Graphics\Texture.Unity.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture2D.Unity.cs" />
     <Compile Include="MonoGame.Framework\Input\GamePad.cs" />
+    <Compile Include="MonoGame.Framework\Input\GamePadState.cs" />
     <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
@@ -403,6 +402,7 @@
     <Compile Include="XnaWrapper\PlatformInterfaces\IAssetLoadingInfo.cs" />
     <Compile Include="XnaWrapper\PlatformInstances.cs" />
     <Compile Include="XnaWrapper\StreamedContentManager.cs" />
+    <Compile Include="XnaWrapper\UnityUtils\Texture2DExtensions.cs" />
     <Compile Include="XnaWrapper\Utils.cs" />
     <Compile Include="XnaWrapper\BundleManager.cs" />
     <Compile Include="XnaWrapper\DataConversion.cs" />
