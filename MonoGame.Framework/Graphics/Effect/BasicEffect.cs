@@ -32,7 +32,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		EffectDirtyFlags dirtyFlags = EffectDirtyFlags.All;
 
-		private static readonly UnityEngine.Shader shader = UnityEngine.Shader.Find("Custom/SpriteShader");
+		private static UnityEngine.Shader shader;
 
 		private UnityEngine.Material material;
 		
@@ -159,6 +159,16 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		public BasicEffect(GraphicsDevice device) : base(device)
 		{
+			shader = UnityEngine.Shader.Find("Custom/SpriteShader");
+			material = new UnityEngine.Material(shader);
+		}
+
+		/// <summary>
+		/// Creates a new BasicEffect with the specified shader.
+		/// </summary>
+		public BasicEffect(GraphicsDevice device, string shaderName) : base(device)
+		{
+			shader = UnityEngine.Shader.Find(shaderName);
 			material = new UnityEngine.Material(shader);
 		}
 
