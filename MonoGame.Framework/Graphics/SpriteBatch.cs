@@ -67,13 +67,24 @@ namespace Microsoft.Xna.Framework.Graphics
 			//_depthStencilState = depthStencilState ?? DepthStencilState.None;
 			//_rasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
 			//
-          
-            if (effect == null)
-            {
+
+			if (effect == null)
+			{
 				basicEffect.Projection = GraphicsDevice.DefaultProjection;
 				basicEffect.View = Matrix.Identity;
 				effect = basicEffect;
-            }
+			}
+			else if (effect is BasicEffect)
+			{
+				BasicEffect uEffect = (BasicEffect)effect;
+				if(uEffect.Projection == Matrix.Identity)
+				{ 
+					uEffect.Projection = GraphicsDevice.DefaultProjection;
+					uEffect.View = Matrix.Identity;
+				}
+				effect = uEffect;
+			}
+
 			_effect = effect;
 			
 			_matrix = transformMatrix;
