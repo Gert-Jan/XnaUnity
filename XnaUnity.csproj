@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>..\Assets\Dlls\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;UNITY;</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;UNITY; U_</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
