@@ -93,6 +93,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
+			UnityEngine.Texture2D unityTexture = new UnityEngine.Texture2D(0, 0);
+			BinaryReader br = new BinaryReader(stream);
+			byte[] data = br.ReadBytes((int)stream.Length);
+			unityTexture.LoadImage(data);
+			return new Texture2D(unityTexture);
+		}
+
+		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream, int width, int height, bool zoom)
+		{
 			throw new NotImplementedException();
 		}
 
