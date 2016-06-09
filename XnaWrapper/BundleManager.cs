@@ -185,7 +185,7 @@ namespace XnaWrapper
 
 			private void LoadWWW()
 			{
-				Log.Write("Loading: " + xnaBundle.bundleFilePath);
+				//Log.Write("Loading: " + xnaBundle.bundleFilePath);
 				startLoadTime = Time.realtimeSinceStartup;
 				data = new WWW(xnaBundle.bundleFilePath);
 				//#if U_FUZE
@@ -242,7 +242,7 @@ namespace XnaWrapper
 					{
 						float decompressTime = finishDecompressTime - startLoadTime;
 						float loadTime = Time.realtimeSinceStartup - finishDecompressTime;
-						Log.WriteT("Bundle {0} took long to load (decompressing: {1}, integration: {2})", xnaBundle.bundleName, decompressTime, loadTime);
+						//Log.WriteT("Bundle {0} took long to load (decompressing: {1}, integration: {2})", xnaBundle.bundleName, decompressTime, loadTime);
 					}
 				}
 				catch (Exception e)
