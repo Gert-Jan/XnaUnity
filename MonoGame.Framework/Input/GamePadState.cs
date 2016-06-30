@@ -30,7 +30,7 @@ namespace Microsoft.Xna.Framework.Input
         public bool IsConnected
         {
             get;
-            internal set;
+            set;
         }
         //
         // Summary:
