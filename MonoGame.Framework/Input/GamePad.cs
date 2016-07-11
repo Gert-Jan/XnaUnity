@@ -1,4 +1,4 @@
-﻿//#define GAMEPAD_TESTING
+//#define GAMEPAD_TESTING
 
 using XnaWrapper;
 
@@ -7,6 +7,14 @@ namespace Microsoft.Xna.Framework.Input
 	public static class GamePad
 	{
 #if !GAMEPAD_TESTING
+
+#if U_XBOXONE
+		private const int MAX_GAMEPAD_COUNT = 8;
+#else
+		private const int MAX_GAMEPAD_COUNT = 4;
+#endif
+		
+
 		private static GamePadState[] prevStates;
 
 		public static GamePadState GetState(PlayerIndex playerIndex)
@@ -15,7 +23,7 @@ namespace Microsoft.Xna.Framework.Input
 			if (UnityEngine.Debug.isDebugBuild)
 			{
 				if (prevStates == null)
-					prevStates = new GamePadState[4];
+					prevStates = new GamePadState[MAX_GAMEPAD_COUNT];
 
 				int index = (int)playerIndex;
 				GamePadState prevState = prevStates[index];
