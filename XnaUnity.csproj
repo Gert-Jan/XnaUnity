@@ -300,9 +300,6 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\PlaneIntersectionType.cs">
       <Link>MonoGame.Framework\PlaneIntersectionType.cs</Link>
     </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\PlayerIndex.cs">
-      <Link>PlayerIndex.cs</Link>
-    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Point.cs">
       <Link>MonoGame.Framework\Point.cs</Link>
     </Compile>
@@ -385,6 +382,7 @@
     <Compile Include="MonoGame.Framework\Input\Keyboard.cs" />
     <Compile Include="MonoGame.Framework\Media\MediaPlayer.cs" />
     <Compile Include="MonoGame.Framework\Media\Song.cs" />
+    <Compile Include="MonoGame.Framework\PlayerIndex.cs" />
     <Compile Include="MonoGame.Framework\SpriteFont.cs" />
     <Compile Include="MonoGame.Framework\Storage\StorageContainer.cs" />
     <Compile Include="MonoGame.Framework\Storage\StorageDevice.cs" />
