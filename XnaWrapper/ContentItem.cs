@@ -26,7 +26,6 @@ namespace XnaWrapper
 		internal void AddUsageReference()
 		{
 			++objectReferences;
-
 			if (request == null)
 				request = new ContentRequest();
 		}
@@ -38,7 +37,7 @@ namespace XnaWrapper
 			{
 				// Don't delete files in the editor, in case the asset was retrieved from AssetDatabase
 				if (!PlatformInstances.AssetLoadingInfo.CanLoadFromAssetDatabase)
-					UObject.DestroyImmediate(Request.Asset, true);
+					UObject.Destroy(Request.Asset);
 
 				request = null;
 			}

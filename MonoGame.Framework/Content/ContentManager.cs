@@ -145,6 +145,8 @@ namespace Microsoft.Xna.Framework.Content
 
             //XnaWrapper.Debug.Log("unloading: " + bundleName);
             xnaBundles.ReleaseBundle(bundleName);
+			// We need to call this because otherwise WWW loaded textures won't be removed from the Unity Scene.
+			UnityEngine.Resources.UnloadUnusedAssets();
 		}
 
 		public void Dispose()
@@ -306,6 +308,37 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return request;
         }
+
+		public void Unload(string fileName)
+		{
+			if (string.IsNullOrEmpty(fileName))
+			{
+				throw new ArgumentNullException("assetName");
+			}
+			if (disposed)
+			{
+				Console.WriteLine("ContentManager.Unload: manager disposed");
+				throw new ObjectDisposedException("ContentManager");
+			}
+			fileName = fileName.ToLower();
+
+			ContentItem item = GetStreamedItem(fileName);
+			if (item != null)
+			{
+				return;
+			}
+
+			item = GetBundleItem(fileName);
+			if (item != null)
+			{
+				if (item.IsActive)
+				{
+					if (xnaBundles.oneAssetPerBundle)
+						ReleaseBundle(fileName);
+				}
+				return;
+			}
+		}
 
 		private static string UnityResourcePath(string xnaPath)
 		{

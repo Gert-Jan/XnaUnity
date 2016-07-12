@@ -57,7 +57,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void PlatformDispose(bool disposing)
 		{
-			throw new NotImplementedException();
 		}
 
 		private void PlatformSetupInstance(SoundEffectInstance instance)

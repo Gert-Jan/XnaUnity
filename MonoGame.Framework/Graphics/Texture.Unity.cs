@@ -11,9 +11,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		public bool IsFontTexture { get { return isFontTexture; } }
 
 		public Texture()
-		{ }
+		{
+			Disposing += OnDispose;
+		}
 
-		public Texture(UnityEngine.Texture texture)
+		public Texture(UnityEngine.Texture texture) :
+			this()
 		{
 			if (texture == null)
 				throw new ArgumentNullException("texture");
@@ -25,6 +28,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		private void PlatformGraphicsDeviceResetting()
 		{
 			throw new NotImplementedException();
+		}
+
+		private void OnDispose(object sender, EventArgs e)
+		{
+			UnityEngine.Object.Destroy(texture);
+			Disposing -= OnDispose;
 		}
 	}
 }

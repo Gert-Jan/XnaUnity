@@ -389,15 +389,15 @@ namespace XnaWrapper
 		{
 			if (loader != null && loader.TryFinishLoading())
 			{
-				//bool shouldAbort = loader.shouldAbort;
-				//loader = null;
-				//if (shouldAbort)
-				//{
-				//    ReleaseBundle();
-				//    return XnaBundleStatus.Initialized;
-				//}
-				//else
-				return XnaBundleStatus.Ready;
+				bool shouldAbort = loader.shouldAbort;
+				loader = null;
+				if (shouldAbort)
+				{
+				    ReleaseBundle();
+				    return XnaBundleStatus.Initialized;
+				}
+				else
+					return XnaBundleStatus.Ready;
 			}
 			else
 				return Status;
