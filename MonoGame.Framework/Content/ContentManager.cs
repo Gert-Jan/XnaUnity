@@ -69,6 +69,10 @@ namespace Microsoft.Xna.Framework.Content
 		private List<IDisposable> disposableAssets = new List<IDisposable>();
 		private bool disposed;
 
+		private bool gcRequest = false;
+		private TimeSpan timeSinceLastGCRequest = TimeSpan.Zero;
+		private static readonly TimeSpan START_GC_AFTER_REQUEST_TIME = new TimeSpan(0, 0, 1);
+
 		public ContentManager()
 		{
 		}
@@ -123,12 +127,25 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-		public void UpdateBundleLoading()
+		public void UpdateBundleLoading(GameTime gameTime)
 		{
 			EnsureMappingsExist();
 
             xnaBundles.UpdateBundleLoading();
 			streams.UpdateLoading();
+
+			// postpone garbage collection until we haven't had a request for a second
+			if (gcRequest)
+			{
+				gcRequest = false;
+				timeSinceLastGCRequest = gameTime.TotalGameTime;
+			}
+			if (timeSinceLastGCRequest != TimeSpan.Zero && gameTime.TotalGameTime - timeSinceLastGCRequest > START_GC_AFTER_REQUEST_TIME)
+			{
+				timeSinceLastGCRequest = TimeSpan.Zero;
+				// free scene textures from memory
+				UnityEngine.Resources.UnloadUnusedAssets();
+			}
 		}
 
 		public void LoadBundle(string bundleName)
@@ -145,8 +162,8 @@ namespace Microsoft.Xna.Framework.Content
 
             //XnaWrapper.Debug.Log("unloading: " + bundleName);
             xnaBundles.ReleaseBundle(bundleName);
-			// We need to call this because otherwise WWW loaded textures won't be removed from the Unity Scene.
-			UnityEngine.Resources.UnloadUnusedAssets();
+			// We need to scedule a garbage collect request because otherwise WWW loaded textures won't be removed from the Unity Scene.
+			gcRequest = true;
 		}
 
 		public void Dispose()
