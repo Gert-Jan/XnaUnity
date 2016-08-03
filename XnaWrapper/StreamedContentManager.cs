@@ -99,7 +99,14 @@ namespace XnaWrapper
 				{
 					if (!string.IsNullOrEmpty(www.error))
 						throw new FileNotFoundException("Could not load audio file from url: " + www.url);
+#if U_PS4
+					// In Unity 5.3.6p1 streaming audioclips seem to break in certain situations.
+					// Specifically when calling Pause, Stop, set clip, Play in quick succesion on an AudioSource would not start playing the audio sometimes.
+					// Do not stream in that case as a workaround.
+					asset = www.GetAudioClip(false, false);
+#else
 					asset = www.GetAudioClip(false, true);
+#endif
 				}
 				AudioClip clip = asset as AudioClip;
 
