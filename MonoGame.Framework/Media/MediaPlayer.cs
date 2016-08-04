@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		public static void Resume()
 		{
-			if (AudioSource != null)
+			if (AudioSource != null && State != MediaState.Playing)
 				AudioSource.Play();
 			State = MediaState.Playing;
 		}
