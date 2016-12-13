@@ -19,6 +19,9 @@ namespace Microsoft.Xna.Framework.Input
 
 		public static GamePadState GetState(PlayerIndex playerIndex)
 		{
+			if (!PlatformInstances.GamePad.GetState(playerIndex).IsConnected)
+				return GamePadState.Default;
+
 			// code for controlling overlays
 			if (UnityEngine.Debug.isDebugBuild)
 			{
@@ -53,6 +56,7 @@ namespace Microsoft.Xna.Framework.Input
 				prevStates[index] = newState;
 				return newState;
 			}
+
 			return PlatformInstances.GamePad.GetState(playerIndex);
 		}
 #else
