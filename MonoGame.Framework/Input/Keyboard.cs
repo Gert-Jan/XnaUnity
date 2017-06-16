@@ -70,17 +70,16 @@ namespace Microsoft.Xna.Framework.Input
 
 		public static KeyboardState GetState()
 		{
-			bool[] keyStates = new bool[256];
 			pressedKeys.Clear();
 
-			for (int i = 0; i < keyStates.Length; i++)
+			for (int i = 0; i < keyMapping.Length; i++)
 			{
 				if (keyMapping[i] != KeyCode.None && UnityEngine.Input.GetKey(keyMapping[i]))
 				{
 					pressedKeys.Add((Keys)i);
 				}
 			}
-            KeyboardState state = new KeyboardState(pressedKeys);
+
 			return new KeyboardState(pressedKeys);
 		}
 	}
