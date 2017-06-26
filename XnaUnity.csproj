@@ -189,9 +189,6 @@
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Texture.cs">
       <Link>MonoGame.Framework\Graphics\Texture.cs</Link>
     </Compile>
-    <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Texture2D.cs">
-      <Link>MonoGame.Framework\Graphics\Texture2D.cs</Link>
-    </Compile>
     <Compile Include="..\MonoGame\MonoGame.Framework\Graphics\Vertices\IVertexType.cs">
       <Link>MonoGame.Framework\Graphics\Vertices\IVertexType.cs</Link>
     </Compile>
@@ -376,6 +373,7 @@
     <Compile Include="MonoGame.Framework\Graphics\States\RasterizerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\States\SamplerState.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture.Unity.cs" />
+    <Compile Include="MonoGame.Framework\Graphics\Texture2D.cs" />
     <Compile Include="MonoGame.Framework\Graphics\Texture2D.Unity.cs" />
     <Compile Include="MonoGame.Framework\Input\GamePad.cs" />
     <Compile Include="MonoGame.Framework\Input\GamePadState.cs" />
