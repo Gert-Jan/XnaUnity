@@ -60,6 +60,7 @@ namespace Microsoft.Xna.Framework.Audio
 				_source.Stop();
 				pool.Restore(_source);
 				_source = null;
+				SoundEffectInstancePool.Add(this);
 			}
 		}
 
