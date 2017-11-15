@@ -188,6 +188,7 @@ namespace XnaWrapper
 				//Log.Write("Loading: " + xnaBundle.bundleFilePath);
 				startLoadTime = Time.realtimeSinceStartup;
 				data = new WWW(xnaBundle.bundleFilePath);
+
 				//#if U_FUZE
 				//				if (PlatformInstances.IsEditor)
 				//					data = WWW.LoadFromCacheOrDownload(xnaBundle.bundleFilePath, 1);
@@ -360,7 +361,7 @@ namespace XnaWrapper
 			if (oneAssetPerBundle)
 			{
 				bundleName = name;
-				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator).Replace(".", BundleManager.DotSeparator);
+				bundleFilePath = BundleManager.validPathFormat + name.Replace("/", BundleManager.DirSeparator).Replace(".", BundleManager.DotSeparator);
 			}
 			bundleFilePath = bundleFilePath.ToLower();
 		}
