@@ -360,9 +360,8 @@ namespace XnaWrapper
 			if (oneAssetPerBundle)
 			{
 				bundleName = name;
-				bundleFilePath = BundleManager.validPathFormat + name.Replace("\\", BundleManager.DirSeparator).Replace(".", BundleManager.DotSeparator);
+				bundleFilePath = BundleManager.validPathFormat + name.Replace("/", BundleManager.DirSeparator).Replace(".", BundleManager.DotSeparator);
 			}
-			bundleFilePath = bundleFilePath.ToLower();
 		}
 
 		internal void LoadBundle()

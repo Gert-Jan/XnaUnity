@@ -277,6 +277,7 @@ namespace Microsoft.Xna.Framework.Content
                 Console.WriteLine("ContentManager.Load: manager disposed");
                 throw new ObjectDisposedException("ContentManager");
 			}
+			fileName = fileName.Replace('\\', '/');
 			fileName = fileName.ToLower();
 
             ContentItem item = GetStreamedItem(fileName);
