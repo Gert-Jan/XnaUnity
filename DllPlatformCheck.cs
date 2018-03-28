@@ -10,6 +10,8 @@
 		public const object U_WINDOWS = null;
 #elif U_PS4
 		public const object U_PS4 = null;
+#elif U_SWITCH
+		public const object U_SWITCH = null;
 #endif
 	}
 }

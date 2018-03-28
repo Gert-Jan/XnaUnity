@@ -177,7 +177,11 @@ namespace XnaWrapper
 
 		private static uint GetMono()
 		{
+#if U_SWITCH
+			return 0;
+#else
 			return Profiler.GetMonoUsedSize();
+#endif
 		}
 
 		private static void AddTracker(uint id, string trackerName, Func<uint> valueGetterFunction)

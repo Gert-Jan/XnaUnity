@@ -153,8 +153,8 @@ namespace XnaWrapper
 			// We should avoid using UnityEngine.Time.time and use an alternative method to get the application running time.
 			
 			// This is broken and causing the xbox application to crash at the moment - investigate later, for now return an empty string when on XBOX build - WB
-#if U_XBOXONE
-			return String.Empty;
+#if U_XBOXONE || U_SWITCH
+			return new TimeSpan(DateTime.Now.Ticks).TotalSeconds.ToString("F3") + ' ';
 #else
 			TimeSpan runningTime = DateTime.Now - Process.GetCurrentProcess().StartTime;
 

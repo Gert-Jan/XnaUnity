@@ -110,6 +110,8 @@ namespace Microsoft.Xna.Framework.Content
 				else
 #if U_WINDOWS || U_PS4
 					streamingAssetsPath = string.Format("file://{0}/", Application.streamingAssetsPath);
+#elif U_SWITCH
+					streamingAssetsPath = string.Format("file:///{0}/", Application.streamingAssetsPath);
 #else
 					streamingAssetsPath = string.Format("{0}/", Application.streamingAssetsPath);
 #endif

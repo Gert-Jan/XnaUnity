@@ -32,7 +32,11 @@ namespace Microsoft.Xna.Framework
 
 			_window = new UnityGameWindow(GraphicsDevice);
 
+			// Any file system write operation will crash on switch.
+			// It turns out that Application.persistenDataPath sometimes tries to create a directory.
+#if !U_SWITCH
 			UnityStoragePath = Application.persistentDataPath;
+#endif
 
 			UnityEngine.Input.simulateMouseWithTouches = false;
 			UnityEngine.Input.multiTouchEnabled = true;
