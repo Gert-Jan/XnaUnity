@@ -96,7 +96,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			UnityEngine.Texture2D unityTexture = new UnityEngine.Texture2D(0, 0);
 			BinaryReader br = new BinaryReader(stream);
 			byte[] data = br.ReadBytes((int)stream.Length);
-			unityTexture.LoadImage(data);
+			unityTexture.LoadRawTextureData(data);
 			return new Texture2D(unityTexture);
 		}
 
