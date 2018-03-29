@@ -76,7 +76,7 @@ namespace Microsoft.Xna.Framework
 				_height = height;
 
 				_graphicsDevice.Viewport = new Viewport(0, 0, width, height);
-
+				OnClientSizeChanged();
 				OnOrientationChanged();
 			}
 		}
