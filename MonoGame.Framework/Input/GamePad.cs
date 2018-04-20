@@ -8,7 +8,7 @@ namespace Microsoft.Xna.Framework.Input
 	{
 #if !GAMEPAD_TESTING
 
-#if U_XBOXONE
+#if U_XBOXONE || U_SWITCH
 		private const int MAX_GAMEPAD_COUNT = 8;
 #else
 		private const int MAX_GAMEPAD_COUNT = 4;
