@@ -31,7 +31,7 @@ namespace Microsoft.Xna.Framework.Input
 				float yScale = (float)UnityEngine.Screen.height / (float)SWITCH_HANDHELD_HEIGHT;
 
 				state.X = (int)(touchState.position.x * xScale);
-				state.Y = SWITCH_HANDHELD_HEIGHT - (int)(touchState.position.y * yScale); // Switch has inverted the y-axis on the screen(720 is top, 0 is bottom)
+				state.Y = UnityEngine.Screen.height - (int)(touchState.position.y * yScale); // Switch has inverted the y-axis on the screen(720 is top, 0 is bottom)
 #else
 				// This might be wrong, depending on touch device and native resolution
 				state.X = (int)touchState.position.x;
