@@ -13,7 +13,8 @@ namespace Microsoft.Xna.Framework
 		Five = 4,
 		Six = 5,
 		Seven = 6,
-		Eight = 7
+		Eight = 7,
+		Nine = 8
     }
 }
 
