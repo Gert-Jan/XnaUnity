@@ -21,7 +21,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				UnityEngine.Touch touchState = UnityEngine.Input.GetTouch(0);
 
-				if (touchState.phase == TouchPhase.Began)
+				if (touchState.phase == TouchPhase.Began || touchState.phase == TouchPhase.Stationary || touchState.phase == TouchPhase.Moved)
 					state.LeftButton = ButtonState.Pressed;
 				else
 					state.LeftButton = ButtonState.Released;
