@@ -8,12 +8,14 @@ namespace Microsoft.Xna.Framework.Input
 	{
 #if !GAMEPAD_TESTING
 
-#if U_XBOXONE || U_SWITCH
+#if U_XBOXONE
 		private const int MAX_GAMEPAD_COUNT = 8;
+#elif U_SWITCH
+		private const int MAX_GAMEPAD_COUNT = 9;
 #else
 		private const int MAX_GAMEPAD_COUNT = 4;
 #endif
-		
+
 
 		private static GamePadState[] prevStates;
 
@@ -35,7 +37,6 @@ namespace Microsoft.Xna.Framework.Input
 					PlatformInstances.LogOverlay = !PlatformInstances.LogOverlay;
 				if (newState.Buttons.LeftShoulder == ButtonState.Pressed && prevState.Buttons.LeftShoulder == ButtonState.Released)
 					PlatformInstances.InfoOverlay = !PlatformInstances.InfoOverlay;
-
 				if (PlatformInstances.LogOverlay)
 				{
 					if (playerIndex == PlayerIndex.One)
