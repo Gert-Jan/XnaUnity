@@ -52,18 +52,36 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private void PlatformSetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct
 		{
-			UnityEngine.Color[] unityData = new UnityEngine.Color[data.Length];
-			Color[] xnaData = (Color[])(object)data;
-			XnaToUnity.Color(xnaData, ref unityData);
-			if (rect.HasValue)
+			if (typeof(T) == typeof(Color))
 			{
-				UnityTexture2D.SetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, unityData);
+				UnityEngine.Color[] unityData = new UnityEngine.Color[data.Length];
+				Color[] xnaData = (Color[])(object)data;
+				XnaToUnity.Color(xnaData, ref unityData);
+				if (rect.HasValue)
+				{
+					UnityTexture2D.SetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, unityData);
+				}
+				else
+				{
+					UnityTexture2D.SetPixels(unityData);
+				}
+				UnityTexture2D.Apply();
+			}
+			else if (typeof(T) == typeof(byte))
+			{
+				if (!rect.HasValue)
+				{
+					UnityEngine.ImageConversion.LoadImage(UnityTexture2D, (byte[])(object)data);
+				}
+				else
+				{
+					throw new NotImplementedException("Texture2D.PlatformGetData setting a texture partially using bytes is not implementing. Make sure rect == null.");
+				}
 			}
 			else
 			{
-				UnityTexture2D.SetPixels(unityData);
+				throw new NotImplementedException("Texture2D.PlatformGetData type not implemented: " + typeof(T).Name);
 			}
-			UnityTexture2D.Apply();
 		}
 
 		public void SetData(UnityEngine.Color[] data)
@@ -80,15 +98,34 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private void PlatformGetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct
 		{
-			UnityEngine.Color[] output;
-			// unity reads from bottom to top, so compensate for that on the Y position
-			if (rect.HasValue)
-				output = UnityTexture2D.GetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, level);
-			else
-				output = UnityTexture2D.GetPixels(level);
+			if (typeof(T) == typeof(Color))
+			{
+				UnityEngine.Color[] output;
+				// unity reads from bottom to top, so compensate for that on the Y position
+				if (rect.HasValue)
+					output = UnityTexture2D.GetPixels(rect.Value.X, UnityTexture2D.height - rect.Value.Y - rect.Value.Height, rect.Value.Width, rect.Value.Height, level);
+				else
+					output = UnityTexture2D.GetPixels(level);
 
-			Color[] xnaData = (Color[])(object)data;
-			UnityToXna.Color(output, ref xnaData);
+				Color[] xnaData = (Color[])(object)data;
+				UnityToXna.Color(output, ref xnaData);
+			}
+			else if (typeof(T) == typeof(byte))
+			{
+				if (!rect.HasValue)
+				{
+					byte[] pngData = UnityEngine.ImageConversion.EncodeToPNG(UnityTexture2D);
+					Array.Copy(pngData, data, pngData.Length);
+				}
+				else
+				{
+					throw new NotImplementedException("Texture2D.PlatformGetData getting a texture partially using bytes is not implementing. Make sure rect == null.");
+				}
+			}
+			else
+			{
+				throw new NotImplementedException("Texture2D.PlatformGetData type not implemented: " + typeof(T).Name);
+			}
 		}
 
 		private static Texture2D PlatformFromStream(GraphicsDevice graphicsDevice, Stream stream)
