@@ -165,12 +165,20 @@ namespace Microsoft.Xna.Framework.Input
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickDown;
             else if (sticks.Right.Y > 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickUp;
-            
-            if (triggers.Left > DEFAULT_TRIGGER_THRESHOLD)
+
+#if U_SWITCH
+			
+
+			if (Buttons.LeftTrigger == ButtonState.Pressed)
+				result |= Microsoft.Xna.Framework.Input.Buttons.LeftTrigger;
+			if (Buttons.RightTrigger == ButtonState.Pressed)
+				result |= Microsoft.Xna.Framework.Input.Buttons.RightTrigger;
+#else
+			if (triggers.Left > DEFAULT_TRIGGER_THRESHOLD)
                 result |= Microsoft.Xna.Framework.Input.Buttons.LeftTrigger;
             if (triggers.Right > DEFAULT_TRIGGER_THRESHOLD)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightTrigger;
-
+#endif
             return result;
         }
         

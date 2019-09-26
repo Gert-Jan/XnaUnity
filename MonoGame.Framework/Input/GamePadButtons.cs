@@ -109,7 +109,21 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.RightShoulder) == Buttons.RightShoulder) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
-        public ButtonState RightStick
+		public ButtonState LeftTrigger
+		{
+			get
+			{
+				return ((buttons & Buttons.LeftTrigger) == Buttons.LeftTrigger) ? ButtonState.Pressed : ButtonState.Released;
+			}
+		}
+		public ButtonState RightTrigger
+		{
+			get
+			{
+				return ((buttons & Buttons.RightTrigger) == Buttons.RightTrigger) ? ButtonState.Pressed : ButtonState.Released;
+			}
+		}
+		public ButtonState RightStick
         {
             get
             {
